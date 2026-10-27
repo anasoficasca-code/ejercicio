@@ -137,3 +137,69 @@ export function makeTileTexture() {
     }
   });
 }
+
+/**
+ * Mapa normal (capa de relieve PBR) a partir de un mapa de alturas dibujado en canvas (gris: claro = alto).
+ * Así el ladrillo, la teja y el pañete reaccionan a la luz con relieve en lugar de verse planos.
+ */
+function normalFrom(drawHeight, strength = 2.5) {
+  const N = 256;
+  const hc = document.createElement('canvas');
+  hc.width = hc.height = N;
+  const hctx = hc.getContext('2d', { willReadFrequently: true });
+  drawHeight(hctx, N, N);
+  const h = hctx.getImageData(0, 0, N, N).data;
+  const out = document.createElement('canvas');
+  out.width = out.height = N;
+  const octx = out.getContext('2d');
+  const img = octx.createImageData(N, N), d = img.data;
+  const H = (x, y) => h[(((y + N) % N) * N + ((x + N) % N)) * 4] / 255;
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const dx = (H(x + 1, y) - H(x - 1, y)) * strength, dy = (H(x, y + 1) - H(x, y - 1)) * strength;
+    const l = Math.hypot(dx, dy, 1), i = (y * N + x) * 4;
+    d[i] = ((-dx / l) * 0.5 + 0.5) * 255; d[i + 1] = ((dy / l) * 0.5 + 0.5) * 255; d[i + 2] = ((1 / l) * 0.5 + 0.5) * 255; d[i + 3] = 255;
+  }
+  octx.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(out);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.NoColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
+/** Relieve de teja de barro: cada pieza abombada y la hilada de abajo montada. */
+export function makeTileNormal() {
+  return normalFrom((ctx, w, h) => {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, w, h);
+    for (let y = 0; y < h; y += 16) for (let x = 0; x < w; x += 16) {
+      const g = ctx.createRadialGradient(x + 8, y + 10, 1, x + 8, y + 10, 9);
+      g.addColorStop(0, '#fff'); g.addColorStop(1, '#222');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.ellipse(x + 8, y + 10, 7, 9, 0, 0, Math.PI * 2); ctx.fill();
+    }
+  }, 3.5);
+}
+
+/** Relieve de ladrillo (misma trama que `bricks`): junta hundida y pieza con leve textura. */
+export function makeBrickNormal(rowH = 8) {
+  return normalFrom((ctx, w, h) => {
+    ctx.fillStyle = '#202020';
+    ctx.fillRect(0, 0, w, h);
+    for (let y = 0, r = 0; y < h; y += rowH, r++) for (let x = (r % 2) * -13; x < w; x += 26) {
+      const v = 200 + Math.random() * 40 | 0;
+      ctx.fillStyle = `rgb(${v},${v},${v})`;
+      ctx.fillRect(x + 1, y + 1, 24, rowH - 2);
+    }
+    noise(ctx, w, h, 30);
+  }, 2.2);
+}
+
+/** Grano de pañete. */
+export function makePlasterNormal() {
+  return normalFrom((ctx, w, h) => {
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, w, h);
+    noise(ctx, w, h, 70);
+  }, 0.9);
+}

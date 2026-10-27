@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { LON0, LAT0, MLON, MLAT, toLocal } from '../geo.js';
 import { makeTreeImpostors, RealTrees } from './RealTrees.js';
 import { load as loadPBR } from './PBRSurfaces.js';
-import { makeFacadeTextures, makeTileTexture, BAY_W } from './FacadeTextures.js';
+import { makeFacadeTextures, makeTileTexture, makeTileNormal, BAY_W } from './FacadeTextures.js';
 import { Church } from './Church.js';
 
 /**
@@ -192,6 +192,7 @@ export class CityContext {
     const tower = parts.filter((b) => b !== nave).reduce((a, b) => (!a || b.p > a.p ? b : a), null);
     if (nave && tower) this.church = new Church(this.group, { nave, tower, textures: this.textures });
     this.buildingList = all.filter((b) => b !== nave && b !== tower);
+    this.groundAO = this._bakeGroundAO(all);
 
     this._buildManzanas();
     this._buildAndenes();
@@ -371,6 +372,7 @@ export class CityContext {
     const hole = (L) => ({ cx: (L.x0 + L.x1) / 2, cz: (L.zN + L.zS) / 2, hx: (L.x1 - L.x0) / 2 - 1, hz: (L.zS - L.zN) / 2 - 1 });
     this._photoMat(L3, hole(L2)); this._photoMat(L2, hole(L1));
     this._groundMat(L1, L0 ? hole(L0) : null); if (L0) this._groundMat(L0, null);
+    this._withGroundAO(L1.mesh.material, 'L1'); if (L0) this._withGroundAO(L0.mesh.material, 'L0');
     const far3 = this._fillLevel(L3);
     const near = Promise.all([L0 && this._fillLevel(L0), this._fillLevel(L1)]);
     const far2 = near.then(() => this._fillLevel(L2));
@@ -466,6 +468,7 @@ export class CityContext {
         .replace('#include <map_fragment>', `#include <map_fragment>
           float rnd = vSeed;
           float facRough = 0.0;
+          float facH = 0.0;
           if (uFlat > 0.5) {
             // tema plano: el color lo pone el atributo de vértice
           } else if (vUp > 0.5) {
@@ -477,20 +480,50 @@ export class CityContext {
             float tileN = fract(sin(dot(floor(vCW.xz * 1.2), vec2(12.9898, 78.233))) * 43758.5453);
             diffuseColor.rgb *= rc * (0.96 + 0.06 * tileN);
           } else {
-            // fachada: paleta bogotana (ladrillo, pañete crema, gris) teñida con el color de su cubierta
-            vec3 brick = vec3(0.56, 0.27, 0.17), cream = vec3(0.80, 0.76, 0.68), grey = vec3(0.66, 0.66, 0.65);
-            vec3 base = rnd < 0.55 ? brick : (rnd < 0.82 ? cream : grey);
+            // fachada PBR: paleta bogotana (ladrillo, pañete crema, concreto gris) con relieve y luz horneada
+            bool isBrick = rnd < 0.55, isCream = rnd >= 0.55 && rnd < 0.82;
+            vec3 base = isBrick ? vec3(0.56, 0.27, 0.17) : (isCream ? vec3(0.80, 0.76, 0.68) : vec3(0.66, 0.66, 0.65));
             base = base * (0.85 + 0.3 * fract(vSeed * 13.17 + 0.37));
             float fh = 2.75 + 0.35 * fract(vSeed * 29.31 + 0.71), cw = 2.6 + 1.2 * fract(vSeed * 47.73 + 0.13);
             float fy = fract(vFac.y / fh), fx = fract(vFac.x / cw);
             vec2 fw = fwidth(vFac);
             float aa = smoothstep(0.18, 0.5, max(fw.x / cw, fw.y / fh)); // a distancia: color medio (sin moiré)
+            float dAA = smoothstep(0.015, 0.05, max(fw.x, fw.y));       // el detalle de ladrillo se apaga a distancia
             float win = step(0.25, fx) * step(fx, 0.75) * step(0.36, fy) * step(fy, 0.82) * step(1.2, vFac.y);
-            float lit = step(0.95, hsh(floor(vec2(vFac.x / cw, vFac.y / fh)) + vec2(vSeed * 91.7, vSeed * 17.3)));
-            vec3 glass = mix(vec3(0.06, 0.075, 0.09), vec3(0.24, 0.27, 0.3), 0.3 * hsh(floor(vec2(vFac.x / cw, vFac.y / fh)) + vec2(vSeed * 91.7, vSeed * 17.3))) + lit * vec3(0.08, 0.07, 0.04);
+            vec2 cell = floor(vec2(vFac.x / cw, vFac.y / fh)) + vec2(vSeed * 91.7, vSeed * 17.3);
+            float lit = step(0.95, hsh(cell));
+            vec3 glass = mix(vec3(0.06, 0.075, 0.09), vec3(0.24, 0.27, 0.3), 0.3 * hsh(cell)) + lit * vec3(0.08, 0.07, 0.04);
             float band = step(fract(vFac.y / fh), 0.06) * 0.25;
-            diffuseColor.rgb = mix(mix(base * (1.0 - band), glass, win), mix(base, vec3(0.16, 0.18, 0.2), 0.2), aa);
+            // ladrillo: hiladas de 7,5 cm y piezas de 25 cm trabadas, junta hundida y cada pieza con su tono
+            float row = floor(vFac.y / 0.075), bx = (vFac.x + mod(row, 2.0) * 0.125) / 0.25;
+            float joint = max(1.0 - smoothstep(0.10, 0.17, fract(vFac.y / 0.075)), 1.0 - smoothstep(0.03, 0.07, fract(bx)));
+            if (isBrick) {
+              base *= mix(0.84 + 0.28 * hsh(vec2(floor(bx), row) + vSeed * 7.0), 1.0, dAA);
+              base = mix(base, vec3(0.60, 0.56, 0.50), joint * 0.8 * (1.0 - dAA));
+              facH = (1.0 - joint) * 0.012 * (1.0 - dAA);
+            } else if (isCream) {
+              facH = (hsh(floor(vFac * 45.0)) - 0.5) * 0.0018 * (1.0 - dAA);      // grano del pañete
+            } else {
+              facH = -0.012 * step(fract(vFac.y / fh), 0.025);                       // junta de placa por piso
+            }
+            facH = mix(facH, -0.15, win * (1.0 - aa));                                // vidrio hundido 15 cm
+            // luz horneada (oclusión): base del muro, dintel y jambas del vano, sombra bajo el alféizar, juntas
+            float wy = (fy - 0.36) / 0.46, wx = (fx - 0.25) / 0.5;
+            float ao = mix(0.6, 1.0, smoothstep(0.0, 2.6, vFac.y));
+            ao *= 1.0 - win * (0.45 * smoothstep(0.55, 1.0, wy) + 0.3 * (1.0 - smoothstep(0.0, 0.14, min(wx, 1.0 - wx))));
+            ao *= 1.0 - 0.3 * (1.0 - win) * step(0.25, fx) * step(fx, 0.75) * smoothstep(0.28, 0.36, fy) * step(fy, 0.36);
+            ao *= 1.0 - (isBrick ? 0.3 * joint * (1.0 - dAA) : 0.0);
+            diffuseColor.rgb = mix(mix(base * (1.0 - band), glass, win), mix(base, vec3(0.16, 0.18, 0.2), 0.2), aa) * mix(ao, 1.0, aa * 0.6);
             facRough = mix(win, 0.25, aa);
+          }`)
+        .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+          if (vUp < 0.5 && uFlat < 0.5) {
+            // relieve de la fachada (bump por derivadas, como perturbNormalArb de three.js)
+            vec3 dpdx = dFdx(-vViewPosition), dpdy = dFdy(-vViewPosition);
+            float hx = dFdx(facH), hy = dFdy(facH);
+            vec3 r1 = cross(dpdy, normal), r2 = cross(normal, dpdx);
+            float det = dot(dpdx, r1);
+            normal = normalize(abs(det) * normal - sign(det) * (hx * r1 + hy * r2));
           }`)
         .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.18, facRough);');
     };
@@ -551,7 +584,7 @@ export class CityContext {
     geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
     geo.computeVertexNormals();
     const tex = makeTileTexture();
-    this.tileRoofs = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, vertexColors: true, roughness: 0.85, side: THREE.DoubleSide }));
+    this.tileRoofs = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, normalMap: makeTileNormal(), vertexColors: true, roughness: 0.85, side: THREE.DoubleSide }));
     this.tileRoofs.castShadow = !this.mobile;
     this.tileRoofs.receiveShadow = true;
     this.tileRoofs.name = 'Cubiertas de teja';
@@ -646,6 +679,68 @@ export class CityContext {
 
 
 
+  /**
+   * Luz horneada en el suelo: un mapa de oclusión ambiental precalculado con las huellas de todas las
+   * construcciones (y el edificio del proyecto) desenfocadas. Asfalto, andenes y manzanas lo multiplican,
+   * así el suelo se oscurece al pie de los edificios sin calcular nada en cada cuadro.
+   */
+  _bakeGroundAO(list) {
+    const half = 900, N = 2048, k = N / (2 * half);
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = N;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, N, N);
+    const draw = (pts, blur, alpha, grow = 0) => {
+      ctx.filter = `blur(${blur}px)`;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      const [cx, cz] = centroid(pts);
+      pts.forEach(([x, z], i) => {
+        const dx = x - cx, dz = z - cz, l = Math.hypot(dx, dz) || 1;
+        const X = (x + (dx / l) * grow + half) * k, Z = (z + (dz / l) * grow + half) * k;
+        i ? ctx.lineTo(X, Z) : ctx.moveTo(X, Z);
+      });
+      ctx.closePath();
+      ctx.fill();
+    };
+    for (const b of list) {
+      const h = Math.max(b.h, b.p * 2.8);
+      draw(b.pts, 2 + Math.min(6, h / 6), Math.min(0.55, 0.25 + h / 60), Math.min(2.5, h / 12)); // halo: más amplio en edificios altos
+    }
+    const proj = this.data.predios.p.find((p) => p.id === 'englobe');
+    if (proj) draw(proj.pts.map(([x, z]) => [x, z]), 3, 0.18, -6);
+    ctx.filter = 'none';
+    ctx.globalAlpha = 1;
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.NoColorSpace;
+    return { tex, bounds: new THREE.Vector4(-half, -half, 2 * half, 2 * half) };
+  }
+
+  /** Inyecta el mapa de oclusión horneada del suelo en un material (por coordenadas de mundo). */
+  _withGroundAO(mat, key) {
+    const prev = mat.onBeforeCompile;
+    mat.onBeforeCompile = (sh, r) => {
+      prev?.call(mat, sh, r);
+      sh.uniforms.tGAO = { value: this.groundAO.tex };
+      sh.uniforms.uGAOB = { value: this.groundAO.bounds };
+      if (!sh.vertexShader.includes('vGW_AO')) {
+        sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vGW_AO;')
+          .replace('#include <project_vertex>', '#include <project_vertex>\nvGW_AO = (modelMatrix * vec4(transformed, 1.0)).xz;');
+      }
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vGW_AO; uniform sampler2D tGAO; uniform vec4 uGAOB;')
+        .replace('#include <aomap_fragment>', `#include <aomap_fragment>
+          { vec2 t = (vGW_AO - uGAOB.xy) / uGAOB.zw; t.y = 1.0 - t.y;
+            float gao = (t.x > 0.0 && t.x < 1.0 && t.y > 0.0 && t.y < 1.0) ? texture2D(tGAO, t).r : 1.0;
+            reflectedLight.indirectDiffuse *= mix(0.45, 1.0, gao); reflectedLight.directDiffuse *= mix(0.7, 1.0, gao); }`);
+    };
+    const prevKey = mat.customProgramCacheKey?.bind(mat);
+    mat.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}_gao_${key}`;
+    mat.needsUpdate = true;
+    return mat;
+  }
+
   // ---------------------------------------------------------------- andenes y suelo de manzana
   /** Andenes: manzana ampliada 2,6 m (data/geometry/andenes.json), en adoquín de concreto con bordillo de 14 cm. */
   _buildAndenes() {
@@ -661,7 +756,9 @@ export class CityContext {
     g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     const map = loadPBR('concrete_pavement', 'diff', true);
-    this.andenes = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map, color: 0xe9e5dd, roughness: 0.9, metalness: 0 }));
+    const normalMap = loadPBR('concrete_pavement', 'nor_gl', false); // capa de relieve real (Poly Haven)
+    this.andenes = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map, normalMap, color: 0xe9e5dd, roughness: 0.9, metalness: 0 }));
+    this._withGroundAO(this.andenes.material, 'andenes');
     this.andenes.receiveShadow = true;
     this.andenes.name = 'Andenes';
     this.group.add(this.andenes);
@@ -688,7 +785,7 @@ export class CityContext {
           diffuseColor.rgb *= mix(conc, grass, veg);`);
     };
     mat.customProgramCacheKey = () => 'manzana_realista';
-    return mat;
+    return this._withGroundAO(mat, 'manzana');
   }
 
   // ---------------------------------------------------------------- manzanas

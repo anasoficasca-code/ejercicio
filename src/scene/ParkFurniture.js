@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
 /**
  * ParkFurniture — mobiliario urbano y de parque en 3D (medidas reales, en metros) para el patio,
@@ -190,7 +191,8 @@ export function car(parent, kind, x, z, ry, y = 0) {
   const url = `./assets/models/${kind}.glb`;
   (cache[url] ||= loader.loadAsync(url).catch(() => null)).then((gltf) => {
     if (!gltf) return;
-    const o = gltf.scene.clone(true);
+    const o = SkeletonUtils.clone(gltf.scene); // los modelos traen esqueleto: clone() normal los deja en el origen
+    o.scale.setScalar(0.92);
     place(parent, o, x, z, ry, y);
   });
 }

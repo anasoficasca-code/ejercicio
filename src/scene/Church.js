@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { prismGeometry, obb } from './CityContext.js';
-import { makeTileTexture } from './FacadeTextures.js';
+import { makeTileTexture, makeTileNormal, makePlasterNormal } from './FacadeTextures.js';
 
 /**
  * Church — la iglesia de la manzana vecina (lote catastral 007208001002, Calle 56 con Carrera 18),
@@ -16,16 +16,17 @@ export class Church {
     this.group.name = 'Iglesia';
     scene.add(this.group);
     const tile = makeTileTexture();
-    const roofMat = new THREE.MeshStandardMaterial({ map: tile, roughness: 0.8, side: THREE.DoubleSide });
-    const wall = new THREE.MeshStandardMaterial({ map: textures.iglesiaMuro, roughness: 0.92 });
-    const wall2 = new THREE.MeshStandardMaterial({ map: textures.iglesiaMuro, roughness: 0.92, side: THREE.DoubleSide });
+    const roofMat = new THREE.MeshStandardMaterial({ map: tile, normalMap: makeTileNormal(), roughness: 0.8, side: THREE.DoubleSide });
+    const plasterN = makePlasterNormal();
+    const wall = new THREE.MeshStandardMaterial({ map: textures.iglesiaMuro, normalMap: plasterN, roughness: 0.92 });
+    const wall2 = new THREE.MeshStandardMaterial({ map: textures.iglesiaMuro, normalMap: plasterN, roughness: 0.92, side: THREE.DoubleSide });
     const trim = new THREE.MeshStandardMaterial({ color: 0xefe8d8, roughness: 0.8 });
     const dark = new THREE.MeshStandardMaterial({ color: 0x232c38, roughness: 0.35, metalness: 0.2, side: THREE.DoubleSide });
     const base = 0.16, wallH = 10.5;
 
     // --- nave
     const g = prismGeometry(nave.pts, base, base + wallH, { floorH: wallH, bayW: 4.2 });
-    this.group.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: textures.iglesiaNave, roughness: 0.92 })));
+    this.group.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: textures.iglesiaNave, normalMap: plasterN, roughness: 0.92 })));
     const o = obb(nave.pts);
     const ridge = (o.w / 2) * Math.tan(THREE.MathUtils.degToRad(24));
     const roof = new THREE.Mesh(gableRoof(o.l + 1.2, o.w + 1.2, ridge), roofMat);
