@@ -1,0 +1,1244 @@
+/* ==========================================================================
+   Apartaestudios Galerías · Calle 56 — Web Masterplan UI (misma línea visual del masterplan Hotel La Fontana)
+   ========================================================================== */
+
+:root {
+  --umbra-red: #d81e28;
+  --umbra-red-hover: #f02834;
+  --umbra-red-glow: rgba(216, 30, 40, 0.45);
+  --glass-bg: linear-gradient(155deg, rgba(68, 68, 70, 0.84) 0%, rgba(42, 42, 44, 0.88) 100%);
+  --glass-card-bg: linear-gradient(155deg, rgba(58, 38, 40, 0.88) 0%, rgba(44, 34, 36, 0.92) 100%);
+  --glass-dock-bg: rgba(118, 122, 126, 0.68);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --btn-muted: rgba(255, 255, 255, 0.16);
+  --btn-muted-hover: rgba(255, 255, 255, 0.28);
+  --btn-active-gray: rgba(205, 208, 212, 0.72);
+  --text-white: #ffffff;
+  --text-soft: rgba(255, 255, 255, 0.82);
+  --text-dim: rgba(255, 255, 255, 0.52);
+  --whatsapp-green: #25d366;
+  --font-main: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-main);
+  background: #14181d;
+  color: var(--text-white);
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#canvas-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  cursor: grab;
+}
+
+#canvas-container:active {
+  cursor: grabbing;
+}
+
+/* Top Left Brand Badge (JMC ARQUITECTURA) */
+.top-left-brand {
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(20, 23, 28, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 4px 16px 4px 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.top-jmc-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  padding: 1.5px;
+  object-fit: contain;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.top-jmc-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.top-jmc-title {
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+}
+
+.top-jmc-sub {
+  font-size: 9.5px;
+  color: var(--text-soft);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* ==========================================================================
+   Top Right Controls
+   ========================================================================== */
+.top-right-bar {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mode-switch-group {
+  display: flex;
+  align-items: center;
+  background: rgba(38, 40, 44, 0.76);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 3px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+}
+
+.mode-pill-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  font-family: var(--font-main);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mode-pill-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mode-pill-btn.active {
+  background: var(--umbra-red);
+  color: #fff;
+  box-shadow: 0 2px 10px var(--umbra-red-glow);
+}
+
+.icon-circle-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(110, 114, 118, 0.65);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-circle-btn:hover {
+  background: rgba(140, 144, 148, 0.85);
+  transform: translateY(-1px);
+}
+
+.contact-pill-btn {
+  border: none;
+  background: var(--umbra-red);
+  color: #fff;
+  font-family: var(--font-main);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px var(--umbra-red-glow);
+  transition: all 0.2s ease;
+}
+
+.contact-pill-btn:hover {
+  background: var(--umbra-red-hover);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Left Sidebar Filters (JMC ARQUITECTURA · Masterplan Architecture & Remodeling)
+   ========================================================================== */
+.left-sidebar-wrapper {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  bottom: 64px;
+  width: 316px;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.left-sidebar-wrapper.collapsed {
+  transform: translateX(-336px);
+}
+
+.left-sidebar {
+  width: 316px;
+  height: 100%;
+  max-height: 840px;
+  background: rgba(20, 23, 28, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 16px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(45, 48, 54, 0.65);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.sidebar-collapse-tab {
+  position: absolute;
+  right: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 76px;
+  background: rgba(70, 75, 82, 0.85);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sidebar-collapse-tab:hover {
+  background: rgba(100, 105, 115, 0.95);
+}
+
+/* JMC ARQUITECTURA Brand Header */
+.sidebar-brand-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 10px;
+}
+
+.jmc-sidebar-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  padding: 2px;
+  object-fit: contain;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.jmc-brand-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.jmc-brand-name {
+  font-family: var(--font-main);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #ffffff;
+}
+
+.jmc-brand-project {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--text-soft);
+  font-weight: 500;
+}
+
+.sidebar-header-controls {
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 12px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.umbra-switch {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.umbra-switch.on {
+  background: var(--umbra-red);
+}
+
+.umbra-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.umbra-switch.on .umbra-switch-knob {
+  transform: translateX(16px);
+}
+
+.toggle-label {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: 12px;
+  padding-right: 4px;
+}
+
+.sidebar-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+}
+
+.filter-main-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--text-soft);
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.filter-section {
+  margin-bottom: 18px;
+}
+
+.filter-section-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-soft);
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.38);
+}
+
+.filter-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.filter-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 215px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.filter-stack::-webkit-scrollbar {
+  width: 3px;
+}
+
+.filter-stack::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 3px;
+}
+
+/* JMC ARQUITECTURA Room Cards & Pill Buttons */
+.jmc-pill-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.jmc-pill-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.75);
+  font-family: var(--font-main);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.jmc-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.jmc-pill-btn.active {
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.jmc-room-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.jmc-room-stack::-webkit-scrollbar {
+  width: 3px;
+}
+
+.jmc-room-stack::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 3px;
+}
+
+.jmc-room-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.jmc-room-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateX(2px);
+}
+
+.jmc-room-card.active {
+  background: linear-gradient(135deg, rgba(216, 30, 40, 0.26), rgba(216, 30, 40, 0.08));
+  border: 1px solid rgba(216, 30, 40, 0.75);
+  box-shadow: 0 4px 14px rgba(216, 30, 40, 0.25);
+}
+
+.jmc-room-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jmc-room-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.jmc-room-type {
+  font-size: 11px;
+  color: var(--text-soft);
+  font-weight: 400;
+}
+
+.jmc-room-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.09);
+  color: #e2e8f0;
+  white-space: nowrap;
+}
+
+.jmc-room-card.active .jmc-room-badge {
+  background: var(--umbra-red);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Center Floating Detail Card ("Inmueble / Habitación 2XX" — exact Centrum UI)
+   ========================================================================== */
+.room-detail-card {
+  position: absolute;
+  top: 46%;
+  left: 53.5%;
+  transform: translate(-50%, -50%) scale(0.96);
+  width: 294px;
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  padding: 20px 20px 18px;
+  z-index: 28;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.room-detail-card.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.detail-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(20, 20, 22, 0.62);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.detail-close-btn:hover {
+  background: rgba(0, 0, 0, 0.88);
+}
+
+.detail-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+  padding-right: 32px;
+}
+
+.detail-subtitle {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 14px;
+}
+
+.detail-props {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.detail-prop-line {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.35;
+}
+
+.detail-prop-line span.label {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-gallery-btn {
+  width: 100%;
+  border: none;
+  background: rgba(255, 255, 255, 0.36);
+  color: #fff;
+  font-family: var(--font-main);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 9px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.detail-gallery-btn:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.detail-interior-btn {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(216, 30, 40, 0.78);
+  color: #fff;
+  font-family: var(--font-main);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: all 0.2s ease;
+}
+
+.detail-interior-btn:hover {
+  background: var(--umbra-red-hover);
+}
+
+/* ==========================================================================
+   Active Filter Chip & Bottom Navigation Dock (Exact Centrum UI)
+   ========================================================================== */
+.active-filter-chip {
+  position: absolute;
+  bottom: 108px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 26;
+  background: rgba(52, 52, 56, 0.82);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.active-filter-chip button {
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.active-filter-chip button:hover {
+  opacity: 1;
+}
+
+.bottom-dock-container {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dock-collapse-handle {
+  width: 36px;
+  height: 16px;
+  background: rgba(68, 72, 76, 0.78);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.bottom-dock {
+  background: var(--glass-dock-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.45);
+}
+
+.jmc-dock-brand {
+  background: rgba(248, 248, 250, 0.96);
+  border-radius: 12px;
+  padding: 5px 14px 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 54px;
+}
+
+.jmc-dock-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.jmc-dock-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.jmc-dock-name {
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #111;
+}
+
+.jmc-dock-sub {
+  font-size: 9px;
+  color: #666;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.dock-tab-btn {
+  width: 72px;
+  height: 54px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(160, 164, 168, 0.42);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.dock-tab-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.dock-tab-btn:hover {
+  background: rgba(185, 190, 195, 0.58);
+  transform: translateY(-1px);
+}
+
+.dock-tab-btn.active {
+  background: var(--umbra-red);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 16px var(--umbra-red-glow);
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   WhatsApp Floating Button & Hover 3D Tooltip
+   ========================================================================== */
+.whatsapp-float-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 18px;
+  z-index: 30;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--whatsapp-green);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  text-decoration: none;
+}
+
+.whatsapp-float-btn:hover {
+  transform: scale(1.07);
+}
+
+.hover-room-tooltip {
+  position: absolute;
+  z-index: 24;
+  pointer-events: none;
+  background: rgba(26, 26, 30, 0.88);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-left: 3px solid var(--umbra-red);
+  padding: 6px 11px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: #fff;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.hover-room-tooltip.show {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   Modals: Gallery Lightbox & Location ("Dónde estamos" — Calle 56 # 17-53)
+   ========================================================================== */
+.umbra-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgba(14, 16, 20, 0.82);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.umbra-modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.umbra-modal-box {
+  width: min(1120px, 92vw);
+  height: min(740px, 86vh);
+  background: rgba(34, 36, 40, 0.94);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.65);
+}
+
+.modal-header {
+  padding: 16px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal-filter-pills {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+.gallery-main-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #121417;
+  padding: 20px;
+  position: relative;
+}
+
+.gallery-main-stage img {
+  max-width: 100%;
+  max-height: calc(100% - 42px);
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.gallery-caption {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.gallery-thumbs-sidebar {
+  width: 260px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(26, 28, 32, 0.9);
+}
+
+.gallery-thumb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.gallery-thumb-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.gallery-thumb-item.active {
+  border-color: var(--umbra-red);
+  background: rgba(216, 30, 40, 0.22);
+}
+
+.gallery-thumb-item img {
+  width: 64px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.gallery-thumb-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.gallery-thumb-info strong {
+  font-size: 11.5px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gallery-thumb-info span {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* Map container in Location Modal */
+#osm-map-container {
+  flex: 1;
+  height: 100%;
+}
+
+.location-info-sidebar {
+  width: 310px;
+  padding: 20px;
+  background: rgba(28, 30, 34, 0.96);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.coord-badge {
+  background: rgba(216, 30, 40, 0.18);
+  border: 1px solid rgba(216, 30, 40, 0.5);
+  color: #ff9ea4;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 11.5px;
+}
+
+.poi-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.poi-item {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ==========================================================================
+   Sky Atmosphere · Hora del día
+   ========================================================================== */
+.sky-time-control {
+  position: absolute;
+  top: 58px;
+  right: 18px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(38, 40, 44, 0.76);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  color: #fff;
+  font-family: var(--font-main);
+  font-size: 11.5px;
+}
+.sky-time-control input[type="range"] {
+  width: 150px;
+  accent-color: var(--umbra-red);
+  cursor: pointer;
+}
+.sky-time-label { min-width: 36px; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .sky-time-control { top: auto; bottom: 86px; right: 12px; }
+  .sky-time-control input[type="range"] { width: 110px; }
+}
+
+/* Iconos planos (reemplazan emojis) */
+.ui-ico { width: 1.05em; height: 1.05em; vertical-align: -0.17em; margin-right: 0.35em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.sky-time-icon .ui-ico { margin-right: 0; }
+
+/* ==========================================================================
+   Apartaestudios Galerías · componentes propios del estudio de mercado
+   ========================================================================== */
+
+/* Pantalla de carga JMC */
+.ls-wrap{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 40%,#ffffff 0%,#f4f1ea 60%,#e9e5dc 100%);font-family:var(--font-main);transition:opacity .9s ease,visibility .9s}
+.ls-wrap.out{opacity:0;visibility:hidden}
+.ls-logo{width:230px;max-width:60vw;animation:lsIn 1.2s cubic-bezier(.2,.8,.2,1) both}
+.ls-title{margin-top:26px;font-size:20px;letter-spacing:6px;text-transform:uppercase;color:#1e2a44;font-weight:300;animation:lsIn 1.2s .15s both;text-align:center}
+.ls-sub{margin-top:8px;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#8a8378;animation:lsIn 1.2s .25s both;text-align:center;padding:0 16px}
+.ls-bar{margin-top:34px;width:260px;height:2px;background:#ddd8cf;border-radius:2px;overflow:hidden}
+.ls-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#1e2a44,#d81e28);transition:width .5s ease}
+.ls-msg{margin-top:12px;font-size:11px;color:#9a9388;letter-spacing:1px;min-height:14px;text-align:center;padding:0 16px}
+@keyframes lsIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* Panel lateral: contenido intercambiable (apartaestudios / urbanismo) */
+.left-sidebar-wrapper.collapsed{transform:translateX(calc(-100% - 16px))}
+.sidebar-content{flex:1;min-height:0;display:flex;flex-direction:column}
+.sidebar-note{font-size:10.5px;line-height:1.45;color:var(--text-dim);padding:8px 2px 4px}
+.layer-row{margin-bottom:9px}
+.layer-row .toggle-label{display:flex;align-items:center}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;flex-shrink:0;vertical-align:0}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:11.5px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);color:var(--text-soft)}
+.kv span{display:flex;align-items:center}
+.kv strong{color:#fff;font-weight:500;text-align:right}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:10px;font-size:10.5px;color:var(--text-soft)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-2px;border:1px solid rgba(255,255,255,.25)}
+.side-text{font-size:11.5px;line-height:1.5;color:var(--text-soft);margin-bottom:8px}
+.side-text strong{color:#fff;font-weight:500}
+.side-caption{font-size:11px;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:600;margin-top:4px}
+.side-foot{font-size:10.5px;line-height:1.45;color:var(--text-dim);margin-top:auto;padding-top:12px}
+.poi-item span{display:flex;align-items:center}
+
+/* Tarjeta de la unidad: a la derecha para no tapar el edificio, que queda al centro */
+.room-detail-card{left:auto;right:22px;top:50%;transform:translate(0,-50%) scale(.96)}
+.room-detail-card.visible{transform:translate(0,-50%) scale(1)}
+.detail-prop-line.dim{font-size:10.5px;color:rgba(255,255,255,.6)}
+.finish-row{display:flex;align-items:center;gap:6px;margin:-4px 0 14px}
+.finish-row i{width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,.4);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.finish-row span{font-size:11px;color:rgba(255,255,255,.7);margin-left:4px}
+
+/* Etiquetas 3D (CSS2DRenderer) */
+.labels-layer{position:absolute;inset:0;pointer-events:none;z-index:2}
+.poi-pin{pointer-events:auto;cursor:pointer;display:flex;flex-direction:column;align-items:center;font-family:var(--font-main);transition:opacity .2s}
+.poi-pin.dim,.street-tag.dim{opacity:.25}
+.poi-pin-card{display:flex;align-items:center;gap:7px;padding:5px 10px 5px 7px;border-radius:999px;background:rgba(20,23,28,.86);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.18);box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:nowrap}
+.poi-pin-card i{width:10px;height:10px;border-radius:50%;background:var(--pin);box-shadow:0 0 0 3px color-mix(in srgb,var(--pin) 30%,transparent)}
+.poi-pin-card strong{display:block;font-size:11px;font-weight:600;color:#fff;line-height:1.2}
+.poi-pin-card span{display:block;font-size:9.5px;color:rgba(255,255,255,.7);line-height:1.2}
+.poi-pin-stem{width:2px;height:22px;background:linear-gradient(var(--pin),transparent)}
+.poi-pin:hover .poi-pin-card{border-color:var(--pin);background:rgba(20,23,28,.96)}
+.poi-pin.comp .poi-pin-card{border-left:3px solid var(--pin)}
+.poi-pin.lote .poi-pin-card{background:rgba(200,164,110,.92)}
+.poi-pin.lote .poi-pin-card strong,.poi-pin.lote .poi-pin-card span{color:#1e2a44}
+.project-tag{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:9px;padding:5px 14px 5px 5px;border-radius:999px;background:rgba(248,248,250,.96);
+  box-shadow:0 8px 24px rgba(0,0,0,.35);font-family:var(--font-main);white-space:nowrap;border:2px solid var(--umbra-red)}
+.project-tag img{width:30px;height:30px;border-radius:50%;object-fit:contain;background:#fff}
+.project-tag strong{display:block;font-size:11.5px;color:#111;font-weight:700}
+.project-tag span{display:block;font-size:9.5px;color:#666;font-weight:500}
+.street-tag{font-family:var(--font-main);font-size:10.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#fff;
+  text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 10px rgba(0,0,0,.6);white-space:nowrap}
+
+/* Galería: flechas */
+.gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;border:1px solid var(--glass-border);
+  background:rgba(40,42,46,.8);color:#fff;font-size:22px;cursor:pointer;z-index:2}
+.gallery-nav.prev{left:14px}.gallery-nav.next{right:14px}
+.gallery-nav:hover{background:var(--umbra-red)}
+
+/* Modales tipo informe (mercado y predios) */
+.modal-scroll{flex:1;overflow-y:auto;padding:20px 22px 26px}
+.modal-scroll::-webkit-scrollbar{width:6px}
+.modal-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:6px}
+.market-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.lot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.market-card,.lot-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.lot-card.selected{border-color:var(--umbra-red);box-shadow:0 0 0 1px var(--umbra-red),0 10px 30px rgba(216,30,40,.2)}
+.market-photo{height:170px;background:#1b1d21 center/cover no-repeat;position:relative}
+.market-photo span{position:absolute;left:12px;bottom:8px;font-size:28px;font-weight:800;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.7)}
+.lot-photo{height:130px;background:#1b1d21 center/cover no-repeat}
+.market-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:2px;flex:1}
+.market-body h4{font-size:15px;font-weight:600}
+.market-body p{font-size:11px;line-height:1.5;color:var(--text-soft);margin-top:8px}
+.market-body p.warn{color:#f2c27b}
+.market-addr{font-size:11px;color:var(--text-dim);margin-bottom:6px}
+.market-actions{display:flex;gap:6px;margin-top:auto;padding-top:10px;flex-wrap:wrap}
+.market-actions .mode-pill-btn{background:rgba(255,255,255,.1)}
+.market-actions .mode-pill-btn:hover{background:var(--umbra-red)}
+.lot-tag{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#c8a46e;font-weight:600}
+.report-section{margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1)}
+.report-section h4{font-size:14px;font-weight:600;margin-bottom:12px}
+.report-section h4 small{font-size:11px;font-weight:400;color:var(--text-dim);margin-left:8px}
+.bars{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.bar-row{display:grid;grid-template-columns:190px 1fr 70px;align-items:center;gap:10px;font-size:12px;color:var(--text-soft)}
+.bar-row em{font-style:normal;color:var(--text-dim);font-size:10.5px}
+.bar-row .bar{height:12px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden}
+.bar-row .bar i{display:block;height:100%;background:linear-gradient(90deg,#8f6b3d,#c8a46e);border-radius:6px}
+.bar-row.own{color:#fff;font-weight:600}
+.bar-row.own .bar i{background:linear-gradient(90deg,#a3151d,var(--umbra-red))}
+.bar-row strong{text-align:right;color:#fff;font-weight:500}
+.profile-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.profile-card{background:rgba(255,255,255,.05);border-radius:12px;padding:12px 14px;border-left:3px solid var(--umbra-red)}
+.profile-card strong{display:block;font-size:12.5px}
+.profile-card span{display:block;font-size:11px;color:#c8a46e;margin:2px 0 6px}
+.profile-card p{font-size:11px;line-height:1.45;color:var(--text-soft)}
+table.matrix{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:12px}
+table.matrix th{text-align:left;font-weight:600;color:var(--text-soft);padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.2);vertical-align:bottom}
+table.matrix th span{font-weight:400;color:var(--text-dim)}
+table.matrix td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.07);color:var(--text-soft);vertical-align:top}
+table.matrix td strong{display:block;color:#fff;font-weight:500}
+table.matrix td span{font-size:10.5px;color:var(--text-dim)}
+table.matrix .hl{background:rgba(216,30,40,.12)}
+table.matrix td.dots{letter-spacing:2px;font-size:13px;color:#e6e1d8;white-space:nowrap}
+table.matrix td.dots.hl{color:#ff9ea4}
+table.matrix tr.total td{font-size:15px;font-weight:700;color:#fff;border-bottom:none;padding-top:12px}
+table.matrix tr.total td.hl{color:#ff858d}
+.norm-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.norm-grid div{border-top:2px solid #c8a46e;padding-top:8px}
+.norm-grid span{display:block;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#c8a46e;font-weight:600}
+.norm-grid strong{display:block;font-size:18px;font-weight:600;margin:4px 0 2px}
+.norm-grid em{display:block;font-style:normal;font-size:10.5px;color:var(--text-dim)}
+
+/* Responsive */
+@media (max-width: 1100px){
+  .market-grid,.profile-grid,.norm-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lot-grid{grid-template-columns:1fr}
+}
+@media (max-width: 760px){
+  .left-sidebar-wrapper{width:calc(100vw - 48px);max-width:316px;bottom:auto;height:58vh;top:64px}
+  .left-sidebar{width:100%}
+  .top-right-bar{left:12px;right:12px;flex-wrap:wrap;justify-content:flex-end}
+  .mode-pill-btn{font-size:10.5px;padding:6px 9px}
+  .bottom-dock-container{left:8px;right:8px;transform:none}
+  .bottom-dock{overflow-x:auto;justify-content:flex-start}
+  .jmc-dock-brand{display:none}
+  .dock-tab-btn{flex-shrink:0;width:64px}
+  .room-detail-card{left:50%;right:auto;top:auto;bottom:96px;transform:translate(-50%,0) scale(.96)}
+  .room-detail-card.visible{transform:translate(-50%,0) scale(1)}
+  .market-grid,.profile-grid,.norm-grid{grid-template-columns:1fr}
+  .bar-row{grid-template-columns:110px 1fr 60px}
+  .umbra-modal-box{width:100vw;height:100vh;border-radius:0}
+  .modal-body{flex-direction:column}
+  .gallery-thumbs-sidebar,.location-info-sidebar{width:100%;border-left:none;max-height:40%}
+  .modal-filter-pills{display:none}
+}

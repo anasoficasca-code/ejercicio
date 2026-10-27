@@ -1,0 +1,628 @@
+{
+  "proyecto": {
+    "id": "EP2-GALERIAS-2026",
+    "nombre": "Apartaestudios Galerías · Calle 56",
+    "curso": "Ejercicio Profesional 2 · Estudio de mercado",
+    "oficina": "JMC Arquitectura",
+    "autores": [
+      "Ana Casas",
+      "Martín Jaramillo",
+      "Jorge"
+    ],
+    "canva": "EJERCICIO PROFESIONAL 2 (37 láminas)"
+  },
+  "ubicacion": {
+    "direccion": "Calle 56 # 17-53, esquina Carrera 18",
+    "barrio": "Galerías",
+    "localidad": "Teusaquillo",
+    "upl": "UPL 32 · Teusaquillo",
+    "loteCatastral": "007208002009",
+    "manzanaCatastral": "007208002",
+    "lat": 4.6438909,
+    "lng": -74.0692778,
+    "altitudMsnm": 2560,
+    "descripcion": "Lote esquinero de 194,19 m² que hoy funciona como parqueadero, sin construcciones. Su condición de esquina le da dos fachadas, sobre la Calle 56 y sobre la Carrera 18, lo que favorece la iluminación, la ventilación y la visibilidad del proyecto. Está cerca de la Avenida NQS, con acceso a la estación de TransMilenio Movistar Arena / El Campín, y próximo al corredor de la Calle 53. En su entorno inmediato se encuentran el Centro Comercial Galerías, la Universidad ECCI, la Clínica de Marly, el estadio El Campín y el Movistar Arena, además de una amplia oferta de comercio y servicios."
+  },
+  "areaEstudio": {
+    "descripcion": "Barrio Galerías y sus barrios inmediatos (Alfonso López y Quesada) en la localidad de Teusaquillo, comprendido entre las Calles 53 y 60 y las Carreras 14 y 24.",
+    "nota": "Delimitación aproximada trazada sobre placas domiciliarias de Catastro en los cruces de las vías.",
+    "lonlat": [
+      [
+        -74.06647,
+        4.6406
+      ],
+      [
+        -74.0735,
+        4.64175
+      ],
+      [
+        -74.07245,
+        4.6458
+      ],
+      [
+        -74.0717,
+        4.64846
+      ],
+      [
+        -74.06538,
+        4.64711
+      ]
+    ]
+  },
+  "conectividad": [
+    {
+      "titulo": "Acceso al sistema TransMilenio",
+      "texto": "Excelente cobertura de transporte público masivo a escala peatonal, con cercanía a las troncales de la Avenida NQS (Estación Movistar Arena / El Campín)."
+    },
+    {
+      "titulo": "Transporte colectivo complementario",
+      "texto": "Cobertura continua de múltiples rutas del SITP que transitan principalmente a lo largo de las Calles 53, 57 y 63 y las Carreras 13 y 24."
+    }
+  ],
+  "usosSuelo": [
+    {
+      "titulo": "Residencial",
+      "texto": "Uso predominante del sector: vivienda unifamiliar y multifamiliar de baja y media altura."
+    },
+    {
+      "titulo": "Comercio de cercanía en ejes viales",
+      "texto": "El comercio se concentra sobre las Calles 53 y 57 y la Carrera 24."
+    },
+    {
+      "titulo": "Seguridad y convivencia urbana",
+      "texto": "Barrio consolidado con vida de barrio y actividad peatonal."
+    },
+    {
+      "titulo": "Confort acústico y tranquilidad residencial",
+      "texto": "Las calles interiores, lejos de las troncales, conservan un carácter residencial tranquilo."
+    }
+  ],
+  "normaGeneral": {
+    "fuente": "Norma urbana oficial de Bogotá · Decreto 555 de 2021 (POT)",
+    "items": [
+      {
+        "titulo": "Índice de ocupación",
+        "texto": "Resultante de la correcta aplicación de normas volumétricas.",
+        "ref": "Página 4"
+      },
+      {
+        "titulo": "Aislamiento posterior",
+        "texto": "Mínimo 3,00 m, medido en línea perpendicular al lindero posterior.",
+        "ref": "Página 14"
+      },
+      {
+        "titulo": "Equipamiento comunal privado",
+        "texto": "Vivienda no VIS ni VIP: 10 m² por cada 80 m² de área construida en el uso.",
+        "ref": "Página 20"
+      },
+      {
+        "titulo": "Biciparqueaderos",
+        "texto": "Exigencia de áreas obligatorias para bicicletas y micromovilidad.",
+        "ref": "Página 23"
+      },
+      {
+        "titulo": "Mezcla de usos",
+        "texto": "En las áreas de actividad de la UPL Galerías (Proximidad y Estructurante) la norma permite la convivencia de la vivienda multifamiliar con el uso comercial."
+      }
+    ]
+  },
+  "normaPredio": {
+    "tratamiento": "Conservación",
+    "codigoEdificabilidad": "CO/3-4",
+    "areaActividad": "Proximidad generadora de soportes urbanos",
+    "antejardin": "3,50 m sobre la Calle 56 y la Carrera 18",
+    "antejardinM": 3.5,
+    "aislamientoPosterior": "No se exige (lote esquinero, Anexo 5)",
+    "aislamientosLaterales": "No se exigen; la edificación empata con los colindantes",
+    "patrimonio": "No es BIC · admite demolición y obra nueva",
+    "sotanos": "Permitidos bajo la huella del edificio, excepto bajo los antejardines",
+    "areaForma": "194,19 m² según catastro. Esquinero: 18,64 m sobre la Calle 56 y 10,36 m sobre la Carrera 18.",
+    "usoActual": "Parqueadero, sin construcciones",
+    "normaAplicable": "POT Bogotá, Decreto 555 de 2021; mapa CU-5.4.32 Edificabilidad, UPL Teusaquillo",
+    "fuentes": "Catastro Bogotá; capas oficiales del Decreto 555 de 2021; Anexos 5 y 6 del POT"
+  },
+  "cabida": {
+    "loteM2": 194.19,
+    "frenteCalle56M": 18.64,
+    "frenteCarrera18M": 10.36,
+    "huellaLargoM": 15.14,
+    "huellaFondoM": 6.96,
+    "huellaM2": 104.49,
+    "pisos": 6,
+    "alturaPisoM": 3.0,
+    "alturaTotalM": 18.0,
+    "areaConstruidaM2": 626.93,
+    "indiceOcupacion": 0.54,
+    "indiceConstruccion": 3.23,
+    "unidades": 11,
+    "areaUnidadM2": 35,
+    "areaVendibleM2": 384.6,
+    "precioVentaM2": 11870026.53,
+    "ventasEstimadas": 4565155227,
+    "contexto": "Edificio de 7 pisos en la manzana"
+  },
+  "distribucion": {
+    "nota": "Esquema de distribución propuesto para el modelo 3D: 11 apartaestudios de 35 m² en 6 pisos (1 en el piso 1 y 2 por piso del 2 al 6), con punto fijo central. Ajustar cuando esté la planta arquitectónica definitiva.",
+    "piso1": [
+      "Lobby de acceso",
+      "Bicicletero",
+      "Punto fijo"
+    ]
+  },
+  "apartaestudio": {
+    "area": 35,
+    "concepto": "Un solo espacio que funciona como casa y oficina: cocina abierta, zona de trabajo junto a la ventana y almacenamiento integrado. Pensado para profesionales jóvenes y estadías temporales.",
+    "acabados": [
+      {
+        "elemento": "Piso",
+        "detalle": "Laminado en roble claro",
+        "color": "#c9a27a"
+      },
+      {
+        "elemento": "Muros y techo",
+        "detalle": "Pintura blanco hueso, cielo en drywall",
+        "color": "#efebe3"
+      },
+      {
+        "elemento": "Cocina",
+        "detalle": "Muebles grafito, mesón en cuarzo blanco",
+        "color": "#3a3d42"
+      },
+      {
+        "elemento": "Baño",
+        "detalle": "Porcelanato gris de gran formato",
+        "color": "#b9bcbf"
+      },
+      {
+        "elemento": "Ventanería y grifería",
+        "detalle": "Aluminio y metal negro mate",
+        "color": "#1d1f22"
+      },
+      {
+        "elemento": "Iluminación",
+        "detalle": "LED cálida empotrada",
+        "color": "#f2dfb4"
+      }
+    ]
+  },
+  "perfil": [
+    {
+      "grupo": "Profesionales jóvenes",
+      "edad": "23–32 años",
+      "texto": "Buscan independencia, cercanía al trabajo y buena conexión con la ciudad."
+    },
+    {
+      "grupo": "Parejas jóvenes",
+      "edad": "25–35 años",
+      "texto": "Buscan un espacio práctico, central y cercano a servicios, ocio y actividades urbanas."
+    },
+    {
+      "grupo": "Nómadas digitales",
+      "edad": "25–40 años",
+      "texto": "Valoran conectividad, movilidad, cafés, coworking y una vida urbana activa."
+    },
+    {
+      "grupo": "Profesionales en estadías temporales",
+      "edad": "30–50 años",
+      "texto": "Viajan por trabajo o proyectos y necesitan vivienda funcional, flexible y bien conectada."
+    }
+  ],
+  "zonasSociales": [
+    {
+      "nombre": "Lobby de acceso",
+      "lema": "Elegancia y confort desde el primer instante.",
+      "lamina": 30
+    },
+    {
+      "nombre": "Bicicletero",
+      "lema": "Seguridad y comodidad para cada recorrido.",
+      "lamina": 31
+    },
+    {
+      "nombre": "Zona BBQ",
+      "lema": "El lugar perfecto para compartir y disfrutar.",
+      "lamina": 32
+    },
+    {
+      "nombre": "Parque infantil",
+      "lema": "Diversión y tranquilidad en un mismo lugar.",
+      "lamina": 33
+    },
+    {
+      "nombre": "Sala de cine",
+      "lema": "Disfruta cada momento en un ambiente único.",
+      "lamina": 34
+    },
+    {
+      "nombre": "Café lounge",
+      "lamina": 22
+    },
+    {
+      "nombre": "Salón social",
+      "lamina": 22
+    },
+    {
+      "nombre": "Gimnasio aire libre",
+      "lamina": 22
+    }
+  ],
+  "competencia": [
+    {
+      "id": "distrito-kb",
+      "n": "01",
+      "nombre": "Distrito KB",
+      "direccion": "Carrera 24 # 45C-33",
+      "estrato": 4,
+      "constructora": "AR",
+      "areaPromedioM2": 32,
+      "precioPromedio": 703249000,
+      "precioM2": 15956472.69,
+      "detalle": "54 apartamentos de 23 a 32 m² · 7 pisos · 7 tipologías · 10 zonas sociales (lobby, fire pit, bicicleteros, play room, social kitchen, estar-coworking, BBQ, simulador-teatrino, sky lounge, gimnasio al aire libre).",
+      "lamina": 8
+    },
+    {
+      "id": "kobe-50",
+      "n": "02",
+      "nombre": "Kobe 50",
+      "direccion": "Calle 50 # 19-38",
+      "estrato": 5,
+      "constructora": "CSB",
+      "areaPromedioM2": 36,
+      "precioPromedio": 434500000,
+      "precioM2": 14434633.2,
+      "detalle": "Torre de 6 pisos con 113 unidades de 22,38 m² a 36,0 m². Desde $454.000.000; entre $12.500.000 y $20.200.000 por m² según nivel y acabados.",
+      "lamina": 9
+    },
+    {
+      "id": "tikal-59",
+      "n": "03",
+      "nombre": "Tikal 59 House",
+      "direccion": "Transversal 24 con Calle 59",
+      "estrato": 4,
+      "constructora": "DISICO",
+      "areaPromedioM2": 63,
+      "precioPromedio": 559240000,
+      "precioM2": 13066358.16,
+      "detalle": "Apartamentos de 1 y 2 habitaciones (36,0 a 63,0 m²). Desde $450.000.000 · $12.500.000 por m². Terraza BBQ, gimnasio, coworking, sala de juntas, bicicleteros.",
+      "lamina": 10
+    },
+    {
+      "id": "proyecto-vale",
+      "n": "05",
+      "nombre": "Proyecto Valé",
+      "direccion": "Sin dirección en la lámina",
+      "estrato": 4,
+      "constructora": "DISICO",
+      "areaPromedioM2": 36,
+      "precioPromedio": 559240000,
+      "precioM2": 13066358.16,
+      "detalle": "Apartaestudios monoambiente de 27,9 a 37,6 m², de $277.605.000 a $374.120.000 · $9.950.000 por m² (aprox. 17 % por debajo del promedio de la zona). Licencia para rentas cortas (Airbnb).",
+      "nota": "La lámina 7 repite para Valé los mismos datos de Tikal 59; la lámina 12 da 27,9–37,6 m² y $9.950.000/m².",
+      "lamina": 12,
+      "precioM2Detalle": 9950000,
+      "areaRangoM2": [
+        27.9,
+        37.6
+      ]
+    }
+  ],
+  "predios": [
+    {
+      "id": "lote-01",
+      "nombre": "Lote 01",
+      "direccion": "Carrera 18 # 54-53",
+      "sector": "Banco Central / Galerías",
+      "areaM2": 143.84,
+      "valor": 799000000,
+      "valorM2": 5554783,
+      "metaVendibleM2": 448.75,
+      "nota": "Casa existente de dos pisos",
+      "comercio": "Centro Comercial Galerías y Plaza 54",
+      "educacion": "Universidad ECCI, carrera 19 # 49-20",
+      "salud": "Clínica de Marly, calle 50 # 9-67, en el entorno ampliado",
+      "transporte": "Corredor de la avenida Caracas y estación Calle 57",
+      "recreacion": "El Campín y Movistar Arena, en el entorno ampliado"
+    },
+    {
+      "id": "lote-02",
+      "nombre": "Lote 02 · Seleccionado",
+      "direccion": "Calle 56 # 17-53",
+      "sector": "Esquina Carrera 18, Galerías",
+      "areaM2": 194.19,
+      "valor": 870000000,
+      "valorM2": 4480148,
+      "metaVendibleM2": 488.63,
+      "seleccionado": true,
+      "nota": "Cabida propuesta: 384,60 m² vendibles en 6 pisos · precio de referencia, por confirmar con el propietario",
+      "comercio": "Centro Comercial Galerías y Plaza 54",
+      "educacion": "Universidad ECCI, carrera 19 # 49-20",
+      "salud": "Clínica de Marly, en el entorno ampliado",
+      "transporte": "Corredor de la avenida Caracas y estación Calle 57",
+      "recreacion": "El Campín y Movistar Arena, en el entorno ampliado"
+    },
+    {
+      "id": "lote-03",
+      "nombre": "Lote 03",
+      "direccion": "Carrera 15A # 60-44",
+      "sector": "Chapinero Occidental",
+      "areaM2": 160.84,
+      "valor": 860000000,
+      "valorM2": 5346929,
+      "metaVendibleM2": 483.01,
+      "nota": "Casa existente",
+      "comercio": "Comercio de Galerías, algo más alejado que los otros dos lotes",
+      "educacion": "Fundación Universitaria Los Libertadores, carrera 16 # 63A-68",
+      "salud": "Clínica de Marly, más alejada hacia el sur",
+      "transporte": "Corredor de la avenida Caracas y estación Calle 57",
+      "recreacion": "El Campín y Movistar Arena, hacia el occidente"
+    }
+  ],
+  "metaVendibleNota": "Meta calculada con el lote como el 15 % de las ventas y un precio de venta de $11.870.026,53 por m².",
+  "matriz": {
+    "titulo": "¿Cuál lote es mejor?",
+    "subtitulo": "Matriz de evaluación · 7 criterios calificados de 1 a 5",
+    "columnas": [
+      "Alfonso López · Teusaquillo",
+      "Lote 02 · Galerías · Calle 56 # 17-53",
+      "Palermo · Carrera 14A # 46-73"
+    ],
+    "criterios": [
+      {
+        "criterio": "Valor por m² de terreno",
+        "ayuda": "Menor valor, mejor puntaje",
+        "p": [
+          5,
+          4,
+          1
+        ]
+      },
+      {
+        "criterio": "Área del terreno",
+        "ayuda": "Más área, más proyecto",
+        "p": [
+          5,
+          3,
+          2
+        ]
+      },
+      {
+        "criterio": "Facilidad de obra nueva",
+        "ayuda": "Construcción existente por demoler",
+        "p": [
+          3,
+          5,
+          1
+        ]
+      },
+      {
+        "criterio": "Restricción patrimonial",
+        "ayuda": "Protección del predio o del sector",
+        "p": [
+          3,
+          4,
+          1
+        ]
+      },
+      {
+        "criterio": "Potencial de altura",
+        "ayuda": "Según la norma de cada predio",
+        "p": [
+          4,
+          2,
+          1
+        ]
+      },
+      {
+        "criterio": "Forma y fachadas",
+        "ayuda": "Frente, esquina e iluminación",
+        "p": [
+          3,
+          5,
+          2
+        ]
+      },
+      {
+        "criterio": "Certeza de la información",
+        "ayuda": "Datos verificados en catastro y POT",
+        "p": [
+          2,
+          4,
+          3
+        ]
+      }
+    ],
+    "totales": [
+      25,
+      27,
+      11
+    ],
+    "conclusion": "El lote 02 obtiene el mayor puntaje: es esquinero, no tiene construcciones que demoler y su norma está verificada. Alfonso López queda cerca por precio y área, pero su norma y sus dimensiones siguen sin verificar."
+  },
+  "galeria": [
+    {
+      "lamina": 1,
+      "titulo": "Estudio de mercado",
+      "tipo": "Portada"
+    },
+    {
+      "lamina": 2,
+      "titulo": "Área de estudio",
+      "tipo": "Contexto"
+    },
+    {
+      "lamina": 3,
+      "titulo": "Conectividad vial y transporte masivo",
+      "tipo": "Contexto"
+    },
+    {
+      "lamina": 4,
+      "titulo": "Conectividad · red de ciclorrutas y TransMilenio",
+      "tipo": "Contexto"
+    },
+    {
+      "lamina": 5,
+      "titulo": "Cobertura de servicios complementarios",
+      "tipo": "Contexto"
+    },
+    {
+      "lamina": 6,
+      "titulo": "Usos del suelo",
+      "tipo": "Contexto"
+    },
+    {
+      "lamina": 7,
+      "titulo": "Norma · UPL Teusaquillo",
+      "tipo": "Norma"
+    },
+    {
+      "lamina": 8,
+      "titulo": "Estudio de mercado · 4 proyectos",
+      "tipo": "Mercado"
+    },
+    {
+      "lamina": 9,
+      "titulo": "Distrito KB",
+      "tipo": "Mercado"
+    },
+    {
+      "lamina": 10,
+      "titulo": "Kobe 50",
+      "tipo": "Mercado"
+    },
+    {
+      "lamina": 11,
+      "titulo": "Tikal 59 House",
+      "tipo": "Mercado"
+    },
+    {
+      "lamina": 12,
+      "titulo": "Proyecto Valé",
+      "tipo": "Mercado"
+    },
+    {
+      "lamina": 13,
+      "titulo": "Análisis de predios",
+      "tipo": "Predios"
+    },
+    {
+      "lamina": 14,
+      "titulo": "¿Cuál lote es mejor?",
+      "tipo": "Predios"
+    },
+    {
+      "lamina": 15,
+      "titulo": "Análisis de predios · fichas",
+      "tipo": "Predios"
+    },
+    {
+      "lamina": 16,
+      "titulo": "Servicios cercanos",
+      "tipo": "Predios"
+    },
+    {
+      "lamina": 17,
+      "titulo": "Lote esquinero, Calle 56 # 17-53",
+      "tipo": "Predios"
+    },
+    {
+      "lamina": 18,
+      "titulo": "Norma del predio",
+      "tipo": "Norma"
+    },
+    {
+      "lamina": 19,
+      "titulo": "Ubicación",
+      "tipo": "Contexto"
+    },
+    {
+      "lamina": 20,
+      "titulo": "Cabida arquitectónica",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 21,
+      "titulo": "Cabida · planta y corte",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 22,
+      "titulo": "8 zonas sociales",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 23,
+      "titulo": "Programa",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 24,
+      "titulo": "Parqueaderos",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 25,
+      "titulo": "Apartamentos · piso tipo",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 26,
+      "titulo": "Apartamentos · distribución",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 27,
+      "titulo": "Tipología A",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 28,
+      "titulo": "Tipología B",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 29,
+      "titulo": "Zonas sociales · piso 1 y 12",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 30,
+      "titulo": "Lobby",
+      "tipo": "Zonas sociales"
+    },
+    {
+      "lamina": 31,
+      "titulo": "Bicicletero",
+      "tipo": "Zonas sociales"
+    },
+    {
+      "lamina": 32,
+      "titulo": "Zona BBQ",
+      "tipo": "Zonas sociales"
+    },
+    {
+      "lamina": 33,
+      "titulo": "Parque infantil",
+      "tipo": "Zonas sociales"
+    },
+    {
+      "lamina": 34,
+      "titulo": "Sala de cine",
+      "tipo": "Zonas sociales"
+    },
+    {
+      "lamina": 35,
+      "titulo": "El apartaestudio · acabados",
+      "tipo": "Proyecto"
+    },
+    {
+      "lamina": 36,
+      "titulo": "¿Quién va a vivir?",
+      "tipo": "Mercado"
+    },
+    {
+      "lamina": 37,
+      "titulo": "JMC Arquitectura",
+      "tipo": "Portada"
+    }
+  ]
+}
