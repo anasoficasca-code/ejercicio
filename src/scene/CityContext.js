@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { LON0, LAT0, MLON, MLAT, toLocal } from '../geo.js';
 import { makeTreeImpostors, RealTrees } from './RealTrees.js';
 import { load as loadPBR } from './PBRSurfaces.js';
-import { makeFacadeTextures, BAY_W } from './FacadeTextures.js';
+import { makeFacadeTextures, makeTileTexture, BAY_W } from './FacadeTextures.js';
 import { Church } from './Church.js';
 
 /**
@@ -378,6 +378,7 @@ export class CityContext {
     this._buildBuildings(this.buildingList, L0 || L1, L1, L2);
     this.setTheme(this.theme);
     await near;
+    try { this._buildTileRoofs(L1); } catch (e) { console.warn('cubiertas de teja', e); }
     try { this._buildTrees(L1); } catch (e) { console.warn('árboles satelitales', e); }
     await Promise.all([far2, far3]);
     this.levels.forEach((L) => { L.ctx = null; });
@@ -421,7 +422,7 @@ export class CityContext {
           }
         }
       } catch (e) { /* polígono degenerado */ }
-      const sd = hash(`${r.l}${r.pts[0][0]}`); // semilla estable por edificio (paleta, ritmo de ventanas)
+      const sd = r.l === CHURCH_LOT ? 0.7 : hash(`${r.l}${r.pts[0][0]}`); // semilla estable (paleta, ventanas); el convento va en crema
       for (let k = start; k < pos.length / 3; k++) seed.push(sd);
       this.bRanges.push({ it: r, h, start, end: pos.length / 3 });
     }
@@ -492,6 +493,65 @@ export class CityContext {
     this.buildings.castShadow = true;
     this.buildings.receiveShadow = true;
     this.group.add(this.buildings);
+  }
+
+  /**
+   * Cubiertas de teja: en Galerías / Teusaquillo las casas de 1 a 3 pisos tienen techo de barro a dos o
+   * cuatro aguas. Donde la ortofoto muestra teja (rojizo / naranja) sobre una casa baja y rectangular,
+   * se le pone una cubierta inclinada con textura de teja. Sin ortofoto no se agrega nada.
+   */
+  _buildTileRoofs(L) {
+    if (!L.ctx) return;
+    const W = L.canvas.width, H = L.canvas.height;
+    const px = L.ctx.getImageData(0, 0, W, H).data;
+    const sample = (x, z) => {
+      const u = Math.floor(((x - L.x0) / (L.x1 - L.x0)) * W), v = Math.floor(((z - L.zN) / (L.zS - L.zN)) * H);
+      let r = 0, g = 0, b = 0, n = 0;
+      for (let dv = -2; dv <= 2; dv++) for (let du = -2; du <= 2; du++) {
+        const uu = u + du, vv = v + dv;
+        if (uu < 0 || vv < 0 || uu >= W || vv >= H) continue;
+        const i = (vv * W + uu) * 4; r += px[i]; g += px[i + 1]; b += px[i + 2]; n++;
+      }
+      return n ? [r / n, g / n, b / n] : null;
+    };
+    const pos = [], uv = [], col = [];
+    const c = new THREE.Color();
+    for (const rg of this.bRanges || []) {
+      const b = rg.it;
+      if (b.p > 3 || b.l === CHURCH_LOT) continue;
+      const [cx, cz] = centroid(b.pts);
+      if (Math.hypot(cx, cz) > 650 || Math.hypot(cx, cz) < 14) continue;
+      const o = obb(b.pts), ar = Math.abs(signedArea(b.pts));
+      if (ar < 35 || ar > 420 || ar / (o.l * o.w) < 0.72) continue;
+      const s = sample(cx, cz);
+      if (!s) continue;
+      const [r, g, bl] = s;
+      if (!(r > 90 && r > g * 1.16 && r > bl * 1.35)) continue; // teja de barro en la foto
+      const y = this.heightAt(cx, cz) + rg.h, rh = Math.min(3.2, o.w * 0.32);
+      const hx = o.l / 2 + 0.35, hz = o.w / 2 + 0.35, ridge = Math.max(0, hx - hz * 0.9);
+      const ux = Math.cos(o.angle), uz = Math.sin(o.angle), vx = -uz, vz = ux;
+      const P = (a, bb, yy) => [o.cx + a * ux + bb * vx, yy, o.cz + a * uz + bb * vz];
+      const e = [P(-hx, -hz, y), P(hx, -hz, y), P(hx, hz, y), P(-hx, hz, y)], t0 = P(-ridge, 0, y + rh), t1 = P(ridge, 0, y + rh);
+      const faces = [[e[0], e[1], t1, t0], [e[2], e[3], t0, t1], [e[1], e[2], t1], [e[3], e[0], t0]]; // cuatro aguas
+      c.setRGB(r / 255, g / 255, bl / 255, THREE.SRGBColorSpace).multiplyScalar(1.35).lerp(new THREE.Color(0.92, 0.86, 0.8), 0.45); // tono de la foto sobre la textura de teja
+      for (const f of faces) {
+        const tris = f.length === 4 ? [[f[0], f[1], f[2]], [f[0], f[2], f[3]]] : [f];
+        for (const tri of tris) for (const q of tri) { pos.push(...q); uv.push((q[0] + q[2]) / 3.2, q[1] / 1.6); col.push(c.r, c.g, c.b); }
+      }
+    }
+    if (!pos.length) return;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    geo.computeVertexNormals();
+    const tex = makeTileTexture();
+    this.tileRoofs = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, vertexColors: true, roughness: 0.85, side: THREE.DoubleSide }));
+    this.tileRoofs.castShadow = !this.mobile;
+    this.tileRoofs.receiveShadow = true;
+    this.tileRoofs.name = 'Cubiertas de teja';
+    this.tileRoofs.visible = this.theme === 'realista';
+    this.group.add(this.tileRoofs);
   }
 
   /** Árboles a partir de la ortofoto: píxeles verdes, oscuros y con textura (copas, no césped). */
@@ -696,6 +756,7 @@ export class CityContext {
     if (!this.bRanges) return; // las construcciones llegan cuando termina de cargar el relieve
 
     this.bUniforms.uFlat.value = real ? 0 : 1;
+    if (this.tileRoofs) this.tileRoofs.visible = real;
     const bc = this.buildings.geometry.attributes.color, base = new THREE.Color(MAQUETA_BLD), cool = new THREE.Color('#dfe3e8'), w = new THREE.Color(1, 1, 1);
     for (const r of this.bRanges) {
       if (real) c.copy(w);

@@ -6,7 +6,8 @@ import * as THREE from 'three';
  *  · ladrillo  — ladrillo a la vista bogotano con ventana de marco blanco
  *  · pañete    — muro pañetado y pintado en tonos claros
  *  · concreto  — edificio contemporáneo con franjas de ventanería
- *  · iglesia   — ladrillo macizo sin ventanas (naves y torres)
+ *  · iglesia   — ladrillo macizo sin ventanas (culatas)
+ *  · iglesiaNave / iglesiaMuro — pañete beige de la iglesia frente al lote, con ventanales de medio punto
  */
 export const BAY_W = 3.2;
 
@@ -91,21 +92,29 @@ export function makeFacadeTextures() {
       bricks(ctx, w, h, '#a5553a', 8);
       noise(ctx, w, h, 16);
     }),
-    // muro de nave: un tramo con ventanal alto de arco ojival y zócalo de piedra
+    // iglesia de Galerías (Street View): pañete beige, ventanales de arco de medio punto con marco claro
     iglesiaNave: make((ctx, w, h) => {
-      bricks(ctx, w, h, '#a5553a', 6);
-      noise(ctx, w, h, 16);
-      ctx.fillStyle = '#d9d2c3';
-      ctx.fillRect(0, h - 22, w, 22);
-      const x = w / 2 - 22, top = 54, bot = h - 70;
-      ctx.fillStyle = '#d9d2c3';
-      ctx.beginPath(); ctx.moveTo(x - 6, bot + 6); ctx.lineTo(x - 6, top + 30); ctx.quadraticCurveTo(w / 2, top - 30, x + 50, top + 30); ctx.lineTo(x + 50, bot + 6); ctx.fill();
-      const g = ctx.createLinearGradient(0, top, 0, bot);
-      g.addColorStop(0, '#3c4f6e'); g.addColorStop(0.5, '#5a3f52'); g.addColorStop(1, '#2c3a52');
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.moveTo(x, bot); ctx.lineTo(x, top + 32); ctx.quadraticCurveTo(w / 2, top - 18, x + 44, top + 32); ctx.lineTo(x + 44, bot); ctx.fill();
-      ctx.fillStyle = 'rgba(217,210,195,0.8)';
-      ctx.fillRect(w / 2 - 1.5, top + 10, 3, bot - top - 10);
+      ctx.fillStyle = '#d3c39f';
+      ctx.fillRect(0, 0, w, h);
+      noise(ctx, w, h, 12);
+      ctx.fillStyle = '#b9a986';
+      ctx.fillRect(0, h - 26, w, 26); // zócalo
+      ctx.fillStyle = '#efe8d8';
+      ctx.fillRect(0, 0, w, 8); // cornisa
+      const cx = w / 2, ww = 46, top = 70, bot = h - 64;
+      const arch = (r, y0, y1, fill) => { ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(cx - r, y1); ctx.lineTo(cx - r, y0); ctx.arc(cx, y0, r, Math.PI, 0); ctx.lineTo(cx + r, y1); ctx.fill(); };
+      arch(ww / 2 + 7, top, bot + 7, '#f1ebdd');
+      const g = ctx.createLinearGradient(0, top - ww / 2, 0, bot);
+      g.addColorStop(0, '#46586e'); g.addColorStop(1, '#232c38');
+      arch(ww / 2, top, bot, g);
+      ctx.fillStyle = 'rgba(241,235,221,0.85)';
+      ctx.fillRect(cx - 1.5, top - 10, 3, bot - top + 10);
+      ctx.fillRect(cx - ww / 2, top + 40, ww, 3);
+    }),
+    iglesiaMuro: make((ctx, w, h) => {
+      ctx.fillStyle = '#d3c39f';
+      ctx.fillRect(0, 0, w, h);
+      noise(ctx, w, h, 12);
     })
   };
 }
