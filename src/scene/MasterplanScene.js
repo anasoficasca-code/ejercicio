@@ -1,26 +1,19 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
-import { Sky } from 'three/addons/objects/Sky.js';
+import { SkyEnvironment } from './SkyEnvironment.js';
+import { PostFX } from './PostFX.js';
+import { applyWind, windUniforms } from './Wind.js';
 import { CityContext } from './CityContext.js';
 import { ProjectBuilding } from './ProjectBuilding.js';
 import { PoiLayer } from './PoiLayer.js';
 import { store } from '../state/store.js';
 
 /**
- * MasterplanScene — motor Three.js del masterplan: cielo físico con el sol real de Bogotá según la
- * hora, sombras, contexto urbano de Catastro, el edificio del proyecto y raycasting de unidades.
+ * MasterplanScene — motor Three.js del masterplan, con el mismo cielo (atmósfera + nubes volumétricas),
+ * posproceso y viento del masterplan Hotel La Fontana: contexto urbano real de Catastro, el edificio
+ * del proyecto y raycasting de unidades.
  */
-const LAT = 4.6439 * Math.PI / 180;
-const DECL = -13 * Math.PI / 180; // finales de octubre
-
-export function sunDirection(hour) {
-  const H = (hour - 12) * 15 * Math.PI / 180;
-  const el = Math.asin(Math.sin(LAT) * Math.sin(DECL) + Math.cos(LAT) * Math.cos(DECL) * Math.cos(H));
-  const az = Math.atan2(-Math.cos(DECL) * Math.sin(H), Math.sin(DECL) * Math.cos(LAT) - Math.cos(DECL) * Math.sin(LAT) * Math.cos(H));
-  return new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el));
-}
-
 export class MasterplanScene {
   constructor(container) {
     this.container = container;
@@ -32,7 +25,7 @@ export class MasterplanScene {
     this.renderer.setSize(w, h);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.62;
+    this.renderer.toneMappingExposure = 1.35;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(this.renderer.domElement);
@@ -43,7 +36,8 @@ export class MasterplanScene {
     container.appendChild(this.labels.domElement);
 
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(42, w / h, 0.5, 12000);
+    this.camera = new THREE.PerspectiveCamera(42, w / h, 0.5, 90000);
+    this.clock = new THREE.Clock();
     this.camera.position.set(-62, 40, -58);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -64,54 +58,44 @@ export class MasterplanScene {
     window.addEventListener('resize', () => this.onResize());
     this._bindPointer();
     store.subscribe((s) => this.onState(s));
+    try { this.postfx = new PostFX(this.renderer, this.scene, this.camera, container); } catch (e) { console.warn('PostFX desactivado', e); }
+    if (this.postfx) this.renderer.setPixelRatio(this.postfx.maxPixelRatio);
+    if (this.postfx?.low && this.skyEnv?.cloudMaterial) this.skyEnv.cloudMaterial.uniforms.uSteps.value = 16;
     this.renderer.setAnimationLoop(() => this.render());
   }
 
   // ---------------------------------------------------------------- cielo y sol
   _setupSky() {
-    this.sky = new Sky();
-    this.sky.scale.setScalar(20000);
-    const u = this.sky.material.uniforms;
-    u.turbidity.value = 6;
-    u.rayleigh.value = 1.6;
-    u.mieCoefficient.value = 0.004;
-    u.mieDirectionalG.value = 0.8;
-    this.scene.add(this.sky);
-
-    this.hemi = new THREE.HemisphereLight(0xdfe9f5, 0x8a8170, 0.9);
+    this.scene.fog = new THREE.Fog(0xc9d6e4, 220, 1400);
+    this.hemi = new THREE.HemisphereLight(0xffffff, 0xc8d6e5, 0.95);
     this.scene.add(this.hemi);
-    this.sun = new THREE.DirectionalLight(0xfff1dc, 2.6);
+    this.sun = new THREE.DirectionalLight(0xfffaed, 3.1);
     this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(this.mobile ? 1024 : 2048, this.mobile ? 1024 : 2048);
+    const ms = this.mobile ? 2048 : 4096;
+    this.sun.shadow.mapSize.set(ms, ms);
+    this.sun.shadow.normalBias = 0.03;
+    this.sun.shadow.radius = 3;
+    this.sun.shadow.bias = -0.0003;
     const c = this.sun.shadow.camera;
-    c.left = -120; c.right = 120; c.top = 120; c.bottom = -120; c.near = 10; c.far = 900;
-    this.sun.shadow.bias = -0.0004;
-    this.sun.shadow.normalBias = 0.04;
+    c.left = -95; c.right = 95; c.top = 95; c.bottom = -95; c.near = 10; c.far = 320;
     this.scene.add(this.sun, this.sun.target);
-    this.pmrem = new THREE.PMREMGenerator(this.renderer);
-    this.scene.fog = new THREE.Fog(0xcdd7e2, 1400, 6500);
-    this.setHour(10.5);
+    this.skyEnv = new SkyEnvironment(this.renderer, this.scene, this.sun, this.hemi);
+    this.skyEnv.farGround.visible = false; // el suelo real lo pone CityContext
   }
 
   setHour(hour) {
-    const d = sunDirection(hour);
-    this.sky.material.uniforms.sunPosition.value.copy(d);
-    const day = THREE.MathUtils.smoothstep(d.y, -0.02, 0.25);
-    this.sun.position.copy(d).multiplyScalar(400);
-    this.sun.intensity = 0.2 + 2.6 * day;
-    this.sun.color.setHSL(0.09, 0.55 - 0.35 * day, 0.62 + 0.3 * day);
-    this.hemi.intensity = 0.35 + 0.65 * day;
-    this.scene.fog.color.setHSL(0.58, 0.25, 0.45 + 0.38 * day);
-    // entorno PBR a partir del cielo (se regenera con la hora)
-    clearTimeout(this._envT);
-    this._envT = setTimeout(() => {
-      const tmp = new THREE.Scene();
-      const sky = this.sky.clone();
-      tmp.add(sky);
-      this.env?.dispose();
-      this.env = this.pmrem.fromScene(tmp, 0.02).texture;
-      this.scene.environment = this.env;
-    }, 60);
+    this.skyEnv.setHour(hour);
+  }
+
+  /** Niebla y plano cercano según la distancia de la cámara; el cielo y las nubes la siguen. */
+  _updateRange() {
+    const cam = this.camera, dist = cam.position.distanceTo(this.controls.target);
+    const near = THREE.MathUtils.clamp(dist * 0.012, 0.3, 30);
+    if (Math.abs(near - cam.near) > 0.02 * cam.near) { cam.near = near; cam.updateProjectionMatrix(); }
+    this.scene.fog.near = 180 + dist * 0.9;
+    this.scene.fog.far = 7000 + dist * 6;
+    this.skyEnv.sky?.position.copy(cam.position);
+    this.skyEnv.clouds?.position.copy(cam.position);
   }
 
   // ---------------------------------------------------------------- datos
@@ -128,7 +112,7 @@ export class MasterplanScene {
     this.data = { project, construcciones, manzanas, lotes, predios, puntos };
 
     const lot = predios.p.find((p) => p.id === 'lote-02');
-    this.city = new CityContext(this.scene, { renderer: this.renderer, data: this.data, project });
+    this.city = new CityContext(this.scene, { renderer: this.renderer, data: this.data, project, mobile: this.mobile });
     this.building = new ProjectBuilding(this.scene, { lot, project });
     this.pois = new PoiLayer(this.scene, {
       puntos: puntos.p, predios: predios.p, project, competencia: project.competencia,
@@ -244,11 +228,17 @@ export class MasterplanScene {
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
     this.labels.setSize(w, h);
+    this.postfx?.setSize(w, h);
   }
 
   render() {
+    const dt = Math.min(this.clock.getDelta(), 0.1);
+    this.skyEnv.update(dt);
     this.controls.update();
-    this.renderer.render(this.scene, this.camera);
+    this._updateRange();
+    windUniforms.uWindTime.value += dt;
+    if (this.city?.trees && !this._cityWind) { applyWind(this.city.trees.material, { amp: 1.2, from: 2.0, to: 10 }); this._cityWind = true; }
+    if (this.postfx) this.postfx.render(dt); else this.renderer.render(this.scene, this.camera);
     this.labels.render(this.scene, this.camera);
   }
 }

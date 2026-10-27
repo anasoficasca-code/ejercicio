@@ -35,7 +35,9 @@ Todo el contexto sale de los servicios ArcGIS públicos de **Catastro Bogotá (U
 | Lotes | `catastro/lote` | Trama predial y los tres predios evaluados |
 | Placas domiciliarias | `catastro/placadomiciliaria` | Geocodificación de servicios, competencia y lotes |
 
-Ortofoto del suelo: Esri World Imagery. Mapa de "Dónde estamos": OpenStreetMap.
+Ortofoto del suelo: Esri World Imagery. Relieve: Terrarium DEM (Cerros Orientales). Mapa de "Dónde estamos": OpenStreetMap.
+
+**Técnica visual:** el suelo en niveles (ortofoto + césped / asfalto / adoquín fotogramétricos de Poly Haven), el relieve, las fachadas y cubiertas de las construcciones, el arbolado detectado en la ortofoto, el cielo con nubes volumétricas, el viento y el posproceso son los mismos del masterplan Hotel La Fontana (`SkyEnvironment.js`, `PostFX.js`, `Wind.js`, `RealTrees.js`, `PBRSurfaces.js` y el sistema de suelo y construcciones de `CityContext.js`), usados con autorización de su autora.
 
 ---
 
