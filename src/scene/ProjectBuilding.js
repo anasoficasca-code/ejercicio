@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { RealTrees } from './RealTrees.js';
+import { bench, lamp, swingSet, slide, seesaw, bikeRack, bin, planter, bollard, hedge, place, car } from './ParkFurniture.js';
 
 /**
  * ProjectBuilding — el proyecto sobre el englobe del Parqueadero Divino Salvador (cinco lotes catastrales,
@@ -29,7 +31,6 @@ const M = {
   grass: new THREE.MeshStandardMaterial({ color: 0x6f8f4e, roughness: 1 }),
   rubber: new THREE.MeshStandardMaterial({ color: 0x8a4a3a, roughness: 1 }),
   asphalt: new THREE.MeshStandardMaterial({ color: 0x4a4b4e, roughness: 0.95 }),
-  play: new THREE.MeshStandardMaterial({ color: 0xd8a03a, roughness: 0.6 }),
   leaf: new THREE.MeshStandardMaterial({ color: 0x4f7a3a, roughness: 0.9, flatShading: true }),
   bark: new THREE.MeshStandardMaterial({ color: 0x5b4636, roughness: 1 })
 };
@@ -106,6 +107,7 @@ export class ProjectBuilding {
     this._buildSite();
     for (let i = 0; i < this.floors; i++) this._buildFloor(i);
     this._buildRoof();
+    this._plantTrees();
     this.group.traverse((m) => { if (m.isMesh && !m.material.transparent) { m.castShadow = true; m.receiveShadow = true; } });
     this.setCut(null);
   }
@@ -135,25 +137,53 @@ export class ProjectBuilding {
     // patio posterior con parque infantil y franja verde de aislamiento
     const pz = this.oz + PD + 0.6;
     g(PW - 2, zMax - pz - back + 2.2, this.ox + 1, pz, M.grass);
-    g(8, 6, this.ox + 3, pz + 1.2, M.rubber, 0.08);
-    this.box(1.6, 2.4, 1.6, M.play, 3.6, 0, PD + 2.4);
-    this.box(0.1, 1.8, 3.2, M.play, 6.0, 0, PD + 2.2);
-    this.box(2.4, 0.08, 0.6, M.play, 5.3, 1.2, PD + 4.5);
+    g(9, 6.5, this.ox + 2.5, pz + 1.0, M.rubber, 0.08);
+    // parque infantil: columpios, rodadero y balancín sobre piso de caucho
+    const px = this.ox + 7, pzz = pz + 4.2;
+    place(f, swingSet(), px - 2.6, pzz, 0);
+    place(f, slide(), px + 1.4, pzz - 1.2, Math.PI);
+    place(f, seesaw(), px + 1.2, pzz + 1.8, 0);
+    // bancas, luminarias y canecas alrededor del patio
+    for (const x of [this.ox + 13.5, this.ox + 17.5, this.ox + 21.5]) place(f, bench(), x, pz + 1.4, Math.PI);
+    for (const x of [this.ox + 12, this.ox + 19.5]) place(f, lamp(), x, pz + 7.2, -Math.PI / 2);
+    place(f, lamp(), this.ox - 1.2, this.oz + 2, Math.PI);
+    place(f, lamp(), this.ox + PW + 0.8, this.oz - 1.2, 0);
+    place(f, bin(), this.ox + 15.5, pz + 1.2, 0);
+    place(f, bin(), this.ox + 1.6, 1.0, 0);
+    // acceso: materas, bicicletero de visitantes y bolardos en el antejardín de la esquina
+    place(f, planter(2.2, 0.7), this.ox + 1.1, 1.3, 0);
+    place(f, planter(2.2, 0.7), this.ox + 6.0, 1.3, 0);
+    place(f, bikeRack(), this.ox + 10.5, 1.4, 0);
+    for (const x of [this.ox + 2.4, this.ox + 3.2, this.ox + 4.0]) place(f, bollard(), x, 0.4);
+    // setos bajos de cerramiento sobre los antejardines (con el acceso peatonal y vehicular libres)
+    place(f, hedge(this.ox + 0.4), (this.ox + 0.4) / 2, 0.45);
+    place(f, hedge(xMax - (this.ox + 13) - 7), this.ox + 13 + (xMax - (this.ox + 13) - 7) / 2, 0.45);
+    place(f, hedge(zMax - ant - 2), Math.max(0, this.ox - ant) + 0.45, ant + 1 + (zMax - ant - 2) / 2, Math.PI / 2);
     // rampa al sótano de parqueaderos (44 cupos + 9 de visitantes según la lámina) sobre el costado oriental
     const rx = this.ox + PW + 1.5;
     g(Math.min(4.2, xMax - rx - 0.5), zMax - ant - 1, rx, ant + 0.5, M.asphalt, 0.05);
-    // arborización: antejardines y patio
-    const tree = (x, z, s = 1) => {
-      const t = new THREE.Mesh(new THREE.CylinderGeometry(0.1 * s, 0.14 * s, 3 * s, 6), M.bark);
-      t.position.set(x, 1.5 * s, z);
-      const c = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5 * s, 1), M.leaf);
-      c.position.set(x, 3.5 * s, z);
-      c.scale.y = 0.85;
-      f.add(t, c);
-    };
-    for (const x of [8, 14, 20, 26, 32]) if (x < xMax - 2) tree(x, 1.6);
-    for (const z of [9, 16, 23]) tree(this.ox - ant / 2 - 0.2, z, 0.95);
-    for (const x of [this.ox + 14, this.ox + 20]) tree(x, pz + 4, 1.1);
+    // carros parqueados sobre la Calle 56 y la Carrera 18 (modelos del masterplan La Fontana)
+    const west = Math.min(...this.poly.filter((p) => p[1] < 25).map((p) => p[0]));
+    car(f, 'sedan', 7, -3.9, Math.PI / 2, -0.34);
+    car(f, 'taxi', 13.5, -3.9, Math.PI / 2, -0.34);
+    car(f, 'suv', 20, -3.9, -Math.PI / 2, -0.34);
+    car(f, 'sedan', west - 3.9, 12, 0, -0.34);
+    car(f, 'suv', west - 3.9, 19, Math.PI, -0.34);
+    // arborización con los árboles 3D del masterplan La Fontana: andenes, antejardines y patio
+    this._treePts = [];
+    const tree = (x, z, sp) => this._treePts.push([x, z, sp]);
+    for (const x of [4, 10.5, 17, 23.5, 30]) if (x < xMax - 2) tree(x, -1.3, 'ash');
+    for (const z of [6, 14, 22]) tree(west - 1.3, z, 'ash');
+    tree(this.ox - ant / 2, ant + 3, 'celtis'); tree(this.ox - ant / 2, ant + 11, 'celtis');
+    for (const x of [this.ox + 14, this.ox + 19.5, this.ox + 23]) tree(x, pz + 5.5, 'euc');
+  }
+
+  /** Siembra los árboles 3D en coordenadas del mundo (requiere el marco ya ubicado). */
+  _plantTrees() {
+    this.group.updateMatrixWorld(true);
+    const v = new THREE.Vector3();
+    const pts = this._treePts.map(([x, z, sp]) => { this.frame.localToWorld(v.set(x, 0, z)); return [v.x, v.y, v.z, sp]; });
+    new RealTrees().plant(pts, this.group, { variants: 2 });
   }
 
   // ---------------------------------------------------------------- piso tipo
@@ -298,7 +328,7 @@ export class ProjectBuilding {
     for (let x = px0; x <= px1; x += 0.6) this.box(0.08, 0.12, PD - 2.8, M.wood, x, y + 2.6, 1.4, r);
     this.box(1.8, 0.9, 0.6, M.kitchen, px0 + 1, y, PD - 2.2, r);
     for (const [x, z] of [[2, 2], [5, 2], [2, PD - 3], [5, PD - 3]]) this.box(1.2, 0.45, 1.2, M.fabric, x, y, z, r);
-    this.box(PW - 2, 0.5, 0.5, M.leaf, 1, y, 0.9, r);
+    for (const x of [3, 9, 15]) place(r, planter(4.5, 0.6), x, 1.0, 0, y);
   }
 
   // ---------------------------------------------------------------- interacción

@@ -10,6 +10,7 @@ Salidas en data/geometry/:
   lotes.json            lotes catastrales cercanos al proyecto
   predios.json          los tres lotes evaluados en el estudio de mercado
   puntos.json           servicios, equipamientos y proyectos competidores (geocodificados por placa)
+  andenes.json          andenes: manzanas ampliadas 2,6 m (requiere shapely)
 
 Uso: python3 scripts/build-context.py [radio_m]
 """
@@ -181,4 +182,28 @@ for p in fuente["puntos"]:
     lon, lat = placa(*p["placa"]) if "placa" in p else p["lonlat"]
     pts.append({**{k: v for k, v in p.items() if k != "placa"}, "lonlat": [round(lon, 7), round(lat, 7)], "xz": loc(lon, lat)})
 save("puntos.json", {"p": pts})
+
+
+
+# --- Andenes ----------------------------------------------------------------------------------
+def build_andenes(ancho=2.6, radio=820):
+    """Anden = manzana ampliada `ancho` metros (requiere shapely). La calzada es lo que queda entre andenes."""
+    from shapely.geometry import Polygon
+    m = json.load(open(os.path.join(OUT, "manzanas.json"), encoding="utf-8"))["m"]
+    out = []
+    for z in m:
+        p = Polygon(z["pts"])
+        if not p.is_valid:
+            p = p.buffer(0)
+        c = p.centroid
+        if math.hypot(c.x, c.y) > radio:
+            continue
+        b = p.buffer(ancho, join_style=2, mitre_limit=2.5).simplify(0.3)
+        if b.geom_type != "Polygon":
+            continue
+        out.append([[round(x, 2), round(y, 2)] for x, y in list(b.exterior.coords)[:-1]])
+    save("andenes.json", {"fuente": "Manzanas de Catastro Bogotá ampliadas %.1f m" % ancho, "a": out})
+
+
+build_andenes()
 print("listo")

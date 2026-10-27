@@ -194,6 +194,7 @@ export class CityContext {
     this.buildingList = all.filter((b) => b !== nave && b !== tower);
 
     this._buildManzanas();
+    this._buildAndenes();
     this._buildLotes();
     this._buildStudyArea();
     this._buildPredios();
@@ -326,7 +327,7 @@ export class CityContext {
           // adoquín gris de concreto (espiga) para andenes, plazoletas y patios; asfalto donde la foto es oscura
           conc = mix(vec3(dot(conc, vec3(0.3, 0.59, 0.11))), conc, 0.22) * 1.15;
           vec3 paved = mix(asph, conc, smoothstep(0.055, 0.085, lum));
-          vec3 ground = mix(paved, grass, veg);
+          vec3 ground = asph; // calzadas en asfalto: andenes y manzanas van modelados encima (antes: máscara de la foto)
           // borde exterior: se funde con la ortofoto del nivel lejano (sin costura)
           vec2 eb = min(st, 1.0 - st) * uSatB.zw;
           float edge = 1.0 - smoothstep(20.0, 180.0, min(eb.x, eb.y));
@@ -376,6 +377,7 @@ export class CityContext {
     try { await this._loadDEM(); } catch (e) { console.warn('DEM no disponible', e); }
     [L3, L2, L1, L0].forEach((L) => L && this._applyHeights(L));
     this._buildBuildings(this.buildingList, L0 || L1, L1, L2);
+    this.mzRealMat = this._manzanaRealMat(L1);
     this.setTheme(this.theme);
     await near;
     try { this._buildTileRoofs(L1); } catch (e) { console.warn('cubiertas de teja', e); }
@@ -468,14 +470,17 @@ export class CityContext {
             // tema plano: el color lo pone el atributo de vértice
           } else if (vUp > 0.5) {
             // cubierta: la propia ortofoto (con el relieve de la foto) + un toque de contraste
-            vec3 c = sat(vCW.xz, 0.0);
-            diffuseColor.rgb *= pow(c, vec3(1.08)) * 1.08;
+            // cubierta plana: impermeabilización / concreto claro con variación por edificio (antes: recorte de la ortofoto)
+            float k = fract(vSeed * 7.31 + 0.13);
+            vec3 rc = mix(vec3(0.60, 0.60, 0.58), vec3(0.74, 0.72, 0.69), k);
+            rc = mix(rc, vec3(0.55, 0.42, 0.36), step(0.86, k) * 0.6); // algunas placas con manto rojizo
+            float tileN = fract(sin(dot(floor(vCW.xz * 1.2), vec2(12.9898, 78.233))) * 43758.5453);
+            diffuseColor.rgb *= rc * (0.96 + 0.06 * tileN);
           } else {
             // fachada: paleta bogotana (ladrillo, pañete crema, gris) teñida con el color de su cubierta
-            vec3 roofC = sat(vCen, 4.0);
             vec3 brick = vec3(0.56, 0.27, 0.17), cream = vec3(0.80, 0.76, 0.68), grey = vec3(0.66, 0.66, 0.65);
             vec3 base = rnd < 0.55 ? brick : (rnd < 0.82 ? cream : grey);
-            base = mix(base, roofC * 0.9, 0.25) * (0.85 + 0.3 * fract(vSeed * 13.17 + 0.37));
+            base = base * (0.85 + 0.3 * fract(vSeed * 13.17 + 0.37));
             float fh = 2.75 + 0.35 * fract(vSeed * 29.31 + 0.71), cw = 2.6 + 1.2 * fract(vSeed * 47.73 + 0.13);
             float fy = fract(vFac.y / fh), fx = fract(vFac.x / cw);
             vec2 fw = fwidth(vFac);
@@ -533,7 +538,7 @@ export class CityContext {
       const P = (a, bb, yy) => [o.cx + a * ux + bb * vx, yy, o.cz + a * uz + bb * vz];
       const e = [P(-hx, -hz, y), P(hx, -hz, y), P(hx, hz, y), P(-hx, hz, y)], t0 = P(-ridge, 0, y + rh), t1 = P(ridge, 0, y + rh);
       const faces = [[e[0], e[1], t1, t0], [e[2], e[3], t0, t1], [e[1], e[2], t1], [e[3], e[0], t0]]; // cuatro aguas
-      c.setRGB(r / 255, g / 255, bl / 255, THREE.SRGBColorSpace).multiplyScalar(1.35).lerp(new THREE.Color(0.92, 0.86, 0.8), 0.45); // tono de la foto sobre la textura de teja
+      c.setHSL(0.045 + (rg.it.pts[0][0] % 1 + 1) % 1 * 0.02, 0.45, 0.78 + ((rg.it.pts[0][1] % 1 + 1) % 1) * 0.12); // teja de barro con leve variación
       for (const f of faces) {
         const tris = f.length === 4 ? [[f[0], f[1], f[2]], [f[0], f[2], f[3]]] : [f];
         for (const tri of tris) for (const q of tri) { pos.push(...q); uv.push((q[0] + q[2]) / 3.2, q[1] / 1.6); col.push(c.r, c.g, c.b); }
@@ -641,6 +646,51 @@ export class CityContext {
 
 
 
+  // ---------------------------------------------------------------- andenes y suelo de manzana
+  /** Andenes: manzana ampliada 2,6 m (data/geometry/andenes.json), en adoquín de concreto con bordillo de 14 cm. */
+  _buildAndenes() {
+    const list = this.data.andenes?.a || [];
+    const pos = [], nor = [], uv = [];
+    for (const pts of list) {
+      const { W, R } = prismArrays(pts, 0, 0.14, { floorH: 0.14, bayW: 1, roofUV: (x, z) => [x / 2.6, z / 2.6] });
+      pos.push(...W.pos, ...R.pos); nor.push(...W.nor, ...R.nor); uv.push(...W.uv, ...R.uv);
+    }
+    if (!pos.length) return;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    const map = loadPBR('concrete_pavement', 'diff', true);
+    this.andenes = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map, color: 0xe9e5dd, roughness: 0.9, metalness: 0 }));
+    this.andenes.receiveShadow = true;
+    this.andenes.name = 'Andenes';
+    this.group.add(this.andenes);
+  }
+
+  /** Suelo de las manzanas en el tema realista: césped donde la ortofoto es verde, si no concreto gastado. */
+  _manzanaRealMat(L) {
+    const uni = {
+      tSat: { value: L.tex }, uSatB: { value: new THREE.Vector4(L.x0, L.zN, L.x1 - L.x0, L.zS - L.zN) },
+      tGrass: { value: loadPBR('leafy_grass', 'diff', true) }, tConc: { value: loadPBR('concrete_floor_worn_001', 'diff', true) }
+    };
+    const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, metalness: 0 });
+    mat.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, uni);
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vMW;')
+        .replace('#include <project_vertex>', '#include <project_vertex>\nvMW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vMW;\nuniform sampler2D tSat, tGrass, tConc; uniform vec4 uSatB;')
+        .replace('#include <map_fragment>', `
+          vec2 w = vMW.xz; vec2 st = (w - uSatB.xy) / uSatB.zw; st.y = 1.0 - st.y;
+          vec3 s = texture2D(tSat, st).rgb;
+          float veg = smoothstep(0.09, 0.16, (s.g - max(s.r, s.b)) / max(s.g, 0.015));
+          vec3 grass = texture2D(tGrass, w / 2.4).rgb, conc = texture2D(tConc, w / 3.0).rgb * vec3(1.03, 1.0, 0.95);
+          diffuseColor.rgb *= mix(conc, grass, veg);`);
+    };
+    mat.customProgramCacheKey = () => 'manzana_realista';
+    return mat;
+  }
+
   // ---------------------------------------------------------------- manzanas
   _buildManzanas() {
     const pos = [], nor = [], ranges = [];
@@ -656,7 +706,8 @@ export class CityContext {
     g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(pos.length), 3));
     this.mzRanges = ranges;
-    this.manzanas = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
+    this.mzColorMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
+    this.manzanas = new THREE.Mesh(g, this.mzColorMat);
     this.manzanas.receiveShadow = true;
     this.manzanas.name = 'Manzanas';
     this.group.add(this.manzanas);
@@ -748,7 +799,7 @@ export class CityContext {
     this.theme = theme;
     const real = theme === 'realista';
     const tinted = ['usos', 'valor', 'altura'].includes(theme);
-    this.manzanas.visible = !real; // en "Realista" el suelo es la ortofoto con texturas reales
+    this.manzanas.material = real && this.mzRealMat ? this.mzRealMat : this.mzColorMat; // realista: césped / concreto
     const set = (col, [a, b], c) => { for (let v = a; v < b; v++) { col[v * 3] = c.r; col[v * 3 + 1] = c.g; col[v * 3 + 2] = c.b; } };
     const mc = this.manzanas.geometry.attributes.color, c = new THREE.Color();
     for (const r of this.mzRanges) set(mc.array, r.parts[0], c.set(this._mzColor(r.it)));

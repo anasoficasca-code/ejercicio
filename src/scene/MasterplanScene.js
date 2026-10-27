@@ -101,15 +101,16 @@ export class MasterplanScene {
   // ---------------------------------------------------------------- datos
   async loadData() {
     const get = (p) => fetch(p).then((r) => { if (!r.ok) throw new Error(p); return r.json(); });
-    const [project, construcciones, manzanas, lotes, predios, puntos] = await Promise.all([
+    const [project, construcciones, manzanas, lotes, predios, puntos, andenes] = await Promise.all([
       get('./data/proyecto.json'),
       get('./data/geometry/construcciones.json'),
       get('./data/geometry/manzanas.json'),
       get('./data/geometry/lotes.json'),
       get('./data/geometry/predios.json'),
-      get('./data/geometry/puntos.json')
+      get('./data/geometry/puntos.json'),
+      get('./data/geometry/andenes.json').catch(() => null)
     ]);
-    this.data = { project, construcciones, manzanas, lotes, predios, puntos };
+    this.data = { project, construcciones, manzanas, lotes, predios, puntos, andenes };
 
     const lot = predios.p.find((p) => p.id === 'englobe');
     this.city = new CityContext(this.scene, { renderer: this.renderer, data: this.data, project, mobile: this.mobile });
