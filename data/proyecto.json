@@ -142,7 +142,7 @@
     "contexto": "Edificio de 7 pisos en la manzana"
   },
   "distribucion": {
-    "nota": "Esquema de distribución propuesto para el modelo 3D: 11 apartaestudios de 35 m² en 6 pisos (1 en el piso 1 y 2 por piso del 2 al 6), con punto fijo central. Ajustar cuando esté la planta arquitectónica definitiva.",
+    "nota": "Modelo 3D sobre todo el lote (194 m² por piso, sin antejardín): 11 unidades en 6 pisos, 1 en el piso 1 y 2 por piso del 2 al 6, con punto fijo central, de unos 75 m² cada una. La cabida normativa del Canva (antejardín de 3,50 m, huella de 104,49 m² y apartaestudios de 35 m²) se mantiene en la pestaña Predios.",
     "piso1": [
       "Lobby de acceso",
       "Bicicletero",

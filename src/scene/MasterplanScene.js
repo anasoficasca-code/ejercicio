@@ -232,7 +232,7 @@ export class MasterplanScene {
     this.tooltip.classList.toggle('show', !!u);
     this.renderer.domElement.style.cursor = u ? 'pointer' : '';
     if (u) {
-      this.tooltip.innerHTML = `<strong>${u.title}</strong> · ${u.typology === 'Apartaestudio' ? `${u.area} m²` : u.typology}`;
+      this.tooltip.innerHTML = `<strong>${u.title}</strong> · ${u.typology === 'Apartamento' ? `${u.area.toLocaleString('es-CO')} m²` : u.typology}`;
       this.tooltip.style.left = `${e.clientX + 14}px`;
       this.tooltip.style.top = `${e.clientY + 12}px`;
     }

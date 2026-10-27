@@ -19,7 +19,7 @@ export class UnitDetailCard {
     if (u.id === this._id) return;
     this._id = u.id;
     const p = store.state.project;
-    const apt = u.typology === 'Apartaestudio';
+    const apt = u.typology === 'Apartamento';
     this.container.innerHTML = `
       <button class="detail-close-btn" id="btn-close-detail">✕</button>
       <div class="detail-title">${u.title}</div>
@@ -27,7 +27,7 @@ export class UnitDetailCard {
       <div class="detail-props">
         <div class="detail-prop-line"><span class="label">Piso:</span> ${u.floor} de ${p.cabida.pisos}</div>
         <div class="detail-prop-line"><span class="label">Tipología:</span> ${u.typology}</div>
-        <div class="detail-prop-line"><span class="label">Área:</span> ${u.area} m²${apt ? ' (área vendible)' : ''}</div>
+        <div class="detail-prop-line"><span class="label">Área:</span> ${u.area.toLocaleString('es-CO')} m²${apt ? ' (área privada aprox.)' : ''}</div>
         <div class="detail-prop-line"><span class="label">Ubicación:</span> ${u.location}</div>
         <div class="detail-prop-line"><span class="label">Fachadas:</span> ${u.facades}</div>
         <div class="detail-prop-line"><span class="label">Altura libre:</span> ${u.height}</div>
@@ -38,7 +38,7 @@ export class UnitDetailCard {
       <div class="detail-actions">
         <button class="detail-gallery-btn" id="btn-view-gallery">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          ${apt ? 'Ver el apartaestudio y acabados' : 'Ver zonas sociales'}
+          ${apt ? 'Ver acabados y láminas del proyecto' : 'Ver zonas sociales'}
         </button>
       </div>`;
     this.container.classList.add('visible');

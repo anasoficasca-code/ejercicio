@@ -1,15 +1,21 @@
 import * as THREE from 'three';
 import { LON0, LAT0, MLON, MLAT, toLocal } from '../geo.js';
+import { makeFacadeTextures, BAY_W } from './FacadeTextures.js';
+import { Church } from './Church.js';
 
 /**
  * CityContext — contexto urbano real de Galerías / Teusaquillo a partir de Catastro Bogotá:
- *  · ~7.400 construcciones (huella + número de pisos + altura) extruidas en una sola malla.
+ *  · ~7.400 construcciones (huella + número de pisos + altura) con fachadas realistas de ladrillo,
+ *    pañete o concreto y ventanas por piso; las cubiertas toman la ortofoto real.
+ *  · La iglesia frente al lote (Calle 56 con Carrera 18) reconstruida con nave, cubierta y torre.
  *  · Manzanas con uso predominante, altura media y valor de referencia del suelo (temas de color).
  *  · Lotes catastrales alrededor del proyecto (trama predial) y los predios evaluados 01 y 03.
- *  · Ortofoto real (Esri World Imagery) en el suelo; si no carga, queda un suelo neutro.
+ *  · Ortofoto real (Esri World Imagery) en el suelo; si no carga, quedan las manzanas como andén.
  *  · Área de estudio (Calles 53–60 · Carreras 14–24) como cinta y cortina translúcida.
  */
 const IMG = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/';
+const CHURCH_LOT = '007208001002';
+const BASE_Y = 0.16;
 
 export const USOS = {
   RESIDENCIAL: { label: 'Residencial', color: '#f1d54a' },
@@ -36,6 +42,15 @@ const ALTURA_BINS = [
 const SIN_DATO = '#d6d1c7';
 const MAQUETA_MZ = '#e3ded4';
 const MAQUETA_BLD = '#f3f0ea';
+const ANDEN = '#cbc5b9';
+const STYLES = ['ladrillo', 'pañete', 'concreto'];
+const ROOF_TINTS = ['#8f8a83', '#a39d94', '#7d4a37', '#9a9590', '#b0aaa0'];
+// variación de color por edificio (multiplica la textura de fachada)
+const WALL_TINTS = [
+  ['#ffffff', '#f2e6de', '#e8d8cd', '#fff1e6', '#ddc9bd'],
+  ['#ffffff', '#f4ead7', '#e9dcc4', '#dde5e8', '#f2e0cc', '#e0d3bd', '#f5f0e6'],
+  ['#ffffff', '#e8eaec', '#d9dcde', '#eceae4']
+];
 
 const tileX = (lon, z) => ((lon + 180) / 360) * 2 ** z;
 const tileY = (lat, z) => ((1 - Math.asinh(Math.tan((lat * Math.PI) / 180)) / Math.PI) / 2) * 2 ** z;
@@ -71,54 +86,63 @@ export function pointInPolygon([x, z], poly) {
 }
 
 const centroid = (p) => [p.reduce((s, q) => s + q[0], 0) / p.length, p.reduce((s, q) => s + q[1], 0) / p.length];
+const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return (h >>> 0) / 4294967296; };
 
-/**
- * Extruye muchos polígonos en una sola geometría (muros + cubierta) con color por vértice.
- * Devuelve la geometría y, por polígono, el rango de vértices para recolorear sin reconstruir.
- */
-function extrudeMany(items, getH, getY0 = () => 0) {
-  const pos = [], nor = [], ranges = [];
-  for (const it of items) {
-    let p = it.pts;
-    if (p.length < 3) continue;
-    if (signedArea(p) > 0) p = [...p].reverse(); // horario en (x, z) → normal exterior = (−dz, dx)
-    const h = getH(it), y0 = getY0(it), y1 = y0 + h;
-    const start = pos.length / 3;
-    for (let i = 0; i < p.length; i++) {
-      const [ax, az] = p[i], [bx, bz] = p[(i + 1) % p.length];
-      const dx = bx - ax, dz = bz - az, l = Math.hypot(dx, dz) || 1;
-      const nx = -dz / l, nz = dx / l;
-      pos.push(ax, y0, az, bx, y0, bz, bx, y1, bz, ax, y0, az, bx, y1, bz, ax, y1, az);
-      for (let k = 0; k < 6; k++) nor.push(nx, 0, nz);
+/** Rectángulo orientado mínimo: centro, largo (l), ancho (w) y ángulo del eje largo en el plano (x, z). */
+export function obb(pts) {
+  let best = null;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length];
+    const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), ux = Math.cos(ang), uz = Math.sin(ang);
+    const us = pts.map(([x, z]) => x * ux + z * uz), vs = pts.map(([x, z]) => -x * uz + z * ux);
+    const l = Math.max(...us) - Math.min(...us), w = Math.max(...vs) - Math.min(...vs);
+    if (!best || l * w < best.area) {
+      const mu = (Math.max(...us) + Math.min(...us)) / 2, mv = (Math.max(...vs) + Math.min(...vs)) / 2;
+      best = { area: l * w, l, w, angle: ang, cx: mu * ux - mv * uz, cz: mu * uz + mv * ux };
     }
-    const wallEnd = pos.length / 3;
-    const tris = THREE.ShapeUtils.triangulateShape(p.map(([x, z]) => new THREE.Vector2(x, z)), []);
-    for (const [a, b, c] of tris) {
-      const A = p[a], B = p[b], C = p[c];
-      const cy = (B[1] - A[1]) * (C[0] - A[0]) - (B[0] - A[0]) * (C[1] - A[1]);
-      const order = cy >= 0 ? [A, B, C] : [A, C, B];
-      for (const q of order) { pos.push(q[0], y1, q[1]); nor.push(0, 1, 0); }
-    }
-    ranges.push({ it, start, wallEnd, end: pos.length / 3, h });
   }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(pos.length), 3));
-  return { geometry: g, ranges };
+  if (best.w > best.l) { [best.l, best.w] = [best.w, best.l]; best.angle += Math.PI / 2; }
+  return best;
 }
 
-function paint(geometry, ranges, colorOf, roofShade = 0.92) {
-  const col = geometry.attributes.color.array, c = new THREE.Color(), r = new THREE.Color();
-  for (const rg of ranges) {
-    c.set(colorOf(rg.it, rg.h));
-    r.copy(c).multiplyScalar(roofShade);
-    for (let v = rg.start; v < rg.end; v++) {
-      const s = v < rg.wallEnd ? c : r;
-      col[v * 3] = s.r; col[v * 3 + 1] = s.g; col[v * 3 + 2] = s.b;
+/**
+ * Muros + cubierta de un polígono extruido, con UV de fachada (u en crujías, v en pisos) y
+ * UV de cubierta opcional (`roofUV(x, z)` → [u, v]). Devuelve arreglos para fusionar.
+ */
+function prismArrays(pts, y0, y1, { floorH = 2.9, bayW = BAY_W, roofUV } = {}) {
+  let p = pts;
+  if (signedArea(p) > 0) p = [...p].reverse(); // horario en (x, z) → normal exterior = (−dz, dx)
+  const W = { pos: [], nor: [], uv: [] }, R = { pos: [], nor: [], uv: [] };
+  const vTop = (y1 - y0) / floorH;
+  for (let i = 0; i < p.length; i++) {
+    const [ax, az] = p[i], [bx, bz] = p[(i + 1) % p.length];
+    const dx = bx - ax, dz = bz - az, l = Math.hypot(dx, dz) || 1;
+    const nx = -dz / l, nz = dx / l;
+    const uMax = l < 1.6 ? l / bayW : Math.max(1, Math.round(l / bayW)); // crujías enteras en cada muro
+    W.pos.push(ax, y0, az, bx, y0, bz, bx, y1, bz, ax, y0, az, bx, y1, bz, ax, y1, az);
+    W.uv.push(0, 0, uMax, 0, uMax, vTop, 0, 0, uMax, vTop, 0, vTop);
+    for (let k = 0; k < 6; k++) W.nor.push(nx, 0, nz);
+  }
+  const tris = THREE.ShapeUtils.triangulateShape(p.map(([x, z]) => new THREE.Vector2(x, z)), []);
+  for (const [a, b, c] of tris) {
+    const A = p[a], B = p[b], C = p[c];
+    const cy = (B[1] - A[1]) * (C[0] - A[0]) - (B[0] - A[0]) * (C[1] - A[1]);
+    for (const q of cy >= 0 ? [A, B, C] : [A, C, B]) {
+      R.pos.push(q[0], y1, q[1]); R.nor.push(0, 1, 0);
+      R.uv.push(...(roofUV ? roofUV(q[0], q[1]) : [q[0] / 4, q[1] / 4]));
     }
   }
-  geometry.attributes.color.needsUpdate = true;
+  return { W, R };
+}
+
+/** Geometría de un solo prisma (muros + cubierta) — la usa la iglesia. */
+export function prismGeometry(pts, y0, y1, opts) {
+  const { W, R } = prismArrays(pts, y0, y1, opts);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute([...W.pos, ...R.pos], 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute([...W.nor, ...R.nor], 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute([...W.uv, ...R.uv], 2));
+  return g;
 }
 
 export class CityContext {
@@ -130,9 +154,11 @@ export class CityContext {
     this.group = new THREE.Group();
     this.group.name = 'CityContext';
     scene.add(this.group);
-    this.theme = 'maqueta';
+    this.theme = 'realista';
     this.mzByCode = new Map(data.manzanas.m.map((m) => [m.id, m]));
     this.studyArea = project.areaEstudio.lonlat.map(([lon, lat]) => toLocal(lon, lat));
+    this.textures = makeFacadeTextures();
+    this.orthoPlan = this._planOrtho();
 
     this._buildGround();
     this._buildManzanas();
@@ -140,7 +166,7 @@ export class CityContext {
     this._buildLotes();
     this._buildStudyArea();
     this._buildPredios();
-    this.setTheme('maqueta');
+    this.setTheme('realista');
     this.stats = this._studyStats();
     this.ready = this._loadOrtho();
   }
@@ -157,50 +183,71 @@ export class CityContext {
     this.group.add(ground);
   }
 
-  async _loadOrtho() {
+  _planOrtho() {
     const z = 17, half = 980;
-    const lonA = LON0 - half / MLON, lonB = LON0 + half / MLON, latN = LAT0 + half / MLAT, latS = LAT0 - half / MLAT;
-    const tx0 = Math.floor(tileX(lonA, z)), tx1 = Math.floor(tileX(lonB, z));
-    const ty0 = Math.floor(tileY(latN, z)), ty1 = Math.floor(tileY(latS, z));
-    const nx = tx1 - tx0 + 1, ny = ty1 - ty0 + 1;
+    const tx0 = Math.floor(tileX(LON0 - half / MLON, z)), tx1 = Math.floor(tileX(LON0 + half / MLON, z));
+    const ty0 = Math.floor(tileY(LAT0 + half / MLAT, z)), ty1 = Math.floor(tileY(LAT0 - half / MLAT, z));
+    const [x0, zN] = toLocal(tile2lon(tx0, z), tile2lat(ty0, z));
+    const [x1, zS] = toLocal(tile2lon(tx1 + 1, z), tile2lat(ty1 + 1, z));
+    return { z, tx0, ty0, nx: tx1 - tx0 + 1, ny: ty1 - ty0 + 1, x0, x1, zN, zS };
+  }
+
+  /** UV de la ortofoto para un punto local (las cubiertas usan la foto real de su techo). */
+  orthoUV(x, z) {
+    const o = this.orthoPlan;
+    return [(x - o.x0) / (o.x1 - o.x0), 1 - (z - o.zN) / (o.zS - o.zN)];
+  }
+
+  async _loadOrtho() {
+    const o = this.orthoPlan;
     const cv = document.createElement('canvas');
-    cv.width = nx * 256; cv.height = ny * 256;
+    cv.width = o.nx * 256; cv.height = o.ny * 256;
     const ctx = cv.getContext('2d');
     ctx.fillStyle = '#8f8c85';
     ctx.fillRect(0, 0, cv.width, cv.height);
     const jobs = [];
-    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) jobs.push([i, j]);
+    for (let j = 0; j < o.ny; j++) for (let i = 0; i < o.nx; i++) jobs.push([i, j]);
     let ok = 0, k = 0;
     await Promise.all(Array.from({ length: 8 }, async () => {
       while (k < jobs.length) {
         const [i, j] = jobs[k++];
-        const img = await loadImg(`${IMG}${z}/${ty0 + j}/${tx0 + i}`);
+        const img = await loadImg(`${IMG}${o.z}/${o.ty0 + j}/${o.tx0 + i}`);
         if (img) { ctx.drawImage(img, i * 256, j * 256); ok++; }
       }
     }));
-    if (!ok) return; // sin ortofoto: el suelo neutro se queda
-    const [x0, zN] = toLocal(tile2lon(tx0, z), tile2lat(ty0, z));
-    const [x1, zS] = toLocal(tile2lon(tx1 + 1, z), tile2lat(ty1 + 1, z));
+    if (!ok) return; // sin ortofoto: quedan las manzanas como andén
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
-    const g = new THREE.PlaneGeometry(x1 - x0, zS - zN);
+    const g = new THREE.PlaneGeometry(o.x1 - o.x0, o.zS - o.zN);
     g.rotateX(-Math.PI / 2);
-    g.translate((x0 + x1) / 2, 0, (zN + zS) / 2);
+    g.translate((o.x0 + o.x1) / 2, 0, (o.zN + o.zS) / 2);
     const mesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: tex, roughness: 1, metalness: 0, color: 0xdedede }));
     mesh.position.y = -0.02;
     mesh.receiveShadow = true;
     mesh.name = 'Ortofoto';
     this.group.add(mesh);
     this.ortho = mesh;
+    this.orthoTex = tex;
+    this.setTheme(this.theme);
   }
 
   // ---------------------------------------------------------------- manzanas
   _buildManzanas() {
-    const { geometry, ranges } = extrudeMany(this.data.manzanas.m, () => 0.16);
+    const pos = [], nor = [], ranges = [];
+    for (const m of this.data.manzanas.m) {
+      if (m.pts.length < 3) continue;
+      const { W, R } = prismArrays(m.pts, 0, BASE_Y);
+      const start = pos.length / 3;
+      pos.push(...W.pos, ...R.pos); nor.push(...W.nor, ...R.nor);
+      ranges.push({ it: m, parts: [[start, pos.length / 3]] });
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(pos.length), 3));
     this.mzRanges = ranges;
-    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
-    this.manzanas = new THREE.Mesh(geometry, mat);
+    this.manzanas = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
     this.manzanas.receiveShadow = true;
     this.manzanas.name = 'Manzanas';
     this.group.add(this.manzanas);
@@ -208,21 +255,68 @@ export class CityContext {
 
   // ---------------------------------------------------------------- construcciones
   _buildBuildings() {
-    const bs = this.data.construcciones.b;
-    const { geometry, ranges } = extrudeMany(bs, (b) => b.h, () => 0.16);
-    this.bRanges = ranges;
-    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0, envMapIntensity: 0.6 });
-    this.buildings = new THREE.Mesh(geometry, mat);
+    const all = this.data.construcciones.b;
+    const churchParts = all.filter((b) => b.l === CHURCH_LOT);
+    const area = (b) => Math.abs(signedArea(b.pts));
+    const nave = churchParts.reduce((a, b) => (area(b) > area(a) ? b : a), churchParts[0]);
+    const tower = churchParts.filter((b) => b !== nave).reduce((a, b) => (b.p > a.p ? b : a), churchParts[0]);
+    const bs = all.filter((b) => b !== nave && b !== tower);
+    if (nave && tower) this.church = new Church(this.group, { nave, tower, textures: this.textures });
+
+    // un bloque de vértices por estilo de fachada + uno para cubiertas (grupos de material)
+    const parts = [...STYLES, 'roof'].map(() => ({ pos: [], nor: [], uv: [] }));
+    const recs = [];
+    for (const b of bs) {
+      const floors = Math.max(1, b.p);
+      const h = Math.max(b.h, floors * 2.8);
+      const r = hash(b.l + b.pts[0][0]);
+      const style = floors >= 5 ? (r < 0.55 ? 2 : 1) : floors >= 3 ? (r < 0.55 ? 0 : r < 0.9 ? 1 : 2) : (r < 0.6 ? 0 : 1);
+      const { W, R } = prismArrays(b.pts, BASE_Y, BASE_Y + h, { floorH: h / floors, roofUV: (x, z) => this.orthoUV(x, z) });
+      const w = parts[style], rf = parts[3];
+      const ws = w.pos.length / 3; w.pos.push(...W.pos); w.nor.push(...W.nor); w.uv.push(...W.uv);
+      const rs = rf.pos.length / 3; rf.pos.push(...R.pos); rf.nor.push(...R.nor); rf.uv.push(...R.uv);
+      recs.push({ b, h, style, w: [ws, w.pos.length / 3], r: [rs, rf.pos.length / 3], roofTint: ROOF_TINTS[Math.floor(r * 997) % ROOF_TINTS.length], wallTint: WALL_TINTS[style][Math.floor(r * 7919) % WALL_TINTS[style].length] });
+    }
+    const n = parts.reduce((s, pt) => s + pt.pos.length / 3, 0);
+    const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), uv = new Float32Array(n * 2), g = new THREE.BufferGeometry();
+    const offs = [];
+    let at = 0;
+    parts.forEach((pt, i) => {
+      offs[i] = at;
+      pos.set(pt.pos, at * 3); nor.set(pt.nor, at * 3); uv.set(pt.uv, at * 2);
+      g.addGroup(at, pt.pos.length / 3, i);
+      at += pt.pos.length / 3;
+    });
+    this.bRanges = recs.map((rc) => ({
+      it: rc.b, h: rc.h, roofTint: rc.roofTint, wallTint: rc.wallTint,
+      walls: [offs[rc.style] + rc.w[0], offs[rc.style] + rc.w[1]],
+      roof: [offs[3] + rc.r[0], offs[3] + rc.r[1]]
+    }));
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(pos.length), 3));
+    this.wallMats = STYLES.map((s) => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: s === 'concreto' ? 0.6 : 0.88, metalness: 0, envMapIntensity: 0.7 }));
+    this.roofMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 });
+    this.buildings = new THREE.Mesh(g, [...this.wallMats, this.roofMat]);
     this.buildings.castShadow = true;
     this.buildings.receiveShadow = true;
     this.buildings.name = 'Construcciones Catastro';
     this.group.add(this.buildings);
 
-    // Aristas de maqueta solo en el entorno inmediato (las lejanas saturan la imagen).
+    // aristas de maqueta en el entorno inmediato (solo en el tema "Maqueta")
     const near = bs.filter((b) => Math.hypot(...centroid(b.pts)) < 230);
-    const { geometry: ng } = extrudeMany(near, (b) => b.h, () => 0.16);
-    const edges = new THREE.EdgesGeometry(ng, 30);
-    this.edges = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x8c877d, transparent: true, opacity: 0.35 }));
+    const ep = [];
+    for (const b of near) {
+      const h = Math.max(b.h, Math.max(1, b.p) * 2.8) + BASE_Y;
+      for (let i = 0; i < b.pts.length; i++) {
+        const [ax, az] = b.pts[i], [bx, bz] = b.pts[(i + 1) % b.pts.length];
+        ep.push(ax, h, az, bx, h, bz, ax, BASE_Y, az, ax, h, az);
+      }
+    }
+    const eg = new THREE.BufferGeometry();
+    eg.setAttribute('position', new THREE.Float32BufferAttribute(ep, 3));
+    this.edges = new THREE.LineSegments(eg, new THREE.LineBasicMaterial({ color: 0x8c877d, transparent: true, opacity: 0.35 }));
     this.group.add(this.edges);
   }
 
@@ -279,7 +373,7 @@ export class CityContext {
     this.prediosGroup = new THREE.Group();
     this.prediosGroup.name = 'Predios evaluados';
     for (const p of this.data.predios.p) {
-      if (p.id === 'lote-02') continue; // el lote 02 lo dibuja el proyecto
+      if (p.id === 'lote-02') continue; // el lote 02 lo ocupa el proyecto
       const shape = new THREE.Shape(p.pts.map(([x, z]) => new THREE.Vector2(x, -z)));
       const g = new THREE.ExtrudeGeometry(shape, { depth: 9, bevelEnabled: false });
       g.rotateX(-Math.PI / 2);
@@ -305,21 +399,40 @@ export class CityContext {
     if (this.theme === 'usos') return USOS[mz.uso]?.color || SIN_DATO;
     if (this.theme === 'valor') return mz.vref ? VALOR_BINS.find((b) => mz.vref < b.max).color : SIN_DATO;
     if (this.theme === 'altura') return mz.alt ? ALTURA_BINS.find((b) => mz.alt <= b.max).color : SIN_DATO;
-    return MAQUETA_MZ;
+    return this.theme === 'realista' ? ANDEN : MAQUETA_MZ;
   }
 
   setTheme(theme) {
     this.theme = theme;
-    const sat = theme === 'satelite';
+    const real = theme === 'realista';
     const tinted = ['usos', 'valor', 'altura'].includes(theme);
-    this.manzanas.visible = !sat;
-    paint(this.manzanas.geometry, this.mzRanges, (m) => this._mzColor(m), 1);
-    const mix = new THREE.Color(), base = new THREE.Color(MAQUETA_BLD);
-    paint(this.buildings.geometry, this.bRanges, (b, h) => {
-      if (tinted) return mix.set(this._mzColor(this.mzByCode.get(b.l?.slice(0, 9)))).lerp(base, 0.35).getHex();
-      // maqueta: blanco cálido que se enfría apenas con la altura
-      return mix.copy(base).lerp(new THREE.Color('#dfe3e8'), Math.min(1, h / 40)).getHex();
-    });
+    STYLES.forEach((s, i) => { this.wallMats[i].map = real ? this.textures[s] : null; this.wallMats[i].needsUpdate = true; });
+    this.roofMat.map = real && this.orthoTex ? this.orthoTex : null;
+    this.roofMat.needsUpdate = true;
+    this.manzanas.visible = !(real && this.ortho);
+    this.edges.visible = theme === 'maqueta';
+
+    const set = (col, [a, b], c) => { for (let v = a; v < b; v++) { col[v * 3] = c.r; col[v * 3 + 1] = c.g; col[v * 3 + 2] = c.b; } };
+    const mc = this.manzanas.geometry.attributes.color, c = new THREE.Color();
+    for (const r of this.mzRanges) set(mc.array, r.parts[0], c.set(this._mzColor(r.it)));
+    mc.needsUpdate = true;
+
+    const bc = this.buildings.geometry.attributes.color, base = new THREE.Color(MAQUETA_BLD), cool = new THREE.Color('#dfe3e8'), w = new THREE.Color(1, 1, 1);
+    for (const r of this.bRanges) {
+      if (real) {
+        set(bc.array, r.walls, c.set(r.wallTint));
+        set(bc.array, r.roof, this.orthoTex ? w : c.set(r.roofTint));
+      } else if (tinted) {
+        c.set(this._mzColor(this.mzByCode.get(r.it.l?.slice(0, 9)))).lerp(base, 0.35);
+        set(bc.array, r.walls, c);
+        set(bc.array, r.roof, c.multiplyScalar(0.92));
+      } else {
+        c.copy(base).lerp(cool, Math.min(1, r.h / 40)); // maqueta: blanco cálido que se enfría con la altura
+        set(bc.array, r.walls, c);
+        set(bc.array, r.roof, c.multiplyScalar(0.92));
+      }
+    }
+    bc.needsUpdate = true;
   }
 
   setLayer(key, on) {
@@ -334,13 +447,12 @@ export class CityContext {
     for (const m of inside) usos[m.uso || 'SIN DATO'] = (usos[m.uso || 'SIN DATO'] || 0) + 1;
     const v = inside.map((m) => m.vref).filter(Boolean).sort((a, b) => a - b);
     const a = inside.map((m) => m.alt).filter(Boolean);
-    const lotMz = this.mzByCode.get(this.project.ubicacion.manzanaCatastral);
     return {
       manzanas: inside.length,
       usos,
       vrefMediana: v.length ? v[Math.floor(v.length / 2)] : null,
       alturaMedia: a.length ? a.reduce((s, x) => s + x, 0) / a.length : null,
-      manzanaLote: lotMz,
+      manzanaLote: this.mzByCode.get(this.project.ubicacion.manzanaCatastral),
       construcciones: this.data.construcciones.b.length
     };
   }

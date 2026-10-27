@@ -9,12 +9,12 @@ export class MasterplanStore {
       units: [],                     // apartaestudios y zonas comunes por piso
       showUnitsOverlay: true,        // "Mostrar apartaestudios 3D"
       activeFloor: null,             // filtro por piso (1..6)
-      activeTypology: null,          // 'Apartaestudio' | 'Zona común'
+      activeTypology: null,          // 'Apartamento' | 'Zona común'
       selectedUnitId: null,
       hoveredUnitId: null,
       activeTab: 'inmuebles',        // 'ubicacion' | 'urbanismo' | 'inmuebles' | 'mercado' | 'predios' | 'galeria'
       viewMode: 'exterior',          // 'exterior' | 'contexto' | 'top'
-      cityTheme: 'maqueta',          // 'maqueta' | 'usos' | 'valor' | 'altura' | 'satelite'
+      cityTheme: 'realista',         // 'realista' | 'maqueta' | 'usos' | 'valor' | 'altura'
       layers: { estudio: true, servicios: true, competencia: true, predios: true, vias: true }
     };
     this.listeners = new Set();

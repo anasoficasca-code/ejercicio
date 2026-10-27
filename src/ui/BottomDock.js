@@ -11,7 +11,7 @@ const ICONS = {
 const TABS = [
   ['ubicacion', 'Dónde estamos'],
   ['urbanismo', 'Urbanismo'],
-  ['inmuebles', 'Apartaestudios'],
+  ['inmuebles', 'Apartamentos'],
   ['mercado', 'Mercado'],
   ['predios', 'Predios'],
   ['galeria', 'Galería']

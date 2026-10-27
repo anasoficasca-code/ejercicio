@@ -75,7 +75,7 @@ class App {
   }
 
   openUnitGallery(u) {
-    const pick = u.typology === 'Apartaestudio' ? [35, 21, 20, 36] : [30, 31, 32, 33, 34, 22];
+    const pick = u.typology === 'Apartamento' ? [35, 26, 27, 28, 21, 20, 36] : [30, 31, 32, 33, 34, 22];
     this.gallery.open(`Galería · ${u.title}`, pick.map((n) => this.laminas.find((l) => l.n === n)));
   }
 

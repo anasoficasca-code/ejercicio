@@ -55,12 +55,13 @@ export class SidebarFilters {
     const floors = [...new Set(s.units.map((u) => u.floor))];
     const typos = [...new Set(s.units.map((u) => u.typology))];
     const list = store.getFilteredUnits();
-    const nApts = s.units.filter((u) => u.typology === 'Apartaestudio').length;
+    const apts = s.units.filter((u) => u.typology === 'Apartamento');
+    const nApts = apts.length, avg = apts.reduce((t, u) => t + u.area, 0) / (nApts || 1);
     return `
       <div class="sidebar-header-controls">
         <div class="toggle-row">
           <div class="umbra-switch ${s.showUnitsOverlay ? 'on' : ''}" data-action="toggle-units"><div class="umbra-switch-knob"></div></div>
-          <span class="toggle-label">Mostrar apartaestudios 3D</span>
+          <span class="toggle-label">Mostrar apartamentos 3D</span>
         </div>
       </div>
       <div class="sidebar-body">
@@ -72,12 +73,12 @@ export class SidebarFilters {
           </div>
         </div>
         <div class="filter-section">
-          <div class="filter-section-label">Unidades (${nApts} apartaestudios de 35 m²)</div>
+          <div class="filter-section-label">Unidades (${nApts} apartamentos de ~${Math.round(avg)} m²)</div>
           <div class="jmc-room-stack">
             ${list.map((u) => `
               <div class="jmc-room-card ${s.selectedUnitId === u.id ? 'active' : ''}" data-id="${u.id}">
                 <div class="jmc-room-main">
-                  <span class="jmc-room-title">${u.typology === 'Apartaestudio' ? `Apto ${u.id}` : u.title}</span>
+                  <span class="jmc-room-title">${u.typology === 'Apartamento' ? `Apto ${u.id}` : u.title}</span>
                   <span class="jmc-room-type">Piso ${u.floor} · ${u.location.split(' · ')[0].split(' sobre')[0]}</span>
                 </div>
                 <div class="jmc-room-badge">${u.area} m²</div>
@@ -98,7 +99,7 @@ export class SidebarFilters {
   // ---------------------------------------------------------------- urbanismo
   urbanismo(s) {
     const st = this.getStats();
-    const themes = [['maqueta', 'Maqueta'], ['satelite', 'Satélite'], ['usos', 'Usos del suelo'], ['valor', 'Valor del suelo'], ['altura', 'Altura media']];
+    const themes = [['realista', 'Realista'], ['maqueta', 'Maqueta'], ['usos', 'Usos del suelo'], ['valor', 'Valor del suelo'], ['altura', 'Altura media']];
     const legend = CityContext.legend(s.cityTheme);
     const layer = (k, label, color) => `
       <div class="toggle-row layer-row">
@@ -118,7 +119,7 @@ export class SidebarFilters {
           ${layer('vias', 'Nombres de vías')}
         </div>
         <div class="filter-section">
-          <div class="filter-section-label">Colorear manzanas por</div>
+          <div class="filter-section-label">Vista del contexto</div>
           <div class="filter-grid-2">
             ${themes.map(([k, l]) => `<button class="jmc-pill-btn ${s.cityTheme === k ? 'active' : ''}" data-theme="${k}">${l}</button>`).join('')}
           </div>

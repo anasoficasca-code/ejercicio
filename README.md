@@ -26,7 +26,8 @@ Todo el contexto sale de los servicios ArcGIS públicos de **Catastro Bogotá (U
 
 | Capa | Servicio Catastro | Uso en el masterplan |
 | :--- | :--- | :--- |
-| Construcciones | `catastro/construccion` | ~7.400 edificaciones extruidas con su número de pisos y altura real |
+| Construcciones | `catastro/construccion` | ~7.400 edificaciones con su número de pisos y altura real, fachadas de ladrillo, pañete o concreto con ventanas por piso y cubiertas con la ortofoto |
+| Iglesia (lote `007208001002`) | `catastro/construccion` | Frente al lote sobre la Calle 56: nave reconstruida con cubierta a dos aguas y torre campanario con chapitel |
 | Manzanas | `catastro/manzana` | Base de las manzanas y temas de color |
 | Uso predominante | `catastro/usopredominante` | Tema **Usos del suelo** (residencial, comercio, dotacional…) |
 | Altura media | `catastro/alturamedia` | Tema **Altura media** por manzana |
@@ -62,7 +63,9 @@ ejercicio/
 │   ├── scene/
 │   │   ├── MasterplanScene.js        # Motor Three.js: cielo con el sol real de Bogotá, sombras, cámara, raycasting
 │   │   ├── CityContext.js            # Contexto Catastro, ortofoto, temas de color y área de estudio
-│   │   ├── ProjectBuilding.js        # Cabida: 6 pisos sobre el lote real, antejardín 3,50 m, 11 apartaestudios
+│   │   ├── FacadeTextures.js         # Texturas de fachada (ladrillo, pañete, concreto, iglesia)
+│   │   ├── Church.js                 # La iglesia frente al lote: nave, cubierta y torre
+│   │   ├── ProjectBuilding.js        # Edificio de 6 pisos sobre todo el lote, 11 unidades seleccionables
 │   │   └── PoiLayer.js               # Etiquetas 3D: servicios, competencia, predios y vías
 │   ├── ui/
 │   │   ├── SidebarFilters.js         # Panel izquierdo: apartaestudios por piso / capas urbanas
@@ -99,12 +102,13 @@ ejercicio/
 | Precio de venta | $11.870.026,53 por m² |
 | Ventas estimadas | $4.565.155.227 |
 
-**Esquema de unidades en el modelo 3D** (propuesto, ajustar con la planta definitiva):
+**Modelo 3D sobre todo el lote:** el edificio ocupa el polígono catastral completo (194 m² por piso, sin antejardín), con fachadas acristaladas a la Calle 56 y a la Carrera 18 y culatas de ladrillo contra los vecinos. La tabla de arriba es la cabida normativa del Canva.
 
 | Piso | Esquina (Calle 56 con Carrera 18) | Centro | Medianero (Calle 56) |
 | :--- | :--- | :--- | :--- |
-| 1 | Lobby y bicicletero | Punto fijo | Apartaestudio 101 |
-| 2 – 6 | Apartaestudio x01 | Punto fijo | Apartaestudio x02 |
+| 1 | Lobby y bicicletero (~75 m²) | Punto fijo | Apartamento 101 (~75 m²) |
+| 2 – 6 | Apartamento x01 (~75 m²) | Punto fijo | Apartamento x02 (~75 m²) |
+| Cubierta | — | Sobrecubierta del ascensor | Terraza comunal con pérgola y BBQ |
 
 Acabados del apartaestudio: laminado en roble claro, muros blanco hueso con cielo en drywall, cocina grafito con mesón de cuarzo blanco, baño en porcelanato gris de gran formato, ventanería y grifería negro mate, iluminación LED cálida.
 
