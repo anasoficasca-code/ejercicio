@@ -5,7 +5,7 @@
 [![POT](https://img.shields.io/badge/Norma-POT%20Decreto%20555%2F2021-c8a46e?style=flat-square)](https://www.sdp.gov.co/)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL%20PBR-black?style=flat-square&logo=three.js)](https://threejs.org/)
 
-Masterplan 3D interactivo del **Ejercicio Profesional 2 · Estudio de mercado** de **JMC Arquitectura** (Ana Casas, Martín Jaramillo, Jorge): un edificio de **11 apartaestudios de 35 m²** en el **Lote 02 · Calle 56 # 17-53, esquina Carrera 18**, barrio **Galerías (Teusaquillo, Bogotá D.C.)**, modelado sobre el contexto urbano real de Catastro Bogotá.
+Masterplan 3D interactivo del **Ejercicio Profesional 2 · Estudio de mercado** de **JMC Arquitectura** (Ana Casas, Martín Jaramillo, Jorge): un edificio de **5 pisos y 16 apartamentos** sobre el **Parqueadero Divino Salvador · Calle 56 con Carrera 18**, barrio **Galerías (Teusaquillo, Bogotá D.C.)**, modelado sobre el contexto urbano real de Catastro Bogotá.
 
 La línea visual (panel lateral, tarjeta flotante, dock inferior, modales y estilo glassmorphism) es la misma del masterplan [Hotel Estelar La Fontana](https://github.com/alejagoguti-cpu/hotel-la-fontana-masterplan), con autorización de su autora.
 
@@ -104,13 +104,15 @@ ejercicio/
 | Precio de venta | $11.870.026,53 por m² |
 | Ventas estimadas | $4.565.155.227 |
 
-**Modelo 3D sobre todo el lote:** el edificio ocupa el polígono catastral completo (194 m² por piso, sin antejardín), con fachadas acristaladas a la Calle 56 y a la Carrera 18 y culatas de ladrillo contra los vecinos. La tabla de arriba es la cabida normativa del Canva.
+**Proyecto final en el modelo 3D · englobe del Parqueadero Divino Salvador:** el proyecto ocupa los cinco lotes catastrales del parqueadero (`007208002007`, `008`, `009`, `010` y `011`, ~1.105 m²), con antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m. Volumen de 5 pisos con la planta tipo de la lámina "Apartamentos" (25 × 14 m, 350 m²):
 
-| Piso | Esquina (Calle 56 con Carrera 18) | Centro | Medianero (Calle 56) |
-| :--- | :--- | :--- | :--- |
-| 1 | Lobby y bicicletero (~75 m²) | Punto fijo | Apartamento 101 (~75 m²) |
-| 2 – 6 | Apartamento x01 (~75 m²) | Punto fijo | Apartamento x02 (~75 m²) |
-| Cubierta | — | Sobrecubierta del ascensor | Terraza comunal con pérgola y BBQ |
+| Piso | Esquina Calle 56 / Cra 18 | Sobre la Calle 56 | Hacia el patio (Cra 18) | Hacia el patio |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | Lobby y bicicletero | Salón social y café lounge | Sala de cine | Gimnasio y salón de juegos |
+| 2 – 5 | Apto x01 · Tipo A 78,75 m² | Apto x02 · Tipo A 78,75 m² | Apto x03 · Tipo B 70 m² | Apto x04 · Tipo B 70 m² |
+| Cubierta | Terraza comunal con pérgola, BBQ y jardineras | | | |
+
+Punto fijo central de 52,57 m². 16 apartamentos: tipo A a $708.750.000 y tipo B a $630.000.000 (láminas de tipologías). En el lote quedan los antejardines arborizados, el patio con parque infantil y la rampa al sótano de parqueaderos.
 
 Acabados del apartaestudio: laminado en roble claro, muros blanco hueso con cielo en drywall, cocina grafito con mesón de cuarzo blanco, baño en porcelanato gris de gran formato, ventanería y grifería negro mate, iluminación LED cálida.
 

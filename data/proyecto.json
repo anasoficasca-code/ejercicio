@@ -16,12 +16,12 @@
     "barrio": "Galerías",
     "localidad": "Teusaquillo",
     "upl": "UPL 32 · Teusaquillo",
-    "loteCatastral": "007208002009",
+    "loteCatastral": "Englobe de 5 lotes: 007208002007, 008, 009, 010 y 011",
     "manzanaCatastral": "007208002",
     "lat": 4.6438909,
     "lng": -74.0692778,
     "altitudMsnm": 2560,
-    "descripcion": "Lote esquinero de 194,19 m² que hoy funciona como parqueadero, sin construcciones. Su condición de esquina le da dos fachadas, sobre la Calle 56 y sobre la Carrera 18, lo que favorece la iluminación, la ventilación y la visibilidad del proyecto. Está cerca de la Avenida NQS, con acceso a la estación de TransMilenio Movistar Arena / El Campín, y próximo al corredor de la Calle 53. En su entorno inmediato se encuentran el Centro Comercial Galerías, la Universidad ECCI, la Clínica de Marly, el estadio El Campín y el Movistar Arena, además de una amplia oferta de comercio y servicios."
+    "descripcion": "Lote esquinero de unos 1.105 m² (englobe de los cinco lotes del Parqueadero Divino Salvador) que hoy funciona como parqueadero, sin construcciones. Su condición de esquina le da dos fachadas, sobre la Calle 56 y sobre la Carrera 18, lo que favorece la iluminación, la ventilación y la visibilidad del proyecto. Está cerca de la Avenida NQS, con acceso a la estación de TransMilenio Movistar Arena / El Campín, y próximo al corredor de la Calle 53. En su entorno inmediato se encuentran el Centro Comercial Galerías, la Universidad ECCI, la Clínica de Marly, el estadio El Campín y el Movistar Arena, además de una amplia oferta de comercio y servicios."
   },
   "areaEstudio": {
     "descripcion": "Barrio Galerías y sus barrios inmediatos (Alfonso López y Quesada) en la localidad de Teusaquillo, comprendido entre las Calles 53 y 60 y las Carreras 14 y 24.",
@@ -142,11 +142,13 @@
     "contexto": "Edificio de 7 pisos en la manzana"
   },
   "distribucion": {
-    "nota": "Modelo 3D sobre todo el lote (194 m² por piso, sin antejardín): 11 unidades en 6 pisos, 1 en el piso 1 y 2 por piso del 2 al 6, con punto fijo central, de unos 75 m² cada una. La cabida normativa del Canva (antejardín de 3,50 m, huella de 104,49 m² y apartaestudios de 35 m²) se mantiene en la pestaña Predios.",
+    "nota": "Planta tipo de 25 × 14 m (350 m²) según la lámina \"Apartamentos\": punto fijo central de 52,57 m², 2 apartamentos tipo A de 78,75 m² sobre la Calle 56 y 2 tipo B de 70 m² hacia el patio. Antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m (POT, Decreto 555 de 2021). Piso 1: lobby y zonas sociales; pisos 2 a 5: 16 apartamentos; cubierta: terraza comunal.",
     "piso1": [
       "Lobby de acceso",
-      "Bicicletero",
-      "Punto fijo"
+      "Salón social",
+      "Sala de cine",
+      "Café lounge",
+      "Bicicletero"
     ]
   },
   "apartaestudio": {
@@ -624,5 +626,55 @@
       "titulo": "JMC Arquitectura",
       "tipo": "Portada"
     }
-  ]
+  ],
+  "proyectoActual": {
+    "lote": "Englobe de los 5 lotes catastrales del Parqueadero Divino Salvador (007208002007, 008, 009, 010 y 011)",
+    "loteM2": 1104.84,
+    "antejardinM": 3.5,
+    "aislamientoPosteriorM": 3.0,
+    "plantaM": [
+      25.0,
+      14.0
+    ],
+    "plantaM2": 350.0,
+    "pisos": 5,
+    "alturaPisoM": 3.0,
+    "puntoFijoM2": 52.57,
+    "tipologias": [
+      {
+        "tipo": "A",
+        "area": 78.75,
+        "precio": 708750000,
+        "ubicacion": "Sobre la Calle 56",
+        "espacios": "Comedor 7,50 · cocina 6,20 · sala 10,80 · habitación principal 12,50 · baño principal 3,60 · habitación 2 8,90 · habitación 3 8,40 · baño social 3,10 · balcón 17,75 m²",
+        "lamina": 27
+      },
+      {
+        "tipo": "B",
+        "area": 70.0,
+        "precio": 630000000,
+        "ubicacion": "Hacia el patio posterior",
+        "espacios": "Comedor 7,00 · cocina 5,80 · sala 9,50 · habitación 11,20 · baño principal 3,40 · habitación 2 8,60 · habitación 3 8,20 · baño social 3,00 · balcón 13,30 m²",
+        "lamina": 28
+      }
+    ],
+    "unidades": 16,
+    "piso1": [
+      "Lobby de acceso",
+      "Salón social",
+      "Sala de cine",
+      "Café lounge",
+      "Bicicletero"
+    ],
+    "cubierta": [
+      "Zona BBQ",
+      "Café lounge",
+      "Gimnasio al aire libre"
+    ],
+    "patio": [
+      "Parque infantil",
+      "Zonas verdes"
+    ],
+    "nota": "Planta tipo de 25 × 14 m (350 m²) según la lámina \"Apartamentos\": punto fijo central de 52,57 m², 2 apartamentos tipo A de 78,75 m² sobre la Calle 56 y 2 tipo B de 70 m² hacia el patio. Antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m (POT, Decreto 555 de 2021). Piso 1: lobby y zonas sociales; pisos 2 a 5: 16 apartamentos; cubierta: terraza comunal."
+  }
 }

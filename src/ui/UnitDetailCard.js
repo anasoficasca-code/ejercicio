@@ -25,14 +25,14 @@ export class UnitDetailCard {
       <div class="detail-title">${u.title}</div>
       <div class="detail-subtitle">${p.ubicacion.direccion} · ${p.ubicacion.barrio}</div>
       <div class="detail-props">
-        <div class="detail-prop-line"><span class="label">Piso:</span> ${u.floor} de ${p.cabida.pisos}</div>
+        <div class="detail-prop-line"><span class="label">Piso:</span> ${u.floor} de ${p.proyectoActual.pisos}</div>
         <div class="detail-prop-line"><span class="label">Tipología:</span> ${u.typology}</div>
-        <div class="detail-prop-line"><span class="label">Área:</span> ${u.area.toLocaleString('es-CO')} m²${apt ? ' (área privada aprox.)' : ''}</div>
+        <div class="detail-prop-line"><span class="label">Área:</span> ${u.area.toLocaleString('es-CO')} m²${apt ? ` (tipología ${u.tipo})` : ''}</div>
         <div class="detail-prop-line"><span class="label">Ubicación:</span> ${u.location}</div>
         <div class="detail-prop-line"><span class="label">Fachadas:</span> ${u.facades}</div>
         <div class="detail-prop-line"><span class="label">Altura libre:</span> ${u.height}</div>
-        ${apt ? `<div class="detail-prop-line"><span class="label">Precio estimado:</span> ${fmtCOP(u.price)}</div>
-        <div class="detail-prop-line dim">${u.area} m² × ${fmtCOP(p.cabida.precioVentaM2)}/m² (precio de venta del estudio)</div>` : `<div class="detail-prop-line"><span class="label">Programa:</span> ${p.distribucion.piso1.join(' · ')}</div>`}
+        ${apt ? `<div class="detail-prop-line"><span class="label">Precio:</span> ${fmtCOP(u.price)}</div>
+        <div class="detail-prop-line dim">${u.espacios}</div>` : `<div class="detail-prop-line"><span class="label">Piso 1:</span> ${p.proyectoActual.piso1.join(' · ')}</div>`}
       </div>
       ${apt ? `<div class="finish-row">${p.apartaestudio.acabados.map((a) => `<i title="${a.elemento}: ${a.detalle}" style="background:${a.color}"></i>`).join('')}<span>Acabados</span></div>` : ''}
       <div class="detail-actions">

@@ -56,7 +56,7 @@ export class SidebarFilters {
     const typos = [...new Set(s.units.map((u) => u.typology))];
     const list = store.getFilteredUnits();
     const apts = s.units.filter((u) => u.typology === 'Apartamento');
-    const nApts = apts.length, avg = apts.reduce((t, u) => t + u.area, 0) / (nApts || 1);
+    const nApts = apts.length;
     return `
       <div class="sidebar-header-controls">
         <div class="toggle-row">
@@ -73,7 +73,7 @@ export class SidebarFilters {
           </div>
         </div>
         <div class="filter-section">
-          <div class="filter-section-label">Unidades (${nApts} apartamentos de ~${Math.round(avg)} m²)</div>
+          <div class="filter-section-label">Unidades (${nApts} apartamentos · tipo A 78,75 m² y tipo B 70 m²)</div>
           <div class="jmc-room-stack">
             ${list.map((u) => `
               <div class="jmc-room-card ${s.selectedUnitId === u.id ? 'active' : ''}" data-id="${u.id}">

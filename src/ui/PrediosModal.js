@@ -5,7 +5,7 @@ const dots = (n) => '●'.repeat(n) + '○'.repeat(5 - n);
 /** Modal "Predios": los tres lotes evaluados, la matriz de decisión, la norma del lote 02 y la cabida. */
 export class PrediosModal {
   constructor({ project, onShow, onLamina }) {
-    const { predios, matriz, normaPredio: n, cabida: c } = project;
+    const { predios, matriz, normaPredio: n, cabida: c, proyectoActual: pa } = project;
     const rows = [['Comercio', 'comercio'], ['Educación', 'educacion'], ['Salud', 'salud'], ['Transporte', 'transporte'], ['Recreación y cultura', 'recreacion']];
     this.modal = document.createElement('div');
     this.modal.className = 'umbra-modal-backdrop';
@@ -73,7 +73,19 @@ export class PrediosModal {
           </section>
 
           <section class="report-section">
-            <h4>Cabida arquitectónica</h4>
+            <h4>Proyecto final · englobe del Parqueadero Divino Salvador <small>${pa.lote}</small></h4>
+            <div class="norm-grid">
+              <div><span>Lote</span><strong>${fmtNum(pa.loteM2)} m²</strong><em>5 lotes catastrales sin construcciones</em></div>
+              <div><span>Aislamientos</span><strong>${fmtNum(pa.antejardinM)} m · ${fmtNum(pa.aislamientoPosteriorM)} m</strong><em>Antejardín sobre las dos vías · aislamiento posterior</em></div>
+              <div><span>Volumen</span><strong>${pa.pisos} pisos</strong><em>Planta tipo de ${pa.plantaM.join(' × ')} m (${fmtNum(pa.plantaM2)} m²) · punto fijo de ${fmtNum(pa.puntoFijoM2)} m²</em></div>
+              <div><span>Unidades</span><strong>${pa.unidades} apartamentos</strong><em>${pa.tipologias.map((t) => `Tipo ${t.tipo}: ${fmtNum(t.area)} m² · ${fmtCOP(t.precio)}`).join(' · ')}</em></div>
+            </div>
+            <p class="side-text">${pa.nota}</p>
+            <div class="market-actions"><button class="mode-pill-btn" data-lamina="26">Ver planta de apartamentos</button><button class="mode-pill-btn" data-lamina="27">Tipología A</button><button class="mode-pill-btn" data-lamina="28">Tipología B</button></div>
+          </section>
+
+          <section class="report-section">
+            <h4>Cabida inicial del Canva · solo el lote 02</h4>
             <div class="norm-grid">
               <div><span>Huella por piso</span><strong>${fmtNum(c.huellaM2)} m²</strong><em>${fmtNum(c.huellaLargoM)} × ${fmtNum(c.huellaFondoM)} m</em></div>
               <div><span>Volumen</span><strong>${c.pisos} pisos</strong><em>${fmtNum(c.alturaPisoM)} m por piso · ${fmtNum(c.alturaTotalM)} m de altura</em></div>

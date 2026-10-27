@@ -715,7 +715,7 @@ export class CityContext {
     this.prediosGroup = new THREE.Group();
     this.prediosGroup.name = 'Predios evaluados';
     for (const p of this.data.predios.p) {
-      if (p.id === 'lote-02') continue; // el lote 02 lo ocupa el proyecto
+      if (p.id === 'lote-02' || p.id === 'englobe') continue; // el lote del proyecto lo ocupa el edificio
       const shape = new THREE.Shape(p.pts.map(([x, z]) => new THREE.Vector2(x, -z)));
       const g = new THREE.ExtrudeGeometry(shape, { depth: 9, bevelEnabled: false });
       g.rotateX(-Math.PI / 2);

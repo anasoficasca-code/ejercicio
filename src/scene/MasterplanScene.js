@@ -111,7 +111,7 @@ export class MasterplanScene {
     ]);
     this.data = { project, construcciones, manzanas, lotes, predios, puntos };
 
-    const lot = predios.p.find((p) => p.id === 'lote-02');
+    const lot = predios.p.find((p) => p.id === 'englobe');
     this.city = new CityContext(this.scene, { renderer: this.renderer, data: this.data, project, mobile: this.mobile });
     this.building = new ProjectBuilding(this.scene, { lot, project });
     this.pois = new PoiLayer(this.scene, {
@@ -119,7 +119,7 @@ export class MasterplanScene {
       onPick: (p) => this.onPick?.(p)
     });
     const c = this.building.center();
-    this.home = { target: new THREE.Vector3(c.x, 7, c.z), pos: new THREE.Vector3(c.x - 52, 34, c.z - 50) };
+    this.home = { target: new THREE.Vector3(c.x, 7, c.z), pos: new THREE.Vector3(c.x - 62, 40, c.z - 60) };
     this.controls.target.copy(this.home.target);
     this.camera.position.copy(this.home.pos);
     this.sun.target.position.copy(c);

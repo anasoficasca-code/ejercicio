@@ -52,7 +52,7 @@ export class PoiLayer {
     }
 
     for (const l of predios) {
-      if (l.id === 'lote-02') continue;
+      if (l.id === 'lote-02' || l.id === 'englobe') continue;
       const info = project.predios.find((k) => k.id === l.id);
       const c = l.pts.reduce((s, q) => [s[0] + q[0] / l.pts.length, s[1] + q[1] / l.pts.length], [0, 0]);
       const el = this._pin(info.nombre, `${info.direccion} · ${info.areaM2.toLocaleString('es-CO')} m²`, '#c8a46e', 'poi-pin lote');
@@ -62,7 +62,7 @@ export class PoiLayer {
 
     const pj = document.createElement('div');
     pj.className = 'project-tag';
-    pj.innerHTML = `<img src="./assets/branding/jmc-logo.png" alt=""><div><strong>Lote 02 · Calle 56 # 17-53</strong><span>11 unidades · 6 pisos · todo el lote</span></div>`;
+    pj.innerHTML = `<img src="./assets/branding/jmc-logo.png" alt=""><div><strong>Proyecto · Calle 56 con Carrera 18</strong><span>16 apartamentos · 5 pisos · englobe de 1.105 m²</span></div>`;
     pj.onclick = () => onPick?.({ tipo: 'proyecto' });
     this._add(pj, 0, 27, 0, 'proyecto');
 
