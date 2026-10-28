@@ -492,7 +492,7 @@ export class CityContext {
             float win = step(0.25, fx) * step(fx, 0.75) * step(0.36, fy) * step(fy, 0.82) * step(1.2, vFac.y);
             vec2 cell = floor(vec2(vFac.x / cw, vFac.y / fh)) + vec2(vSeed * 91.7, vSeed * 17.3);
             float lit = step(0.95, hsh(cell));
-            vec3 glass = mix(vec3(0.06, 0.075, 0.09), vec3(0.24, 0.27, 0.3), 0.3 * hsh(cell)) + lit * vec3(0.08, 0.07, 0.04);
+            vec3 glass = mix(vec3(0.05, 0.065, 0.085), vec3(0.16, 0.2, 0.25), 0.4 * hsh(cell)) + lit * vec3(0.08, 0.07, 0.04);
             float band = step(fract(vFac.y / fh), 0.06) * 0.25;
             // ladrillo: hiladas de 7,5 cm y piezas de 25 cm trabadas, junta hundida y cada pieza con su tono
             float row = floor(vFac.y / 0.075), bx = (vFac.x + mod(row, 2.0) * 0.125) / 0.25;
@@ -506,7 +506,11 @@ export class CityContext {
             } else {
               facH = -0.012 * step(fract(vFac.y / fh), 0.025);                       // junta de placa por piso
             }
-            facH = mix(facH, -0.15, win * (1.0 - aa));                                // vidrio hundido 15 cm
+            facH *= 1.0 - win; // el vidrio no lleva relieve (un salto brusco de altura marca líneas punteadas en los bordes)
+            // marco del vano: 7 cm alrededor del vidrio (blanco en ladrillo, oscuro en pañete y concreto)
+            vec2 fm = vec2(fx * cw, fy * fh);
+            float frame = (1.0 - win) * step(1.2, vFac.y) * step(0.25 * cw - 0.07, fm.x) * step(fm.x, 0.75 * cw + 0.07) * step(0.36 * fh - 0.07, fm.y) * step(fm.y, 0.82 * fh + 0.07);
+            base = mix(base, isBrick ? vec3(0.86, 0.84, 0.80) : vec3(0.18, 0.19, 0.2), frame * (1.0 - aa));
             // luz horneada (oclusión): base del muro, dintel y jambas del vano, sombra bajo el alféizar, juntas
             float wy = (fy - 0.36) / 0.46, wx = (fx - 0.25) / 0.5;
             float ao = mix(0.6, 1.0, smoothstep(0.0, 2.6, vFac.y));
