@@ -691,8 +691,7 @@ export class CityContext {
     const ctx = cv.getContext('2d');
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, N, N);
-    const draw = (pts, blur, alpha, grow = 0) => {
-      ctx.filter = `blur(${blur}px)`;
+    const draw = (pts, alpha, grow = 0) => {
       ctx.globalAlpha = alpha;
       ctx.fillStyle = '#000';
       ctx.beginPath();
@@ -705,15 +704,23 @@ export class CityContext {
       ctx.closePath();
       ctx.fill();
     };
+    // huellas con un halo que crece con la altura; un solo desenfoque al final (uno por edificio congelaba la página)
     for (const b of list) {
       const h = Math.max(b.h, b.p * 2.8);
-      draw(b.pts, 2 + Math.min(6, h / 6), Math.min(0.55, 0.25 + h / 60), Math.min(2.5, h / 12)); // halo: más amplio en edificios altos
+      draw(b.pts, Math.min(0.55, 0.25 + h / 60), Math.min(3, 0.8 + h / 10));
     }
     const proj = this.data.predios.p.find((p) => p.id === 'englobe');
-    if (proj) draw(proj.pts.map(([x, z]) => [x, z]), 3, 0.18, -6);
-    ctx.filter = 'none';
+    if (proj) draw(proj.pts, 0.12, -6);
     ctx.globalAlpha = 1;
-    const tex = new THREE.CanvasTexture(cv);
+    const out = document.createElement('canvas');
+    out.width = out.height = N;
+    const octx = out.getContext('2d');
+    octx.fillStyle = '#fff';
+    octx.fillRect(0, 0, N, N);
+    octx.filter = 'blur(4px)';
+    octx.drawImage(cv, 0, 0);
+    octx.filter = 'none';
+    const tex = new THREE.CanvasTexture(out);
     tex.colorSpace = THREE.NoColorSpace;
     return { tex, bounds: new THREE.Vector4(-half, -half, 2 * half, 2 * half) };
   }
