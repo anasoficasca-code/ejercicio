@@ -196,6 +196,7 @@ export class CityContext {
 
     this._buildManzanas();
     this._buildAndenes();
+    this._buildStreetTrees();
     this._buildLotes();
     this._buildStudyArea();
     this._buildPredios();
@@ -773,6 +774,43 @@ export class CityContext {
     this.andenes.receiveShadow = true;
     this.andenes.name = 'Andenes';
     this.group.add(this.andenes);
+  }
+
+  /**
+   * Arborización de andenes: árboles 3D (RealTrees) cada ~8 m sobre el borde de cada andén, hasta 560 m
+   * del lote, para el verde continuo de los barrios de Teusaquillo. El lote del proyecto siembra los suyos.
+   */
+  _buildStreetTrees() {
+    const list = this.data.andenes?.a || [];
+    const pts = [], R = this.mobile ? 300 : 560, step = 8;
+    let k = 0;
+    for (const poly of list) {
+      const [cx, cz] = centroid(poly);
+      if (Math.hypot(cx, cz) > R + 80) continue;
+      for (let i = 0; i < poly.length; i++) {
+        const [ax, az] = poly[i], [bx, bz] = poly[(i + 1) % poly.length];
+        const L = Math.hypot(bx - ax, bz - az);
+        if (L < 8) continue;
+        // 0,9 m hacia adentro del bordillo (sobre el andén)
+        let nx = -(bz - az) / L, nz = (bx - ax) / L;
+        const mx = (ax + bx) / 2, mz = (az + bz) / 2;
+        if ((cx - mx) * nx + (cz - mz) * nz < 0) { nx = -nx; nz = -nz; }
+        const n = Math.floor(L / step);
+        for (let j = 1; j < n; j++) {
+          const t = j / n, x = ax + (bx - ax) * t + nx * 0.9, z = az + (bz - az) * t + nz * 0.9;
+          const d = Math.hypot(x, z);
+          if (d > R || d < 45) continue;
+          if (hash(`${Math.round(x)}_${Math.round(z)}`) < 0.1) continue; // huecos naturales en la arborización
+          pts.push([x, 0, z]);
+          if (++k > (this.mobile ? 500 : 2200)) break;
+        }
+      }
+    }
+    if (!pts.length) return;
+    this.streetTrees = new THREE.Group();
+    this.streetTrees.name = 'Arborización de andenes';
+    new RealTrees().plant(pts, this.streetTrees, { mix: ['ash', 'ash', 'celtis', 'celtis', 'euc'], variants: 2, shadows: !this.mobile });
+    this.group.add(this.streetTrees);
   }
 
   /** Suelo de las manzanas en el tema realista: césped donde la ortofoto es verde, si no concreto gastado. */

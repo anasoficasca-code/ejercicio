@@ -92,8 +92,9 @@ export class MasterplanScene {
     const cam = this.camera, dist = cam.position.distanceTo(this.controls.target);
     const near = THREE.MathUtils.clamp(dist * 0.012, 0.3, 30);
     if (Math.abs(near - cam.near) > 0.02 * cam.near) { cam.near = near; cam.updateProjectionMatrix(); }
-    this.scene.fog.near = 180 + dist * 0.9;
-    this.scene.fog.far = 7000 + dist * 6;
+    // bruma de altura (perspectiva aérea): los Cerros y el fondo se aclaran como en las fotos de dron
+    this.scene.fog.near = 120 + dist * 0.6;
+    this.scene.fog.far = 3200 + dist * 4;
     this.skyEnv.sky?.position.copy(cam.position);
     this.skyEnv.clouds?.position.copy(cam.position);
   }
