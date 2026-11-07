@@ -6,10 +6,10 @@ import { bench, lamp, swingSet, slide, seesaw, bikeRack, bin, planter, bollard, 
  * ProjectBuilding — el proyecto sobre el englobe del Parqueadero Divino Salvador (cinco lotes catastrales,
  * ~1.105 m², esquina Calle 56 con Carrera 18).
  *
- * Norma: antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m.
- * Volumen de 5 pisos de 3,00 m con la planta tipo de la lámina "Apartamentos": 25 × 14 m (350 m²),
- * punto fijo central de 52,57 m², 2 apartamentos tipo A de 78,75 m² sobre la Calle 56 y 2 tipo B de
- * 70 m² hacia el patio. Piso 1: lobby y zonas sociales; pisos 2 a 5: 16 apartamentos; cubierta: terraza.
+ * El edificio es el modelo de Revit (ejercicio2.rvt) exportado con scripts/build-revit-model.py: muros,
+ * losas, fachada en ladrillo, ventanería, puertas, escaleras, barandas y mobiliario. Planta de
+ * 24,84 × 14,00 m, 6 pisos de 3,10 m: piso 1 con lobby y zonas sociales, pisos 2 a 6 con 4 apartamentos
+ * cada uno (20 en total) alrededor del punto fijo central, y terraza en la cubierta.
  * El resto del lote queda como antejardines, patio con parque infantil y rampa al sótano.
  */
 const M = {
@@ -35,10 +35,13 @@ const M = {
   bark: new THREE.MeshStandardMaterial({ color: 0x5b4636, roughness: 1 })
 };
 
-const FLOOR_H = 3.0, SLAB = 0.22;
-const PW = 25, PD = 14;                       // planta tipo 25 × 14 m
-const CX0 = 8.85, CX1 = 16.15, CZ0 = 3.4, CZ1 = 10.6; // punto fijo 7,30 × 7,20 m = 52,6 m²
-const ZS = 7.5;                                // división norte (tipo A) / sur (tipo B)
+const FLOOR_H = 3.1;                           // niveles de Revit: 0,00 · 3,10 · 6,20 … terraza 18,60
+const PW = 24.84, PD = 14.0;                   // planta de Revit: Carrera 18 → oriente, Calle 56 → fondo
+// punto fijo y medianeros de la planta tipo de Revit (metros desde la esquina Calle 56 / Carrera 18)
+const CX0 = 9.41, CX1 = 15.26, CZ0 = 4.44, CZ1 = 9.52;
+const XAC = 12.14, XBD = 12.30, ZS = 7.83;     // medianero A/C, medianero B/D y división Calle 56 / patio
+const MODEL = './assets/models/edificio-revit';
+const TEMPLATE_FLOOR = 2;                      // el mobiliario del piso 3 se repite en los pisos 2 a 6
 
 const area = (p) => Math.abs(p.reduce((s, q, i) => { const r = p[(i + 1) % p.length]; return s + q[0] * r[1] - r[0] * q[1]; }, 0) / 2);
 
@@ -53,14 +56,27 @@ function inset(poly, d) {
   return poly.map(([x, z]) => { const l = Math.hypot(x - cx, z - cz) || 1; return [x - ((x - cx) / l) * d, z - ((z - cz) / l) * d]; });
 }
 
-// cuadrantes de la planta tipo (coordenadas de la planta, x hacia el oriente, z hacia el fondo)
+// apartamentos de la planta tipo de Revit (x hacia el oriente, z hacia el fondo)
 const Q = {
-  NW: [[0, 0], [12.5, 0], [12.5, CZ0], [CX0, CZ0], [CX0, ZS], [0, ZS]],
-  NE: [[12.5, 0], [PW, 0], [PW, ZS], [CX1, ZS], [CX1, CZ0], [12.5, CZ0]],
-  SW: [[0, ZS], [CX0, ZS], [CX0, CZ1], [12.5, CZ1], [12.5, PD], [0, PD]],
-  SE: [[12.5, CZ1], [CX1, CZ1], [CX1, ZS], [PW, ZS], [PW, PD], [12.5, PD]],
+  NW: [[0, 0], [XAC, 0], [XAC, CZ0], [CX0, CZ0], [CX0, ZS], [0, ZS]],
+  NE: [[XAC, 0], [PW, 0], [PW, ZS], [CX1, ZS], [CX1, CZ0], [XAC, CZ0]],
+  SW: [[0, ZS], [CX0, ZS], [CX0, CZ1], [XBD, CZ1], [XBD, PD], [0, PD]],
+  SE: [[XBD, CZ1], [CX1, CZ1], [CX1, ZS], [PW, ZS], [PW, PD], [XBD, PD]],
   CORE: [[CX0, CZ0], [CX1, CZ0], [CX1, CZ1], [CX0, CZ1]]
 };
+
+// los colores de sombreado de Revit en tonos de acabado: pañete blanco, concreto claro, perfilería
+const TONE = { '808080': 0xe8e3da, '95c4ee': 0xf1eee8, 'b4b4b4': 0xd9d6d0, 'f9f9f9': 0xf2f0eb, 'c0c0c0': 0xcfccc6, '7f7f7f': 0xbab6ae };
+const revitMaterials = new Map();
+function revitMaterial(hex, glass) {
+  if (glass) return M.glass;
+  const key = hex.slice(1).toLowerCase();
+  if (!revitMaterials.has(key)) {
+    const color = TONE[key] ?? parseInt(key, 16);
+    revitMaterials.set(key, new THREE.MeshStandardMaterial({ color, roughness: key === '82482d' ? 0.92 : 0.75, metalness: 0, side: THREE.DoubleSide }));
+  }
+  return revitMaterials.get(key);
+}
 
 export class ProjectBuilding {
   constructor(scene, { lot, project }) {
@@ -101,15 +117,52 @@ export class ProjectBuilding {
     this.frame.add(this.plate);
 
     this.floorGroups = [];
-    this.ceilings = [];
     this.unitVolumes = [];
     this.units = [];
     this._buildSite();
     for (let i = 0; i < this.floors; i++) this._buildFloor(i);
-    this._buildRoof();
+    this.roof = new THREE.Group();
+    this.roof.name = 'Cubierta';
+    this.plate.add(this.roof);
     this._plantTrees();
     this.group.traverse((m) => { if (m.isMesh && !m.material.transparent) { m.castShadow = true; m.receiveShadow = true; } });
     this.setCut(null);
+    this.ready = this._loadRevit().catch((e) => console.error('Modelo de Revit', e));
+  }
+
+  /**
+   * Carga el modelo de Revit: cada malla trae el piso (0 = piso 1 … 6 = cubierta), el color del material y
+   * la capa. Las posiciones vienen en milímetros (Int16) en el marco de la planta, por eso la escala 0,001.
+   */
+  async _loadRevit() {
+    const [manifest, bin] = await Promise.all([
+      fetch(`${MODEL}.json`).then((r) => r.json()),
+      fetch(`${MODEL}.bin`).then((r) => r.arrayBuffer())
+    ]);
+    for (const m of manifest.mallas) {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Int16BufferAttribute(new Int16Array(bin, m.position, m.vertices * 3), 3));
+      const nb = new THREE.InterleavedBuffer(new Int8Array(bin, m.normal, m.vertices * 4), 4);
+      g.setAttribute('normal', new THREE.InterleavedBufferAttribute(nb, 3, 0, true));
+      g.setIndex(new THREE.BufferAttribute(m.index32 ? new Uint32Array(bin, m.index, m.indices) : new Uint16Array(bin, m.index, m.indices), 1));
+      g.computeBoundingSphere();
+      const mat = revitMaterial(m.color, m.glass);
+      const put = (floor, dy) => {
+        const mesh = new THREE.Mesh(g, mat);
+        mesh.scale.setScalar(0.001);
+        mesh.position.y = dy;
+        mesh.castShadow = !m.glass;
+        mesh.receiveShadow = !m.glass;
+        if (m.glass) mesh.renderOrder = 3;
+        (floor >= this.floors ? this.roof : this.floorGroups[floor]).add(mesh);
+      };
+      if (m.layer === 'mobiliario' && m.floor === TEMPLATE_FLOOR) {
+        for (let f = 1; f < this.floors; f++) put(f, (f - TEMPLATE_FLOOR) * FLOOR_H);
+      } else {
+        put(m.floor, 0);
+      }
+    }
+    this.revitTriangles = manifest.triangulos;
   }
 
   box(w, h, d, mat, x, y, z, parent) {
@@ -186,62 +239,16 @@ export class ProjectBuilding {
     new RealTrees().plant(pts, this.group, { variants: 2 });
   }
 
-  // ---------------------------------------------------------------- piso tipo
+  // ---------------------------------------------------------------- unidades por piso
+  /** Grupo del piso (la geometría llega del modelo de Revit) y volúmenes seleccionables de sus unidades. */
   _buildFloor(i) {
-    const y0 = i * FLOOR_H, hIn = FLOOR_H - SLAB;
+    const y0 = i * FLOOR_H, hIn = FLOOR_H - 0.2;
     const g = new THREE.Group();
     g.name = `Piso ${i + 1}`;
     this.plate.add(g);
     this.floorGroups.push(g);
-    const plate = [[0, 0], [PW, 0], [PW, PD], [0, PD]];
 
-    if (i === 0) { const s = new THREE.Mesh(prism(plate, SLAB), M.slab); s.position.y = -SLAB; g.add(s); }
-    const fin = new THREE.Mesh(prism(inset(plate, 0.2), 0.02), M.floor);
-    fin.position.y = y0 + 0.01;
-    g.add(fin);
-    const ceil = new THREE.Mesh(prism([[-0.3, -0.3], [PW + 0.3, -0.3], [PW + 0.3, PD + 0.3], [-0.3, PD + 0.3]], SLAB), M.slab);
-    ceil.position.y = y0 + hIn;
-    g.add(ceil);
-    this.ceilings.push(ceil);
-
-    // envolvente: vidrio de piso a techo con perfilería negra mate en las cuatro fachadas
-    const side = (x0, z0, x1, z1) => {
-      const l = Math.hypot(x1 - x0, z1 - z0), ang = -Math.atan2(z1 - z0, x1 - x0);
-      const gl = new THREE.Mesh(new THREE.PlaneGeometry(l, hIn), M.glass);
-      gl.position.set((x0 + x1) / 2, y0 + hIn / 2, (z0 + z1) / 2);
-      gl.rotation.y = ang;
-      gl.renderOrder = 3;
-      g.add(gl);
-      const n = Math.round(l / 1.4);
-      for (let k = 0; k <= n; k++) {
-        const t = k / n;
-        const mu = new THREE.Mesh(new THREE.BoxGeometry(0.07, hIn, 0.14), M.frame);
-        mu.position.set(x0 + (x1 - x0) * t, y0 + hIn / 2, z0 + (z1 - z0) * t);
-        mu.rotation.y = ang;
-        g.add(mu);
-      }
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(l, 0.06, 0.14), M.frame);
-      rail.position.set((x0 + x1) / 2, y0 + 0.95, (z0 + z1) / 2);
-      rail.rotation.y = ang;
-      g.add(rail);
-    };
-    side(0, 0, PW, 0); side(PW, 0, PW, PD); side(PW, PD, 0, PD); side(0, PD, 0, 0);
-
-    // punto fijo: muros en azul JMC, ascensores y escalera
-    this.box(CX1 - CX0, hIn, 0.2, M.core, CX0, y0, CZ0, g);
-    this.box(CX1 - CX0, hIn, 0.2, M.core, CX0, y0, CZ1 - 0.2, g);
-    this.box(0.2, hIn, CZ1 - CZ0, M.core, CX0, y0, CZ0, g);
-    this.box(0.2, hIn, CZ1 - CZ0, M.core, CX1 - 0.2, y0, CZ0, g);
-    this.box(1.8, hIn, 1.9, M.core, CX0 + 0.4, y0, CZ0 + 0.4, g);
-    this.box(1.8, hIn, 1.9, M.core, CX0 + 2.4, y0, CZ0 + 0.4, g);
-    for (let s = 0; s < 9; s++) this.box(1.2, 0.17 * (s + 1), 0.28, M.slab, CX1 - 1.6, y0, CZ0 + 2.6 + s * 0.28, g);
-    // muros divisorios entre apartamentos
-    this.box(0.15, hIn, CZ0, M.white, 12.5 - 0.075, y0, 0, g);
-    this.box(0.15, hIn, PD - CZ1, M.white, 12.5 - 0.075, y0, CZ1, g);
-    this.box(CX0, hIn, 0.15, M.white, 0, y0, ZS - 0.075, g);
-    this.box(PW - CX1, hIn, 0.15, M.white, CX1, y0, ZS - 0.075, g);
-
-    const mk = (id, quad, flipX, flipZ, data) => {
+    const mk = (id, quad, data) => {
       const poly = Q[quad];
       const vol = new THREE.Mesh(prism(inset(poly, 0.3), hIn - 0.14),
         new THREE.MeshBasicMaterial({ color: 0xd81e28, transparent: true, opacity: 0.16, depthWrite: false }));
@@ -251,94 +258,35 @@ export class ProjectBuilding {
       vol.add(new THREE.LineSegments(new THREE.EdgesGeometry(vol.geometry), new THREE.LineBasicMaterial({ color: 0xff5a5f, transparent: true, opacity: 0.8 })));
       g.add(vol);
       this.unitVolumes.push(vol);
-      if (data.typology === 'Apartamento') this._furnish(g, y0, flipX, flipZ, flipZ ? PD - ZS : ZS);
       const cx = poly.reduce((s, p) => s + p[0], 0) / poly.length, cz = poly.reduce((s, p) => s + p[1], 0) / poly.length;
-      this.units.push({ id, floor: i + 1, height: '2,78 m libres', ...data, worldCenter: () => vol.localToWorld(new THREE.Vector3(cx, hIn / 2, cz)) });
+      this.units.push({ id, floor: i + 1, height: '2,90 m libres', ...data, worldCenter: () => vol.localToWorld(new THREE.Vector3(cx, hIn / 2, cz)) });
     };
     if (i === 0) {
       const zc = (title, quad, facades) => ({ typology: 'Zona común', title, facades, area: +area(Q[quad]).toFixed(1) });
-      mk('lobby', 'NW', false, false, { ...zc('Lobby de acceso y bicicletero', 'NW', 'Calle 56 y Carrera 18'), location: 'Esquina Calle 56 con Carrera 18' });
-      mk('salon', 'NE', true, false, { ...zc('Salón social y café lounge', 'NE', 'Calle 56'), location: 'Sobre la Calle 56' });
-      mk('cine', 'SW', false, true, { ...zc('Sala de cine', 'SW', 'Carrera 18 y patio'), location: 'Hacia el patio' });
-      mk('gym', 'SE', true, true, { ...zc('Gimnasio y salón de juegos', 'SE', 'Patio'), location: 'Hacia el patio' });
-      this._groundFloor(g, y0);
+      mk('lobby', 'NW', { ...zc('Lobby de acceso y bicicletero', 'NW', 'Calle 56 y Carrera 18'), location: 'Esquina Calle 56 con Carrera 18' });
+      mk('salon', 'NE', { ...zc('Salón social y café lounge', 'NE', 'Calle 56'), location: 'Sobre la Calle 56' });
+      mk('cine', 'SW', { ...zc('Sala de cine', 'SW', 'Carrera 18 y patio'), location: 'Hacia el patio' });
+      mk('gym', 'SE', { ...zc('Gimnasio y salón de juegos', 'SE', 'Patio'), location: 'Hacia el patio' });
     } else {
       const [A, B] = this.pa.tipologias;
       const apt = (t, n, loc, facades) => ({ typology: 'Apartamento', tipo: t.tipo, title: `Apartamento ${i + 1}0${n} · Tipo ${t.tipo}`, area: t.area, price: t.precio, location: loc, facades, espacios: t.espacios, lamina: t.lamina });
-      mk(`${i + 1}01`, 'NW', false, false, apt(A, 1, 'Esquinero · Calle 56 con Carrera 18', 'Calle 56 (norte) y Carrera 18 (occidente)'));
-      mk(`${i + 1}02`, 'NE', true, false, apt(A, 2, 'Sobre la Calle 56', 'Calle 56 (norte) y oriente'));
-      mk(`${i + 1}03`, 'SW', false, true, apt(B, 3, 'Hacia el patio · Carrera 18', 'Patio (sur) y Carrera 18 (occidente)'));
-      mk(`${i + 1}04`, 'SE', true, true, apt(B, 4, 'Hacia el patio', 'Patio (sur) y oriente'));
+      mk(`${i + 1}01`, 'NW', apt(A, 1, 'Esquinero · Calle 56 con Carrera 18', 'Calle 56 (norte) y Carrera 18 (occidente)'));
+      mk(`${i + 1}02`, 'NE', apt(A, 2, 'Sobre la Calle 56', 'Calle 56 (norte) y oriente'));
+      mk(`${i + 1}03`, 'SW', apt(B, 3, 'Hacia el patio · Carrera 18', 'Patio (sur) y Carrera 18 (occidente)'));
+      mk(`${i + 1}04`, 'SE', apt(B, 4, 'Hacia el patio', 'Patio (sur) y oriente'));
     }
-  }
-
-  /**
-   * Amoblamiento de un apartamento de 3 alcobas (lámina "Tipología A / B"). Coordenadas locales: lx desde
-   * la fachada lateral hacia el punto fijo (0 → 12,5), lz desde la fachada principal hacia adentro (0 → D).
-   */
-  _furnish(g, y0, flipX, flipZ, D) {
-    const b = (w, h, d, mat, lx, y, lz) => this.box(w, h, d, mat, flipX ? PW - lx - w : lx, y0 + y, flipZ ? PD - lz - d : lz, g);
-    const hp = 2.5, mid = Math.min(4.2, D * 0.56);
-    // alcoba principal y alcoba 2 contra la fachada lateral
-    b(0.1, hp, D, M.white, 4.0, 0, 0);
-    b(4.0, hp, 0.1, M.white, 0, 0, mid);
-    b(1.6, 0.48, 2.0, M.bed, 1.0, 0, 0.6);
-    b(1.6, 1.0, 0.08, M.wood, 1.0, 0, 2.6);
-    b(1.0, 0.45, 1.9, M.bed, 0.4, 0, mid + 0.4);
-    b(0.6, 2.1, 1.6, M.wood, 3.3, 0, mid + 0.4);
-    // alcoba 3 sobre la fachada principal y baños hacia el interior
-    b(0.1, hp, 3.0, M.white, 6.9, 0, 0);
-    b(2.9, hp, 0.1, M.white, 4.1, 0, 3.0);
-    b(1.0, 0.45, 1.9, M.bed, 4.6, 0, 0.5);
-    b(2.3, 0.02, 2.0, M.bath, 4.3, 0.02, D - 2.1);
-    b(0.1, hp, 2.2, M.white, 6.6, 0, D - 2.2);
-    b(0.55, 0.42, 0.7, M.quartz, 4.5, 0, D - 0.9);
-    // sala sobre la fachada, comedor y cocina contra el punto fijo
-    b(2.4, 0.42, 0.85, M.fabric, 8.6, 0, 0.6);
-    b(0.9, 0.38, 0.55, M.wood, 9.4, 0, 1.8);
-    b(1.4, 0.75, 0.9, M.wood, 7.2, 0, CZ0 + 0.5);
-    b(0.65, 0.88, Math.max(1.2, D - CZ0 - 0.4), M.kitchen, CX0 - 0.75, 0, CZ0 + 0.2);
-    b(0.66, 0.04, Math.max(1.2, D - CZ0 - 0.4), M.quartz, CX0 - 0.75, 0.88, CZ0 + 0.2);
-  }
-
-  _groundFloor(g, y0) {
-    this.box(2.0, 1.0, 0.6, M.wood, 4.5, y0, 4.8, g);                          // recepción
-    for (let k = 0; k < 6; k++) this.box(0.08, 1.1, 1.6, M.frame, 0.6 + k * 0.45, y0, 5.2, g); // bicicletero
-    for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) this.box(0.8, 0.5, 0.7, M.fabric, 2 + c * 1.3, y0, 9 + r * 1.3, g); // cine
-    this.box(5, 0.05, 0.1, M.frame, 1.5, y0 + 1.2, PD - 0.4, g);
-    this.box(1.6, 0.75, 0.9, M.wood, 18, y0, 2, g); this.box(1.6, 0.75, 0.9, M.wood, 21, y0, 4, g);     // salón social
-    this.box(1.8, 1.2, 0.8, M.kitchen, 19, y0, 10, g); this.box(1.8, 1.2, 0.8, M.kitchen, 22, y0, 11.5, g); // gimnasio
-  }
-
-  _buildRoof() {
-    const y = this.floors * FLOOR_H;
-    const r = new THREE.Group();
-    r.name = 'Cubierta';
-    this.plate.add(r);
-    this.roof = r;
-    this.box(PW + 0.6, 1.05, 0.15, M.slab, -0.3, y, -0.3, r);
-    this.box(PW + 0.6, 1.05, 0.15, M.slab, -0.3, y, PD + 0.15, r);
-    this.box(0.15, 1.05, PD + 0.6, M.slab, -0.3, y, -0.3, r);
-    this.box(0.15, 1.05, PD + 0.6, M.slab, PW + 0.15, y, -0.3, r);
-    this.box(CX1 - CX0, 2.8, CZ1 - CZ0, M.core, CX0, y, CZ0, r);            // sobrecubierta del punto fijo
-    // terraza comunal: deck, pérgola, zona BBQ y jardineras
-    this.box(PW - 2, 0.06, PD - 2, M.deck, 1, y, 1, r);
-    const px0 = 17.2, px1 = PW - 1.4;
-    for (const x of [px0, px1]) for (const z of [1.4, PD - 1.6]) this.box(0.15, 2.6, 0.15, M.frame, x, y, z, r);
-    for (let x = px0; x <= px1; x += 0.6) this.box(0.08, 0.12, PD - 2.8, M.wood, x, y + 2.6, 1.4, r);
-    this.box(1.8, 0.9, 0.6, M.kitchen, px0 + 1, y, PD - 2.2, r);
-    for (const [x, z] of [[2, 2], [5, 2], [2, PD - 3], [5, PD - 3]]) this.box(1.2, 0.45, 1.2, M.fabric, x, y, z, r);
-    for (const x of [3, 9, 15]) place(r, planter(4.5, 0.6), x, 1.0, 0, y);
   }
 
   // ---------------------------------------------------------------- interacción
   getUnitMeshes() { return this.unitVolumes; }
 
-  /** Oculta los pisos por encima de `floor` y su losa para ver la planta (null = edificio completo). */
+  /**
+   * Oculta los pisos por encima de `floor` para ver la planta (null = edificio completo). Cada grupo trae
+   * la losa de su propio nivel, así que al ocultar el de arriba el piso elegido queda destapado.
+   */
   setCut(floor) {
     this.cut = floor;
     this.floorGroups.forEach((g, i) => { g.visible = floor == null || i < floor; });
-    this.ceilings.forEach((c, i) => { c.visible = floor == null || i < floor - 1; });
     this.roof.visible = floor == null;
   }
 

@@ -62,7 +62,7 @@ export class PoiLayer {
 
     const pj = document.createElement('div');
     pj.className = 'project-tag';
-    pj.innerHTML = `<img src="./assets/branding/jmc-logo.png" alt=""><div><strong>Proyecto · Calle 56 con Carrera 18</strong><span>16 apartamentos · 5 pisos · englobe de 1.105 m²</span></div>`;
+    pj.innerHTML = `<img src="./assets/branding/jmc-logo.png" alt=""><div><strong>Proyecto · Calle 56 con Carrera 18</strong><span>${project.proyectoActual.unidades} apartamentos · ${project.proyectoActual.pisos} pisos · englobe de 1.105 m²</span></div>`;
     pj.onclick = () => onPick?.({ tipo: 'proyecto' });
     this._add(pj, 0, 27, 0, 'proyecto');
 

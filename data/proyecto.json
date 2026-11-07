@@ -142,7 +142,7 @@
     "contexto": "Edificio de 7 pisos en la manzana"
   },
   "distribucion": {
-    "nota": "Planta tipo de 25 × 14 m (350 m²) según la lámina \"Apartamentos\": punto fijo central de 52,57 m², 2 apartamentos tipo A de 78,75 m² sobre la Calle 56 y 2 tipo B de 70 m² hacia el patio. Antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m (POT, Decreto 555 de 2021). Piso 1: lobby y zonas sociales; pisos 2 a 5: 16 apartamentos; cubierta: terraza comunal.",
+    "nota": "Edificio modelado en Revit (ejercicio2.rvt): planta de 24,84 × 14,00 m, 6 pisos de 3,10 m y punto fijo central de 27,08 m². Piso 1: lobby y zonas sociales; pisos 2 a 6: 4 apartamentos por piso (20 en total), 2 tipo A sobre la Calle 56 y 2 tipo B hacia el patio, cada uno con sala-comedor-cocina, 2 alcobas, 2 baños, ropas y depósito; cubierta: terraza comunal. Antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m (POT, Decreto 555 de 2021).",
     "piso1": [
       "Lobby de acceso",
       "Salón social",
@@ -633,20 +633,20 @@
     "antejardinM": 3.5,
     "aislamientoPosteriorM": 3.0,
     "plantaM": [
-      25.0,
+      24.84,
       14.0
     ],
-    "plantaM2": 350.0,
-    "pisos": 5,
-    "alturaPisoM": 3.0,
-    "puntoFijoM2": 52.57,
+    "plantaM2": 347.76,
+    "pisos": 6,
+    "alturaPisoM": 3.1,
+    "puntoFijoM2": 27.08,
     "tipologias": [
       {
         "tipo": "A",
         "area": 78.75,
         "precio": 708750000,
         "ubicacion": "Sobre la Calle 56",
-        "espacios": "Comedor 7,50 · cocina 6,20 · sala 10,80 · habitación principal 12,50 · baño principal 3,60 · habitación 2 8,90 · habitación 3 8,40 · baño social 3,10 · balcón 17,75 m²",
+        "espacios": "Sala, comedor y cocina 41,0 · alcoba principal 12,7 · baño privado 3,4 · alcoba 2 10,5 · baño social 4,9 · ropas 3,1 · depósito 3,6 m² (áreas del modelo de Revit)",
         "lamina": 27
       },
       {
@@ -654,11 +654,11 @@
         "area": 70.0,
         "precio": 630000000,
         "ubicacion": "Hacia el patio posterior",
-        "espacios": "Comedor 7,00 · cocina 5,80 · sala 9,50 · habitación 11,20 · baño principal 3,40 · habitación 2 8,60 · habitación 3 8,20 · baño social 3,00 · balcón 13,30 m²",
+        "espacios": "Sala, comedor y cocina 40,0 · alcoba principal 8,4 · baño privado 2,4 · alcoba 2 7,9 · baño social 2,9 · ropas 2,0 · depósito 1,9 m² (áreas del modelo de Revit)",
         "lamina": 28
       }
     ],
-    "unidades": 16,
+    "unidades": 20,
     "piso1": [
       "Lobby de acceso",
       "Salón social",
@@ -675,6 +675,6 @@
       "Parque infantil",
       "Zonas verdes"
     ],
-    "nota": "Planta tipo de 25 × 14 m (350 m²) según la lámina \"Apartamentos\": punto fijo central de 52,57 m², 2 apartamentos tipo A de 78,75 m² sobre la Calle 56 y 2 tipo B de 70 m² hacia el patio. Antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m (POT, Decreto 555 de 2021). Piso 1: lobby y zonas sociales; pisos 2 a 5: 16 apartamentos; cubierta: terraza comunal."
+    "nota": "Edificio modelado en Revit (ejercicio2.rvt): planta de 24,84 × 14,00 m, 6 pisos de 3,10 m y punto fijo central de 27,08 m². Piso 1: lobby y zonas sociales; pisos 2 a 6: 4 apartamentos por piso (20 en total), 2 tipo A sobre la Calle 56 y 2 tipo B hacia el patio, cada uno con sala-comedor-cocina, 2 alcobas, 2 baños, ropas y depósito; cubierta: terraza comunal. Antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m (POT, Decreto 555 de 2021)."
   }
 }

@@ -5,7 +5,7 @@
 [![POT](https://img.shields.io/badge/Norma-POT%20Decreto%20555%2F2021-c8a46e?style=flat-square)](https://www.sdp.gov.co/)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL%20PBR-black?style=flat-square&logo=three.js)](https://threejs.org/)
 
-Masterplan 3D interactivo del **Ejercicio Profesional 2 · Estudio de mercado** de **JMC Arquitectura** (Ana Casas, Martín Jaramillo, Jorge): un edificio de **5 pisos y 16 apartamentos** sobre el **Parqueadero Divino Salvador · Calle 56 con Carrera 18**, barrio **Galerías (Teusaquillo, Bogotá D.C.)**, modelado sobre el contexto urbano real de Catastro Bogotá.
+Masterplan 3D interactivo del **Ejercicio Profesional 2 · Estudio de mercado** de **JMC Arquitectura** (Ana Casas, Martín Jaramillo, Jorge): un edificio de **6 pisos y 20 apartamentos**, modelado en **Revit**, sobre el **Parqueadero Divino Salvador · Calle 56 con Carrera 18**, barrio **Galerías (Teusaquillo, Bogotá D.C.)**, modelado sobre el contexto urbano real de Catastro Bogotá.
 
 La línea visual (panel lateral, tarjeta flotante, dock inferior, modales y estilo glassmorphism) es la misma del masterplan [Hotel Estelar La Fontana](https://github.com/alejagoguti-cpu/hotel-la-fontana-masterplan), con autorización de su autora.
 
@@ -67,7 +67,7 @@ ejercicio/
 │   │   ├── CityContext.js            # Contexto Catastro, ortofoto, temas de color y área de estudio
 │   │   ├── FacadeTextures.js         # Texturas de fachada (ladrillo, pañete, concreto, iglesia)
 │   │   ├── Church.js                 # La iglesia frente al lote: nave, cubierta y torre
-│   │   ├── ProjectBuilding.js        # Edificio de 6 pisos sobre todo el lote, 11 unidades seleccionables
+│   │   ├── ProjectBuilding.js        # Carga el modelo de Revit (6 pisos, corte por piso) y las 24 unidades seleccionables
 │   │   └── PoiLayer.js               # Etiquetas 3D: servicios, competencia, predios y vías
 │   ├── ui/
 │   │   ├── SidebarFilters.js         # Panel izquierdo: apartaestudios por piso / capas urbanas
@@ -86,7 +86,9 @@ ejercicio/
 │   └── branding/                     # Logo JMC Arquitectura
 │
 └── scripts/
-    └── build-context.py              # Descarga y procesa los shapes de Catastro Bogotá
+    ├── build-context.py              # Descarga y procesa los shapes de Catastro Bogotá
+    ├── export-revit-geometry.py      # (dentro de Revit) exporta la geometría del edificio
+    └── build-revit-model.py          # Empaqueta esa geometría en assets/models/edificio-revit.*
 ```
 
 ---
@@ -104,15 +106,17 @@ ejercicio/
 | Precio de venta | $11.870.026,53 por m² |
 | Ventas estimadas | $4.565.155.227 |
 
-**Proyecto final en el modelo 3D · englobe del Parqueadero Divino Salvador:** el proyecto ocupa los cinco lotes catastrales del parqueadero (`007208002007`, `008`, `009`, `010` y `011`, ~1.105 m²), con antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m. Volumen de 5 pisos con la planta tipo de la lámina "Apartamentos" (25 × 14 m, 350 m²):
+**Proyecto final en el modelo 3D · englobe del Parqueadero Divino Salvador:** el proyecto ocupa los cinco lotes catastrales del parqueadero (`007208002007`, `008`, `009`, `010` y `011`, ~1.105 m²), con antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m.
+
+**El edificio de la web es el modelo de Revit** (`ejercicio2.rvt`): muros, losas, fachada en ladrillo, ventanería, puertas, escaleras, barandas, balcones y mobiliario, exportados con `scripts/export-revit-geometry.py` (dentro de Revit) y empaquetados con `scripts/build-revit-model.py` en `assets/models/edificio-revit.{bin,json}` (~288.000 triángulos, 7,6 MB). Planta de 24,84 × 14,00 m y 6 pisos de 3,10 m:
 
 | Piso | Esquina Calle 56 / Cra 18 | Sobre la Calle 56 | Hacia el patio (Cra 18) | Hacia el patio |
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | Lobby y bicicletero | Salón social y café lounge | Sala de cine | Gimnasio y salón de juegos |
-| 2 – 5 | Apto x01 · Tipo A 78,75 m² | Apto x02 · Tipo A 78,75 m² | Apto x03 · Tipo B 70 m² | Apto x04 · Tipo B 70 m² |
-| Cubierta | Terraza comunal con pérgola, BBQ y jardineras | | | |
+| 2 – 6 | Apto x01 · Tipo A 78,75 m² | Apto x02 · Tipo A 78,75 m² | Apto x03 · Tipo B 70 m² | Apto x04 · Tipo B 70 m² |
+| Cubierta | Terraza comunal | | | |
 
-Punto fijo central de 52,57 m². 16 apartamentos: tipo A a $708.750.000 y tipo B a $630.000.000 (láminas de tipologías). En el lote quedan los antejardines arborizados, el patio con parque infantil y la rampa al sótano de parqueaderos.
+Cada apartamento (según el modelo de Revit): sala-comedor-cocina, alcoba principal con baño privado, alcoba 2, baño social, ropas y depósito. Punto fijo central de 27,08 m². 20 apartamentos: tipo A a $708.750.000 y tipo B a $630.000.000 (láminas de tipologías). En el lote quedan los antejardines arborizados, el patio con parque infantil y la rampa al sótano de parqueaderos.
 
 Acabados del apartaestudio: laminado en roble claro, muros blanco hueso con cielo en drywall, cocina grafito con mesón de cuarzo blanco, baño en porcelanato gris de gran formato, ventanería y grifería negro mate, iluminación LED cálida.
 
