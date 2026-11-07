@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { RealTrees } from './RealTrees.js';
+import { architectureMaterial, boxUV } from './BuildingMaterials.js';
+import { applyPBR, SURFACES } from './PBRSurfaces.js';
 import { bench, lamp, swingSet, slide, seesaw, bikeRack, bin, planter, bollard, hedge, place, car } from './ParkFurniture.js';
 
 /**
@@ -34,6 +36,19 @@ const M = {
   leaf: new THREE.MeshStandardMaterial({ color: 0x4f7a3a, roughness: 0.9, flatShading: true }),
   bark: new THREE.MeshStandardMaterial({ color: 0x5b4636, roughness: 1 })
 };
+
+// suelos del lote con texturas fotogramétricas reales (Poly Haven, ya incluidas en assets/textures/pbr)
+applyPBR(M.grass, SURFACES.GRASS, { metersPerTile: 3, tint: 0xd8e6c8, macro: { strength: 0.3 } });
+applyPBR(M.paving, SURFACES.CONCRETE_PAVEMENT, { metersPerTile: 2.4, tint: 0xf2eee6 });
+applyPBR(M.asphalt, SURFACES.ASPHALT, { metersPerTile: 4 });
+
+/** Coordenadas UV en metros sobre el plano del suelo (x, z) para que las texturas queden a escala real. */
+function groundUV(mesh) {
+  const p = mesh.geometry.attributes.position, uv = new Float32Array(p.count * 2);
+  for (let i = 0; i < p.count; i++) { uv[i * 2] = p.getX(i) + mesh.position.x; uv[i * 2 + 1] = p.getZ(i) + mesh.position.z; }
+  mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return mesh;
+}
 
 const FLOOR_H = 3.1;                           // niveles de Revit: 0,00 · 3,10 · 6,20 … terraza 18,60
 const PW = 24.84, PD = 14.0;                   // planta de Revit: Carrera 18 → oriente, Calle 56 → fondo
@@ -146,14 +161,20 @@ export class ProjectBuilding {
       g.setAttribute('normal', new THREE.InterleavedBufferAttribute(nb, 3, 0, true));
       g.setIndex(new THREE.BufferAttribute(m.index32 ? new Uint32Array(bin, m.index, m.indices) : new Uint16Array(bin, m.index, m.indices), 1));
       g.computeBoundingSphere();
-      const mat = revitMaterial(m.color, m.glass);
+      const real = m.layer === 'arquitectura' ? architectureMaterial(m.color, m.glass) : null;
+      const mat = real || revitMaterial(m.color, m.glass);
+      if (mat.map || mat.normalMap) {
+        g.setAttribute('uv', new THREE.BufferAttribute(boxUV(new Int16Array(bin, m.position, m.vertices * 3), new Int8Array(bin, m.normal, m.vertices * 4), m.vertices), 2));
+      }
       const put = (floor, dy) => {
         const mesh = new THREE.Mesh(g, mat);
+        mesh.userData.hex = m.color.slice(1).toLowerCase();
+        mesh.userData.layer = m.layer;
         mesh.scale.setScalar(0.001);
         mesh.position.y = dy;
         mesh.castShadow = !m.glass;
         mesh.receiveShadow = !m.glass;
-        if (m.glass) mesh.renderOrder = 3;
+        if (m.glass) mesh.renderOrder = m.color.toLowerCase() === '#0080c0' ? 4 : 3;
         (floor >= this.floors ? this.roof : this.floorGroups[floor]).add(mesh);
       };
       if (m.layer === 'mobiliario' && m.floor === TEMPLATE_FLOOR) {
@@ -178,11 +199,12 @@ export class ProjectBuilding {
     const base = new THREE.Mesh(prism(this.poly, 0.04), M.paving);
     base.position.y = -0.04;
     base.receiveShadow = true;
+    groundUV(base);
     f.add(base);
     const ant = this.pa.antejardinM, back = this.pa.aislamientoPosteriorM;
     const xs = this.poly.map((p) => p[0]), zs = this.poly.map((p) => p[1]);
     const xMax = Math.max(...xs), zMax = Math.min(...this.poly.filter((p) => p[1] > 15).map((p) => p[1]));
-    const g = (w, d, x, z, mat = M.grass, h = 0.06) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x + w / 2, h / 2, z + d / 2); m.receiveShadow = true; f.add(m); return m; };
+    const g = (w, d, x, z, mat = M.grass, h = 0.06) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x + w / 2, h / 2, z + d / 2); m.receiveShadow = true; groundUV(m); f.add(m); return m; };
     // antejardines verdes sobre la Calle 56 y la Carrera 18, con el acceso peatonal al lobby
     g(this.ox + 2.5 - 1.2, ant - 0.4, 0.2, 0.2);
     g(xMax - (this.ox + 5.5) - 0.4, ant - 0.4, this.ox + 5.5, 0.2);
@@ -294,7 +316,12 @@ export class ProjectBuilding {
     for (const v of this.unitVolumes) {
       const id = v.userData.unitId;
       const sel = id === selectedId, hov = id === hoveredId, inFilter = !filter || filter.has(id);
-      v.visible = (show && inFilter) || sel;
+      // con el resaltado apagado las unidades siguen siendo clicables (invisibles) y se ven solo al pasar
+      // el cursor, al seleccionarlas o al filtrar; así el edificio se ve como un render, sin el tinte rojo
+      v.visible = inFilter || sel;
+      const shown = sel || hov || (inFilter && (show || !!filter));
+      v.material.visible = shown;
+      v.children[0].material.visible = shown;
       v.material.opacity = sel ? 0.3 : hov ? 0.34 : 0.16;
       v.material.color.setHex(sel ? 0xd81e28 : 0xe0484f);
       v.children[0].material.opacity = sel ? 1 : 0.7;

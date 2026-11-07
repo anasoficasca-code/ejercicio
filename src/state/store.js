@@ -7,7 +7,7 @@ export class MasterplanStore {
     this.state = {
       project: null,                 // data/proyecto.json
       units: [],                     // apartaestudios y zonas comunes por piso
-      showUnitsOverlay: true,        // "Mostrar apartaestudios 3D"
+      showUnitsOverlay: false,       // "Mostrar apartaestudios 3D" (apagado: el edificio se ve limpio, como un render)
       activeFloor: null,             // filtro por piso (1..6)
       activeTypology: null,          // 'Apartamento' | 'Zona común'
       selectedUnitId: null,

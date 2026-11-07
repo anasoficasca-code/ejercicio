@@ -166,10 +166,53 @@ export function bollard() {
   return g;
 }
 
-/** Seto bajo (cerramiento verde de los antejardines). */
+/** Follaje de seto podado: hojas pequeñas en verdes variados, con huecos oscuros entre ellas (canvas, sin descargas). */
+let foliage = null;
+function foliageMaps() {
+  if (foliage) return foliage;
+  const N = 256, mk = () => { const c = document.createElement('canvas'); c.width = c.height = N; return [c, c.getContext('2d')]; };
+  const [c, ctx] = mk(), [hc, hctx] = mk();
+  ctx.fillStyle = '#1f3517'; ctx.fillRect(0, 0, N, N);
+  hctx.fillStyle = '#000'; hctx.fillRect(0, 0, N, N);
+  let s = 99; const r = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  for (let i = 0; i < 2600; i++) {
+    const x = r() * N, y = r() * N, a = r() * Math.PI, l = 3 + r() * 4, w = 1.6 + r() * 1.8, k = r();
+    const g = (60 + k * 70) | 0, rr = (g * (0.45 + r() * 0.2)) | 0, bb = (g * (0.3 + r() * 0.15)) | 0;
+    for (const [dx, dy] of [[0, 0], [N, 0], [-N, 0], [0, N], [0, -N]]) {
+      ctx.fillStyle = `rgb(${rr},${g},${bb})`; ctx.beginPath(); ctx.ellipse(x + dx, y + dy, l, w, a, 0, Math.PI * 2); ctx.fill();
+      const v = (90 + k * 165) | 0; hctx.fillStyle = `rgb(${v},${v},${v})`; hctx.beginPath(); hctx.ellipse(x + dx, y + dy, l, w, a, 0, Math.PI * 2); hctx.fill();
+    }
+  }
+  const h = hctx.getImageData(0, 0, N, N).data, out = hctx.createImageData(N, N), d = out.data;
+  const H = (x, y) => h[(((y + N) % N) * N + ((x + N) % N)) * 4] / 255;
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const dx = (H(x + 1, y) - H(x - 1, y)) * 3, dy = (H(x, y + 1) - H(x, y - 1)) * 3, l = Math.hypot(dx, dy, 1), i = (y * N + x) * 4;
+    d[i] = (-dx / l * 0.5 + 0.5) * 255; d[i + 1] = (dy / l * 0.5 + 0.5) * 255; d[i + 2] = (1 / l * 0.5 + 0.5) * 255; d[i + 3] = 255;
+  }
+  hctx.putImageData(out, 0, 0);
+  const t = (cv, srgb) => { const x = new THREE.CanvasTexture(cv); x.wrapS = x.wrapT = THREE.RepeatWrapping; x.repeat.set(1.5, 1.5); x.anisotropy = 8; x.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; return x; };
+  foliage = new THREE.MeshStandardMaterial({ map: t(c, true), normalMap: t(hc, false), normalScale: new THREE.Vector2(1.4, 1.4), roughness: 0.85, envMapIntensity: 0.4 });
+  return foliage;
+}
+
+/** Seto bajo podado (cerramiento verde de los antejardines): volumen con bultos irregulares y follaje. */
 export function hedge(len) {
   const g = new THREE.Group();
-  const m = new THREE.Mesh(new THREE.BoxGeometry(len, 0.9, 0.7), M.shrub);
+  const geo = new THREE.BoxGeometry(len, 0.9, 0.7, Math.max(2, Math.round(len * 4)), 4, 3);
+  const p = geo.attributes.position, uv = geo.attributes.uv, n = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    // bultos suaves y aristas redondeadas, como un seto podado a mano
+    const bump = 0.05 * Math.sin(x * 3.1 + z * 5.3) * Math.cos(y * 4.7 + x * 1.7) + 0.03 * Math.sin(x * 9.2 - y * 6.1);
+    n.set(x / (len / 2 + 1e-3), y / 0.45, z / 0.35);
+    const corner = Math.max(0, Math.min(Math.abs(n.y), Math.max(Math.abs(n.x), Math.abs(n.z))) - 0.7) * 0.25;
+    const k = y > -0.44 ? 1 : 0;
+    p.setXYZ(i, x * (1 - corner * 0.02), y - corner * 0.3 * Math.sign(y) * k, z + (z > 0 ? 1 : -1) * (bump - corner * 0.3) * k);
+    if (y > 0.44) p.setY(i, 0.45 + bump * 0.8);
+    uv.setXY(i, (x + z) * 1.0, y + z);
+  }
+  geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, foliageMaps());
   m.position.y = 0.45;
   g.add(m);
   return g;
