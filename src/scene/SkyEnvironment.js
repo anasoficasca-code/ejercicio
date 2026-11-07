@@ -152,7 +152,7 @@ export class SkyEnvironment {
     this.scene = scene;
     this.sunLight = sunLight;
     this.hemiLight = hemiLight;
-    this.hour = 10.5;
+    this.hour = 15.25;                                 // media tarde: el sol del occidente ilumina la fachada sobre la Carrera 18
     this.sunDir = new THREE.Vector3();
     this.elapsed = 0;
 

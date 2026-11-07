@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RealTrees } from './RealTrees.js';
 import { architectureMaterial, boxUV } from './BuildingMaterials.js';
 import { applyPBR, SURFACES } from './PBRSurfaces.js';
+import { BalconyPlants } from './BalconyPlants.js';
 import { bench, lamp, swingSet, slide, seesaw, bikeRack, bin, planter, bollard, hedge, place, car } from './ParkFurniture.js';
 
 /**
@@ -136,6 +137,7 @@ export class ProjectBuilding {
     this.units = [];
     this._buildSite();
     for (let i = 0; i < this.floors; i++) this._buildFloor(i);
+    this.balconyPlants = new BalconyPlants(this.floorGroups, FLOOR_H);
     this.roof = new THREE.Group();
     this.roof.name = 'Cubierta';
     this.plate.add(this.roof);

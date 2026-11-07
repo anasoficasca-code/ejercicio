@@ -476,10 +476,14 @@ export class CityContext {
             // cubierta: la propia ortofoto (con el relieve de la foto) + un toque de contraste
             // cubierta plana: impermeabilización / concreto claro con variación por edificio (antes: recorte de la ortofoto)
             float k = fract(vSeed * 7.31 + 0.13);
-            vec3 rc = mix(vec3(0.60, 0.60, 0.58), vec3(0.74, 0.72, 0.69), k);
-            rc = mix(rc, vec3(0.55, 0.42, 0.36), step(0.86, k) * 0.6); // algunas placas con manto rojizo
+            vec3 rc = mix(vec3(0.47, 0.47, 0.455), vec3(0.62, 0.6, 0.575), k);
+            rc = mix(rc, vec3(0.5, 0.36, 0.3), step(0.86, k) * 0.7);   // algunas placas con manto rojizo
+            rc = mix(rc, vec3(0.26, 0.26, 0.27), step(k, 0.14) * 0.85); // otras con manto asfáltico oscuro
             float tileN = fract(sin(dot(floor(vCW.xz * 1.2), vec2(12.9898, 78.233))) * 43758.5453);
-            diffuseColor.rgb *= rc * (0.96 + 0.06 * tileN);
+            // manchas de humedad y polvo sobre la placa
+            vec2 q = vCW.xz * 0.18 + vSeed * 31.0, i0 = floor(q), f0 = fract(q); f0 = f0 * f0 * (3.0 - 2.0 * f0);
+            float n = mix(mix(hsh(i0), hsh(i0 + vec2(1.0, 0.0)), f0.x), mix(hsh(i0 + vec2(0.0, 1.0)), hsh(i0 + vec2(1.0, 1.0)), f0.x), f0.y);
+            diffuseColor.rgb *= rc * (0.95 + 0.06 * tileN) * (0.82 + 0.26 * n);
           } else {
             // fachada PBR: paleta bogotana (ladrillo, pañete crema, concreto gris) con relieve y luz horneada
             bool isBrick = rnd < 0.55, isCream = rnd >= 0.55 && rnd < 0.82;
@@ -491,10 +495,40 @@ export class CityContext {
             float aa = smoothstep(0.18, 0.5, max(fw.x / cw, fw.y / fh)); // a distancia: color medio (sin moiré)
             float dAA = smoothstep(0.015, 0.05, max(fw.x, fw.y));       // el detalle de ladrillo se apaga a distancia
             float win = step(0.25, fx) * step(fx, 0.75) * step(0.36, fy) * step(fy, 0.82) * step(1.2, vFac.y);
+            // local comercial en primer piso (vitrina corrida) en parte de los edificios
+            float shop = step(fract(vSeed * 71.3 + 0.21), 0.42) * step(vFac.y, 3.0);
+            if (shop > 0.5) win = step(0.05, fx) * step(fx, 0.95) * step(0.35, vFac.y) * step(vFac.y, 2.6);
             vec2 cell = floor(vec2(vFac.x / cw, vFac.y / fh)) + vec2(vSeed * 91.7, vSeed * 17.3);
             float lit = step(0.95, hsh(cell));
             vec3 glass = mix(vec3(0.05, 0.065, 0.085), vec3(0.16, 0.2, 0.25), 0.4 * hsh(cell)) + lit * vec3(0.08, 0.07, 0.04);
+            {
+              // interior visto a través del vidrio: cortinas y persianas a los lados en muchas ventanas,
+              // reflejo del cielo más claro arriba, y perfilería (parales y travesaño) de aluminio
+              float wx0 = (fx - 0.25) / 0.5, wy0 = (fy - 0.36) / 0.46;
+              float h2 = hsh(cell + 3.7), h3 = hsh(cell + 9.1);
+              float side = 0.12 + 0.3 * h3;
+              float curtain = step(h2, 0.55) * (1.0 - step(side, wx0) * step(wx0, 1.0 - side));
+              float blind = step(0.8, h2) * step(1.0 - 0.25 - 0.4 * h3, wy0);
+              vec3 cloth = mix(vec3(0.42, 0.39, 0.34), vec3(0.3, 0.32, 0.34), step(0.5, h3));
+              glass = mix(glass, cloth, max(curtain, blind) * 0.75 * (1.0 - shop));
+              glass += vec3(0.05, 0.06, 0.075) * smoothstep(0.35, 1.0, wy0);
+              float mull = (1.0 - step(0.022, abs(wx0 - 0.5) * 0.5 * cw)) + (1.0 - step(0.02, abs(wy0 - 0.72) * 0.46 * fh));
+              if (shop > 0.5) mull = 1.0 - step(0.03, abs(fract(fx * 3.0) - 0.5) * cw / 3.0);
+              glass = mix(glass, isBrick ? vec3(0.8, 0.79, 0.76) : vec3(0.14, 0.15, 0.16), clamp(mull, 0.0, 1.0) * win);
+            }
             float band = step(fract(vFac.y / fh), 0.06) * 0.25;
+            {
+              // envejecimiento: manchas grandes de humedad y polvo, chorreaduras bajo los alféizares
+              // y el zócalo más sucio (salpicado de la lluvia)
+              vec2 q = vec2(vFac.x * 0.35, vFac.y * 0.22) + vSeed * 13.0;
+              vec2 i0 = floor(q), f0 = fract(q); f0 = f0 * f0 * (3.0 - 2.0 * f0);
+              float n = mix(mix(hsh(i0), hsh(i0 + vec2(1.0, 0.0)), f0.x), mix(hsh(i0 + vec2(0.0, 1.0)), hsh(i0 + vec2(1.0, 1.0)), f0.x), f0.y);
+              base *= 0.9 + 0.16 * n;
+              float below = (0.36 - fy) * fh;
+              float streak = step(0.27, fx) * step(fx, 0.73) * step(0.0, below) * (1.0 - smoothstep(0.0, 1.3, below)) * hsh(vec2(floor(vFac.x * 9.0), floor(vFac.y / fh)) + vSeed);
+              base *= 1.0 - 0.16 * streak * step(1.2, vFac.y) * (1.0 - dAA * 0.5);
+              base *= mix(0.82, 1.0, smoothstep(0.0, 0.9, vFac.y));
+            }
             // ladrillo: hiladas de 7,5 cm y piezas de 25 cm trabadas, junta hundida y cada pieza con su tono
             float row = floor(vFac.y / 0.075), bx = (vFac.x + mod(row, 2.0) * 0.125) / 0.25;
             float joint = max(1.0 - smoothstep(0.10, 0.17, fract(vFac.y / 0.075)), 1.0 - smoothstep(0.03, 0.07, fract(bx)));
