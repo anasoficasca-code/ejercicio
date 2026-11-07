@@ -446,6 +446,7 @@ export class CityContext {
       tSatA: { value: A.tex }, uSatA: { value: bounds(A) },
       tSatB: { value: B.tex }, uSatB: { value: bounds(B) },
       tSatC: { value: C.tex }, uSatC: { value: bounds(C) },
+      uNight: { value: 0 }, // 0 de día, 1 de noche: ventanas encendidas
       uFlat: { value: 0 } // 1 = temas de color (maqueta, usos, valor, altura): solo el color por vértice
     };
     this.bUniforms = uni;
@@ -457,7 +458,7 @@ export class CityContext {
       s.fragmentShader = s.fragmentShader
         .replace('#include <common>', `#include <common>
           varying vec2 vCen; varying vec3 vCW; varying vec2 vFac; varying float vUp; varying float vSeed;
-          uniform sampler2D tSatA, tSatB, tSatC; uniform vec4 uSatA, uSatB, uSatC; uniform float uFlat;
+          uniform sampler2D tSatA, tSatB, tSatC; uniform vec4 uSatA, uSatB, uSatC; uniform float uFlat, uNight;
           float hsh(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
           vec2 satUV(vec4 b, vec2 w){ vec2 t = (w - b.xy) / b.zw; return vec2(t.x, 1.0 - t.y); }
           bool inside(vec2 t){ return t.x > 0.002 && t.x < 0.998 && t.y > 0.002 && t.y < 0.998; }
@@ -553,6 +554,11 @@ export class CityContext {
             ao *= 1.0 - 0.3 * (1.0 - win) * step(0.25, fx) * step(fx, 0.75) * smoothstep(0.28, 0.36, fy) * step(fy, 0.36);
             ao *= 1.0 - (isBrick ? 0.3 * joint * (1.0 - dAA) : 0.0);
             diffuseColor.rgb = mix(mix(base * (1.0 - band), glass, win), mix(base, vec3(0.16, 0.18, 0.2), 0.2), aa) * mix(ao, 1.0, aa * 0.6);
+            {
+              float onN = step(0.7, hsh(cell + 21.3)) * uNight;
+              vec3 warmN = mix(vec3(1.0, 0.66, 0.34), vec3(1.0, 0.85, 0.62), hsh(cell + 5.5));
+              totalEmissiveRadiance += warmN * warmN * onN * mix(win, 0.12, aa) * (shop > 0.5 ? 0.35 : 0.6);
+            }
             facRough = mix(win, 0.25, aa);
           }`)
         .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
@@ -974,6 +980,8 @@ export class CityContext {
     if (this.theme === 'altura') return mz.alt ? ALTURA_BINS.find((b) => mz.alt <= b.max).color : SIN_DATO;
     return MAQUETA_MZ;
   }
+
+  setNight(v) { if (this.bUniforms) this.bUniforms.uNight.value = v; }
 
   setTheme(theme) {
     this.theme = theme;

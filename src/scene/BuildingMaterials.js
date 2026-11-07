@@ -148,18 +148,34 @@ function mineralMaps({ seed, metres, base, blotchAmt, streaks, grainAmt, bump })
 }
 
 // ------------------------------------------------------------------ vidrio con Fresnel
-function fresnelGlass({ color, base, edge, rough = 0.02, env = 1.6 }) {
+// 0 de día, 1 de noche: lo mueve setNight() según la hora del sol
+const glowUniform = { value: 0 };
+export function setNight(v) { glowUniform.value = v; }
+
+function fresnelGlass({ color, base, edge, rough = 0.02, env = 1.6, lit = 0.6 }) {
   const m = new THREE.MeshPhysicalMaterial({
     color, roughness: rough, metalness: 0, ior: 1.52, specularIntensity: 1, envMapIntensity: env,
     transparent: true, opacity: base, depthWrite: false, side: THREE.DoubleSide
   });
+  m.userData.glow = glowUniform;
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uEdge = { value: edge };
+    sh.uniforms.uGlow = glowUniform;
+    sh.uniforms.uLit = { value: lit };
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vGlassW;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvGlassW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uEdge;')
+      .replace('#include <common>', '#include <common>\nuniform float uEdge, uGlow, uLit;\nvarying vec3 vGlassW;\nfloat glassHash(vec3 p){ return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        // al anochecer se encienden las luces de algunos apartamentos (cálidas, cada ventana con su tono)
+        vec3 wcell = floor(vec3(vGlassW.x / 3.0, vGlassW.y / 3.1, vGlassW.z / 3.0));
+        float on = step(1.0 - uLit, glassHash(wcell)) * uGlow;
+        vec3 warm = mix(vec3(1.0, 0.68, 0.36), vec3(1.0, 0.82, 0.58), glassHash(wcell + 7.0));
+        totalEmissiveRadiance += warm * warm * on * 0.75;`)
       .replace('#include <opaque_fragment>', `#include <opaque_fragment>
         float fres = pow(1.0 - clamp(abs(dot(normal, normalize(vViewPosition))), 0.0, 1.0), 4.0);
-        gl_FragColor.a = mix(opacity, uEdge, fres);`);
+        gl_FragColor.a = max(mix(opacity, uEdge, fres), on * 0.92);`);
   };
   m.customProgramCacheKey = () => `fresnelGlass_${base}_${edge}`;
   return m;
@@ -186,7 +202,7 @@ function build() {
   const darkMetal = std({ color: 0x2c2e31, metalness: 0.6, roughness: 0.45, envMapIntensity: 1 });
   // ventanería: vidrio laminado con leve tinte; barandas: vidrio templado claro
   const windowGlass = fresnelGlass({ color: 0x3f5362, base: 0.66, edge: 0.97, env: 2.0 });
-  const railGlass = fresnelGlass({ color: 0xb9d2d0, base: 0.16, edge: 0.75, env: 1.4 });
+  const railGlass = fresnelGlass({ color: 0xb9d2d0, base: 0.16, edge: 0.75, env: 1.4, lit: 0 });
   const grass = std({ color: 0x5f7f3e, roughness: 1 });
   return {
     glass: { '0a64f4': windowGlass, '0080c0': railGlass },

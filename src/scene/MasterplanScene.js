@@ -6,6 +6,7 @@ import { PostFX } from './PostFX.js';
 import { applyWind, windUniforms } from './Wind.js';
 import { CityContext } from './CityContext.js';
 import { ProjectBuilding } from './ProjectBuilding.js';
+import { setNight } from './BuildingMaterials.js';
 import { PoiLayer } from './PoiLayer.js';
 import { store } from '../state/store.js';
 
@@ -85,6 +86,12 @@ export class MasterplanScene {
 
   setHour(hour) {
     this.skyEnv.setHour(hour);
+    // las luces se encienden con el ocaso (y siguen encendidas antes del amanecer)
+    const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+    const night = Math.max(ss(17.1, 18.0, hour), 1 - ss(5.9, 6.5, hour));
+    setNight(night);
+    this.city?.setNight(night);
+    this._night = night;
   }
 
   /** Niebla y plano cercano según la distancia de la cámara; el cielo y las nubes la siguen. */
