@@ -7,6 +7,7 @@ import { applyWind, windUniforms } from './Wind.js';
 import { CityContext } from './CityContext.js';
 import { ProjectBuilding } from './ProjectBuilding.js';
 import { setNight } from './BuildingMaterials.js';
+import { Traffic } from './Traffic.js';
 import { PoiLayer } from './PoiLayer.js';
 import { store } from '../state/store.js';
 
@@ -91,6 +92,7 @@ export class MasterplanScene {
     const night = Math.max(ss(17.1, 18.0, hour), 1 - ss(5.9, 6.5, hour));
     setNight(night);
     this.city?.setNight(night);
+    this.traffic?.setNight(night);
     this._night = night;
   }
 
@@ -109,20 +111,23 @@ export class MasterplanScene {
   // ---------------------------------------------------------------- datos
   async loadData() {
     const get = (p) => fetch(p).then((r) => { if (!r.ok) throw new Error(p); return r.json(); });
-    const [project, construcciones, manzanas, lotes, predios, puntos, andenes] = await Promise.all([
+    const [project, construcciones, manzanas, lotes, predios, puntos, andenes, vias] = await Promise.all([
       get('./data/proyecto.json'),
       get('./data/geometry/construcciones.json'),
       get('./data/geometry/manzanas.json'),
       get('./data/geometry/lotes.json'),
       get('./data/geometry/predios.json'),
       get('./data/geometry/puntos.json'),
-      get('./data/geometry/andenes.json').catch(() => null)
+      get('./data/geometry/andenes.json').catch(() => null),
+      get('./data/geometry/vias.json').catch(() => null)
     ]);
     this.data = { project, construcciones, manzanas, lotes, predios, puntos, andenes };
 
     const lot = predios.p.find((p) => p.id === 'englobe');
     this.city = new CityContext(this.scene, { renderer: this.renderer, data: this.data, project, mobile: this.mobile });
     this.building = new ProjectBuilding(this.scene, { lot, project });
+    // tráfico sobre las calles reales: carros en movimiento, semáforos y cebras
+    if (vias) { try { this.traffic = new Traffic(this.scene, vias, { mobile: this.mobile, andenes }); this.traffic.setNight(this._night || 0); } catch (e) { console.warn('tráfico', e); } }
     this.pois = new PoiLayer(this.scene, {
       puntos: puntos.p, predios: predios.p, project, competencia: project.competencia,
       onPick: (p) => this.onPick?.(p)
@@ -247,6 +252,7 @@ export class MasterplanScene {
     this._updateRange();
     windUniforms.uWindTime.value += dt;
     if (this.city?.trees && !this._cityWind) { applyWind(this.city.trees.material, { amp: 1.2, from: 2.0, to: 10 }); this._cityWind = true; }
+    this.traffic?.update(dt);
     if (this.postfx) this.postfx.render(dt); else this.renderer.render(this.scene, this.camera);
     this.labels.render(this.scene, this.camera);
   }

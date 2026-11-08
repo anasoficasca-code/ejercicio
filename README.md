@@ -166,3 +166,7 @@ python3 scripts/build-context.py 700
 ```
 
 Publicado en: `https://anasoficasca-code.github.io/ejercicio/`
+
+### Tráfico
+
+`src/scene/Traffic.js` anima carros sobre la red vial real de `data/geometry/vias.json` (© colaboradores de OpenStreetMap, licencia ODbL): circulan por el carril derecho respetando los sentidos de cada vía, paran en los semáforos que OSM tiene registrados (con fases verde, amarillo y rojo) y se dibujan cebras en los cruces peatonales marcados. Al anochecer se encienden farolas y stops.
