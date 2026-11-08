@@ -1,17 +1,16 @@
 /**
- * LoadingScreen — pantalla de carga con la marca JMC Arquitectura mientras se descargan los datos
- * de Catastro, la ortofoto y se arma la escena.
+ * LoadingScreen — pantalla de carga con la marca Aurea Residencial mientras se descargan los datos de
+ * Catastro, el modelo de Revit y la ortofoto. La barra es una línea de ladrillo que crece bajo la marca.
  */
 export class LoadingScreen {
   constructor() {
     const el = document.createElement('div');
     el.className = 'ls-wrap';
     el.innerHTML = `
-      <img class="ls-logo" src="./assets/branding/jmc-logo-wide.png" alt="JMC Arquitectura">
-      <div class="ls-title">Apartaestudios Galerías</div>
-      <div class="ls-sub">Ejercicio Profesional 2 · Estudio de mercado · Calle 56 # 17-53</div>
+      <div class="ls-mark"><span class="ls-word">Aurea</span><span class="ls-res">Residencial</span></div>
       <div class="ls-bar"><i></i></div>
-      <div class="ls-msg">Preparando la escena…</div>`;
+      <div class="ls-msg" role="status">Preparando la escena…</div>
+      <img class="ls-logo" src="./assets/branding/jmc-logo-wide.png" alt="Un proyecto de JMC Arquitectura">`;
     document.body.appendChild(el);
     this.el = el;
     this.bar = el.querySelector('.ls-bar i');
@@ -19,7 +18,7 @@ export class LoadingScreen {
   }
 
   set(p, msg) {
-    this.bar.style.width = `${Math.round(p * 100)}%`;
+    this.bar.style.transform = `scaleX(${p})`;
     if (msg) this.msg.textContent = msg;
   }
 

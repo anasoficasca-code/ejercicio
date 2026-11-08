@@ -253,6 +253,57 @@ export class ProjectBuilding {
     for (const z of [6, 14, 22]) tree(west - 1.3, z, 'ash');
     tree(this.ox - ant / 2, ant + 3, 'celtis'); tree(this.ox - ant / 2, ant + 11, 'celtis');
     for (const x of [this.ox + 14, this.ox + 19.5, this.ox + 23]) tree(x, pz + 5.5, 'euc');
+    this._buildFacadeLights();
+  }
+
+  /**
+   * Bañadores de luz cálida al pie de las fachadas de la Calle 56 y la Carrera 18 (como en los renders
+   * al atardecer): una luminaria de piso en el antejardín y el abanico de luz que sube por el muro.
+   * Se encienden con setNight().
+   */
+  _buildFacadeLights() {
+    const c = document.createElement('canvas');
+    c.width = 64; c.height = 128;
+    const ctx = c.getContext('2d');
+    const grd = ctx.createRadialGradient(32, 128, 2, 32, 128, 128);
+    grd.addColorStop(0, 'rgba(255,255,255,1)');
+    grd.addColorStop(0.35, 'rgba(255,255,255,0.45)');
+    grd.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, 64, 128);
+    const map = new THREE.CanvasTexture(c);
+    map.colorSpace = THREE.SRGBColorSpace;
+    this.washMat = new THREE.MeshBasicMaterial({ map, color: 0xffb36a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+    this.fixtureMat = new THREE.MeshStandardMaterial({ color: 0x2a2724, roughness: 0.5, metalness: 0.4, emissive: 0xffc27a, emissiveIntensity: 0 });
+    const washG = new THREE.PlaneGeometry(1.7, 3.6); washG.translate(0, 1.8, 0);
+    const fixG = new THREE.CylinderGeometry(0.07, 0.09, 0.1, 10); fixG.translate(0, 0.05, 0);
+    const lights = new THREE.Group();
+    lights.name = 'Bañadores de fachada';
+    const add = (x, z, rotY) => {
+      const w = new THREE.Mesh(washG, this.washMat);
+      w.position.set(x, 0.02, z);
+      w.rotation.y = rotY;
+      w.renderOrder = 5;
+      const f = new THREE.Mesh(fixG, this.fixtureMat);
+      f.position.set(x + Math.sin(rotY) * 0.35, 0, z + Math.cos(rotY) * 0.35); // en el antejardín, frente al muro
+      lights.add(w, f);
+    };
+    for (let x = 1.4; x < PW; x += 3.1) add(x, -0.09, Math.PI);       // fachada de la Calle 56 (mira al norte)
+    for (let z = 1.4; z < PD; z += 3.1) add(-0.09, z, -Math.PI / 2);  // fachada de la Carrera 18 (mira al occidente)
+    this.plate.add(lights);
+  }
+
+  /** 0 de día, 1 de noche: bañadores de fachada y luminarias de piso. */
+  setNight(v) {
+    if (!this.washMat) return;
+    this.washMat.opacity = v * 0.5;
+    this.fixtureMat.emissiveIntensity = v * 5;
+  }
+
+  /** Punto en coordenadas de la planta (x oriente, y altura, z sur desde la esquina) llevado al mundo. */
+  world(x, y, z) {
+    this.group.updateMatrixWorld(true);
+    return this.plate.localToWorld(new THREE.Vector3(x, y, z));
   }
 
   /** Siembra los árboles 3D en coordenadas del mundo (requiere el marco ya ubicado). */

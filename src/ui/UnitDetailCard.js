@@ -31,7 +31,7 @@ export class UnitDetailCard {
         <div class="detail-prop-line"><span class="label">Ubicación:</span> ${u.location}</div>
         <div class="detail-prop-line"><span class="label">Fachadas:</span> ${u.facades}</div>
         <div class="detail-prop-line"><span class="label">Altura libre:</span> ${u.height}</div>
-        ${apt ? `<div class="detail-prop-line"><span class="label">Precio:</span> ${fmtCOP(u.price)}</div>
+        ${apt ? `<div class="detail-prop-line"><span class="label">Precio:</span> <span class="price-val">${fmtCOP(u.price)}</span></div>
         <div class="detail-prop-line dim">${u.espacios}</div>` : `<div class="detail-prop-line"><span class="label">Piso 1:</span> ${p.proyectoActual.piso1.join(' · ')}</div>`}
       </div>
       ${apt ? `<div class="finish-row">${p.apartaestudio.acabados.map((a) => `<i title="${a.elemento}: ${a.detalle}" style="background:${a.color}"></i>`).join('')}<span>Acabados</span></div>` : ''}
@@ -42,5 +42,11 @@ export class UnitDetailCard {
         </button>
       </div>`;
     this.container.classList.add('visible');
+    // el precio cuenta hasta su valor al abrir la unidad
+    const pv = this.container.querySelector('.price-val'), g = window.gsap;
+    if (pv && g && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const n = { v: u.price * 0.6 };
+      g.to(n, { v: u.price, duration: 1.1, ease: 'power3.out', onUpdate: () => { pv.textContent = fmtCOP(Math.round(n.v / 1e5) * 1e5); }, onComplete: () => { pv.textContent = fmtCOP(u.price); } });
+    }
   }
 }

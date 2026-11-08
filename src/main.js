@@ -7,6 +7,9 @@ import { LocationModal } from './ui/LocationModal.js';
 import { MarketModal } from './ui/MarketModal.js';
 import { PrediosModal } from './ui/PrediosModal.js';
 import { LoadingScreen } from './ui/LoadingScreen.js';
+import { Intro } from './ui/Intro.js';
+import { Tour, STOPS } from './ui/Tour.js';
+import { Hotspots } from './scene/Hotspots.js';
 import { store } from './state/store.js';
 
 const lamina = (n) => `./assets/canva/lamina-${String(n).padStart(2, '0')}.jpg`;
@@ -35,9 +38,29 @@ class App {
       this.detail = new UnitDetailCard(document.getElementById('room-detail-container'), { onOpenGallery: (u) => this.openUnitGallery(u) });
       this.dock = new BottomDock(document.getElementById('bottom-dock-container'), { onTabClick: (t) => this.handleTabClick(t) });
       store.setState({ activeTab: 'inmuebles' });
+      // recorrido guiado y puntos de interés sobre el edificio
+      this.tour = new Tour({ scene: this.scene });
+      this.hotspots = new Hotspots(this.scene.building, STOPS, { onPick: (i) => this.tour.start(i) });
+      const syncPins = () => {
+        const s = store.state;
+        this.hotspots.setVisible(!document.body.classList.contains('is-intro') && !this.tour.active && s.viewMode === 'exterior' && !s.selectedUnitId && !s.activeFloor);
+      };
+      store.subscribe(syncPins);
+      this.tour.onStop = syncPins;
+      this.tour.onChange = syncPins;
       this.loading.set(0.8, 'Descargando la ortofoto…');
       await Promise.race([this.scene.city.ready, new Promise((r) => setTimeout(r, 7000))]);
+      const hour = document.getElementById('sky-hour');
+      this.scene.setHour(parseFloat(hour.value));
       this.loading.done();
+      // llegada: la cámara baja sobre Galerías hasta la esquina mientras se encienden las luces de la tarde
+      this.intro = new Intro({
+        scene: this.scene,
+        onTour: () => { syncPins(); this.tour.start(0); },
+        onExplore: () => syncPins()
+      });
+      syncPins();
+      this.intro.play();
     }).catch((e) => {
       console.error(e);
       this.loading.set(1, 'No se pudieron cargar los datos. Abre el sitio desde un servidor web (GitHub Pages o npx serve).');
@@ -50,6 +73,7 @@ class App {
     });
     store.subscribe((s) => document.querySelectorAll('.mode-pill-btn[data-mode]').forEach((b) => b.classList.toggle('active', b.dataset.mode === s.viewMode)));
     document.getElementById('btn-laminas').onclick = () => this.gallery.open('Láminas · Ejercicio Profesional 2', this.laminas || []);
+    document.getElementById('btn-tour').onclick = () => this.tour?.start(0);
 
     const hour = document.getElementById('sky-hour'), label = document.getElementById('sky-hour-label');
     let raf = null;

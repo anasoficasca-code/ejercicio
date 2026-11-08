@@ -1242,3 +1242,113 @@ table.matrix tr.total td.hl{color:#ff858d}
   .gallery-thumbs-sidebar,.location-info-sidebar{width:100%;border-left:none;max-height:40%}
   .modal-filter-pills{display:none}
 }
+
+/* ==================================================================================================
+   Aurea · marca, intro, recorrido guiado y puntos de interés
+   ladrillo = único color de acción; Instrument Serif para la marca y los títulos; Archivo para el resto
+   ================================================================================================== */
+:root{
+  --brick:#a3472c; --brick-press:#8a3a23; --brick-on-dark:#e7906b;
+  --stone:#f5f2ec; --ink-a:#1d1f1e;
+  --serif-a:'Instrument Serif',Georgia,'Times New Roman',serif;
+  --sans-a:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --ease-out-a:cubic-bezier(.16,1,.3,1);
+}
+
+/* carga: la marca y una línea de ladrillo que crece */
+.ls-wrap{background:radial-gradient(ellipse at 50% 42%,#ffffff 0%,#f6f3ee 58%,#ebe6de 100%)}
+.ls-mark{display:flex;flex-direction:column;align-items:center;animation:lsIn 1.3s var(--ease-out-a) both}
+.ls-word{font-family:var(--serif-a);font-size:clamp(64px,11vw,128px);line-height:.9;color:var(--ink-a);letter-spacing:-.01em}
+.ls-res{font-family:var(--sans-a);font-size:12px;letter-spacing:.32em;margin-top:10px;color:#6b6760;padding-left:.32em}
+.ls-bar{margin-top:40px;width:220px;height:1px;background:#d9d3c9;border-radius:0}
+.ls-bar i{width:100%;transform:scaleX(0);transform-origin:left;background:var(--brick);transition:transform .7s var(--ease-out-a)}
+.ls-msg{font-family:var(--sans-a);font-size:12px;letter-spacing:0;color:#7d786f;margin-top:14px}
+.ls-logo{position:absolute;bottom:34px;width:150px;opacity:.75}
+
+/* intro: la marca sobre la escena mientras baja la cámara */
+body.is-intro .top-right-bar,body.is-intro .sky-time-control,body.is-intro .left-sidebar-wrapper,
+body.is-intro .bottom-dock-container,body.is-intro .labels-layer{opacity:0;pointer-events:none}
+.aurea-intro{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;padding:0 clamp(20px,6vw,96px) clamp(48px,10vh,120px);pointer-events:none}
+.ai-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,14,10,0) 35%,rgba(18,14,10,.55) 100%),linear-gradient(90deg,rgba(18,14,10,.42) 0%,rgba(18,14,10,0) 60%)}
+.ai-copy{position:relative;max-width:640px;color:#fff;pointer-events:auto}
+.ai-word{font-family:var(--serif-a);font-weight:400;font-size:clamp(84px,15vw,200px);line-height:.86;margin:0;letter-spacing:-.015em;display:flex;overflow:hidden;padding-bottom:.06em}
+.ai-ch{display:inline-block;will-change:transform}
+.ai-sub{font-family:var(--sans-a);font-size:clamp(12px,1.1vw,14px);letter-spacing:.32em;margin:14px 0 0;color:rgba(255,255,255,.88)}
+.ai-line{font-family:var(--sans-a);font-size:clamp(16px,1.5vw,19px);line-height:1.45;margin:22px 0 0;max-width:30ch;color:rgba(255,255,255,.92)}
+.ai-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.ai-btn{font-family:var(--sans-a);font-size:15px;font-weight:600;padding:14px 24px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;backdrop-filter:blur(8px);transition:background .25s,border-color .25s,transform .25s var(--ease-out-a)}
+.ai-btn:hover{background:rgba(255,255,255,.18);transform:translateY(-1px)}
+.ai-btn.primary{background:var(--brick);border-color:var(--brick)}
+.ai-btn.primary:hover{background:var(--brick-press);border-color:var(--brick-press)}
+.ai-btn:focus-visible,.ai-skip:focus-visible,.tc-btn:focus-visible,.tc-close:focus-visible,.hotspot:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.ai-skip{position:absolute;top:22px;right:24px;pointer-events:auto;font-family:var(--sans-a);font-size:13px;color:rgba(255,255,255,.85);background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:8px 14px;cursor:pointer;backdrop-filter:blur(6px)}
+.aurea-intro.static .ai-ch,.aurea-intro.static .ai-sub,.aurea-intro.static .ai-line,.aurea-intro.static .ai-btn{opacity:1}
+
+/* botón de recorrido en la barra superior */
+.tour-pill{background:var(--brick)!important;display:inline-flex;align-items:center;gap:6px}
+.tour-pill:hover{background:var(--brick-press)!important}
+
+/* tarjeta del recorrido: foto grande, título en serif, barras de progreso por parada */
+.tour-card{position:fixed;left:clamp(16px,3vw,32px);bottom:clamp(16px,3vh,32px);z-index:40;width:min(420px,calc(100vw - 32px));
+  border-radius:18px;overflow:hidden;background:rgba(24,22,20,.78);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);
+  border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 60px -20px rgba(0,0,0,.6);color:#fff;font-family:var(--sans-a);
+  opacity:0;transform:translateY(24px);pointer-events:none;transition:opacity .5s var(--ease-out-a),transform .6s var(--ease-out-a)}
+.tour-card.show{opacity:1;transform:none;pointer-events:auto}
+body.is-touring .left-sidebar-wrapper,body.is-touring .bottom-dock-container,body.is-touring .room-detail-card{opacity:0!important;pointer-events:none!important;transition:opacity .4s}
+.tc-media{position:relative;margin:0;aspect-ratio:16/9;overflow:hidden;background:#2a2622}
+.tc-media img{width:100%;height:100%;object-fit:cover;display:block}
+.tc-step{position:absolute;left:14px;top:12px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px)}
+.tc-body{padding:18px 20px 16px}
+.tc-title{font-family:var(--serif-a);font-weight:400;font-size:30px;line-height:1.05;margin:0}
+.tc-text{font-size:14.5px;line-height:1.55;color:rgba(255,255,255,.84);margin:10px 0 0;max-width:46ch}
+.tc-progress{display:flex;gap:5px;margin:18px 0 14px}
+.tc-progress i{flex:1;height:2px;background:rgba(255,255,255,.2);overflow:hidden;border-radius:2px}
+.tc-progress b{display:block;height:100%;background:var(--brick-on-dark);transform:scaleX(0);transform-origin:left}
+.tc-actions{display:flex;align-items:center;gap:8px}
+.tc-btn{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .2s}
+.tc-btn:hover{background:rgba(255,255,255,.16)}
+.tc-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tc-btn .i-play{display:none}
+.tour-card.paused .tc-btn .i-play{display:block}
+.tour-card.paused .tc-btn .i-pause{display:none}
+.tc-close{margin-left:auto;font:600 13px var(--sans-a);color:#fff;background:none;border:0;cursor:pointer;padding:8px 4px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,.4)}
+
+/* puntos de interés: pin con pulso y nombre que se despliega al pasar */
+.hotspot{position:relative;display:flex;align-items:center;gap:0;padding:0;border:0;background:none;cursor:pointer;font-family:var(--sans-a);
+  opacity:0;transform:scale(.6);transition:opacity .45s var(--ease-out-a),transform .45s var(--ease-out-a);pointer-events:none}
+.hotspot.on{opacity:1;transform:none;pointer-events:auto}
+.hs-dot{position:relative;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(163,71,44,.85),0 6px 16px rgba(0,0,0,.4)}
+.hs-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid #fff;animation:hsPulse 2.2s var(--ease-out-a) infinite}
+.hs-label{max-width:0;overflow:hidden;white-space:nowrap;font-size:13px;font-weight:600;color:#fff;background:rgba(24,22,20,.78);border-radius:999px;
+  padding:6px 0;margin-left:8px;opacity:0;transition:max-width .4s var(--ease-out-a),opacity .3s,padding .4s var(--ease-out-a);backdrop-filter:blur(8px)}
+.hotspot:hover .hs-label,.hotspot:focus-visible .hs-label{max-width:180px;opacity:1;padding:6px 12px}
+@keyframes hsPulse{0%{transform:scale(1);opacity:.9}70%{transform:scale(2.4);opacity:0}100%{opacity:0}}
+
+/* tarjeta de la unidad: entra deslizándose y el precio cuenta hasta su valor */
+.room-detail-card .detail-title{font-family:var(--serif-a);font-weight:400;font-size:28px;letter-spacing:0;line-height:1.05}
+.room-detail-card.visible .detail-prop-line{animation:cardLine .55s var(--ease-out-a) both}
+.room-detail-card.visible .detail-prop-line:nth-child(2){animation-delay:.04s}
+.room-detail-card.visible .detail-prop-line:nth-child(3){animation-delay:.08s}
+.room-detail-card.visible .detail-prop-line:nth-child(4){animation-delay:.12s}
+.room-detail-card.visible .detail-prop-line:nth-child(5){animation-delay:.16s}
+.room-detail-card.visible .detail-prop-line:nth-child(6){animation-delay:.2s}
+.room-detail-card.visible .detail-prop-line:nth-child(7){animation-delay:.24s}
+.room-detail-card.visible .detail-prop-line:nth-child(n+8){animation-delay:.28s}
+@keyframes cardLine{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+
+@media (max-width:760px){
+  .aurea-intro{padding:0 20px 36px}
+  .ai-line{max-width:none}
+  .ai-btn{flex:1 1 auto;text-align:center;padding:13px 18px}
+  .tour-card{left:12px;right:12px;bottom:12px;width:auto}
+  .tc-media{aspect-ratio:21/9}
+  .tc-title{font-size:24px}
+  .tc-text{font-size:13.5px}
+  .tour-pill{order:-1}
+}
+@media (prefers-reduced-motion:reduce){
+  .hs-dot::after{animation:none}
+  .tour-card,.hotspot,.hs-label,.ls-bar i{transition:none}
+  .room-detail-card.visible .detail-prop-line{animation:none}
+}
+body.is-touring .labels-layer .project-tag,body.is-touring .labels-layer .poi-pin{opacity:0;pointer-events:none;transition:opacity .4s}

@@ -195,12 +195,13 @@ export class Traffic {
   // ---------------------------------------------------------------- cebras
   _buildZebras(data) {
     const N = this.nodes;
-    const mats = [];
     const stripe = new THREE.PlaneGeometry(0.5, 3.0); stripe.rotateX(-Math.PI / 2);
-    const list = data.cruces.filter((k) => N[k] && Math.hypot(...N[k]) < R && this.wayOf.has(k));
-    // también una cebra en cada brazo de los cruces semaforizados que OSM no marcó
+    const inR = (k) => N[k] && Math.hypot(...N[k]) < R && this.wayOf.has(k);
+    const width = (v) => Math.max(6, (+v.l || (v.o === 'yes' ? (v.h === 'secondary' ? 3 : 2) : 2)) * LANE);
+    const waysAt = (k) => [...new Set(this.wayOf.get(k).map(([v]) => v))];
     const m4 = [];
     const dummy = new THREE.Object3D();
+    // franjas de 3 m paralelas al tráfico, repartidas a lo ancho de la calzada
     const addZebra = (x, z, d, W) => {
       const right = new THREE.Vector2(-d.y, d.x);
       const n = Math.max(4, Math.floor(W / 1.0));
@@ -213,11 +214,35 @@ export class Traffic {
       }
     };
     const seen = [];
-    for (const k of list) {
-      const p = N[k];
-      if (seen.some((s) => Math.hypot(s[0] - p[0], s[1] - p[1]) < 4)) continue;
-      seen.push(p);
-      addZebra(p[0], p[1], this._dirAt(k), this._roadWidth(k));
+    const once = (x, z) => {
+      if (seen.some((s) => Math.hypot(s[0] - x, s[1] - z) < 4)) return false;
+      seen.push([x, z]);
+      return true;
+    };
+    // En una intersección la cebra no va en el centro: va en cada brazo, retirada lo que mide la vía
+    // transversal más la esquina del andén, como en la Calle 56 con Carrera 18 frente al lote.
+    const atIntersection = (k) => {
+      const P = N[k], ways = waysAt(k);
+      for (const [v, i] of this.wayOf.get(k)) {
+        const cross = Math.max(...ways.filter((w) => w !== v).map(width));
+        for (const j of [i - 1, i + 1]) {
+          const q = N[v.r[j]];
+          if (!q) continue;
+          const a = new THREE.Vector2(q[0] - P[0], q[1] - P[1]);
+          const len = a.length();
+          a.normalize();
+          const off = Math.min(cross / 2 + 3.2, len * 0.6);
+          const x = P[0] + a.x * off, z = P[1] + a.y * off;
+          if (once(x, z)) addZebra(x, z, a, width(v));
+        }
+      }
+    };
+    // cruces que OSM marca (en la intersección o a mitad de cuadra) y brazos de los cruces con semáforo
+    const marked = data.cruces.filter(inR);
+    const signals = data.semaforos.filter(inR).filter((k) => waysAt(k).length > 1);
+    for (const k of [...marked, ...signals]) {
+      if (waysAt(k).length > 1) atIntersection(k);
+      else if (once(N[k][0], N[k][1])) addZebra(N[k][0], N[k][1], this._dirAt(k), this._roadWidth(k));
     }
     if (!m4.length) return;
     const mat = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.75, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });

@@ -90,10 +90,20 @@ export class MasterplanScene {
     // las luces se encienden con el ocaso (y siguen encendidas antes del amanecer)
     const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
     const night = Math.max(ss(17.1, 18.0, hour), 1 - ss(5.9, 6.5, hour));
-    setNight(night);
+    // hora dorada (como en los renders): sol más cálido y fuerte, cielo de relleno más tenue
+    const golden = ss(15.4, 16.5, hour) * (1 - ss(17.35, 17.85, hour));
+    this.sun.color.lerp(this._goldenTint ||= new THREE.Color(1.0, 0.6, 0.32), golden * 0.55);
+    this.sun.intensity *= 1 + golden * 0.45;
+    this.hemi.intensity = 0.4 * (1 - golden * 0.3);
+    this.renderer.toneMappingExposure = 1.35 + golden * 0.12;
+    // en la hora dorada los apartamentos y los bañadores de fachada se encienden antes que la calle
+    const dusk = Math.max(night, ss(16.3, 17.2, hour) * 0.85);
+    setNight(dusk);
+    this.building?.setNight(dusk);
     this.city?.setNight(night);
     this.traffic?.setNight(night);
     this._night = night;
+    this._dusk = dusk;
     if (this.reflectionCamera) {
       clearTimeout(this.reflectionTimer);
       this.reflectionTimer = setTimeout(() => this.captureFacadeReflections(), 450);
@@ -130,6 +140,7 @@ export class MasterplanScene {
     const lot = predios.p.find((p) => p.id === 'englobe');
     this.city = new CityContext(this.scene, { renderer: this.renderer, data: this.data, project, mobile: this.mobile });
     this.building = new ProjectBuilding(this.scene, { lot, project });
+    this.building.setNight(this._dusk ?? 0);
     // tráfico sobre las calles reales: carros en movimiento, semáforos y cebras
     if (vias) { try { this.traffic = new Traffic(this.scene, vias, { mobile: this.mobile, andenes }); this.traffic.setNight(this._night || 0); } catch (e) { console.warn('tráfico', e); } }
     this.pois = new PoiLayer(this.scene, {
@@ -195,13 +206,13 @@ export class MasterplanScene {
     this.pois.setCompact(s.viewMode === 'exterior' && !!sel);
   }
 
-  flyTo(pos, target, dur = 1.6) {
+  flyTo(pos, target, dur = 1.6, ease = 'power2.inOut') {
     const g = window.gsap;
     if (!g) { this.camera.position.copy(pos); this.controls.target.copy(target); return; }
     g.killTweensOf(this.camera.position);
     g.killTweensOf(this.controls.target);
-    g.to(this.camera.position, { x: pos.x, y: pos.y, z: pos.z, duration: dur, ease: 'power2.inOut' });
-    g.to(this.controls.target, { x: target.x, y: target.y, z: target.z, duration: dur, ease: 'power2.inOut' });
+    g.to(this.camera.position, { x: pos.x, y: pos.y, z: pos.z, duration: dur, ease });
+    g.to(this.controls.target, { x: target.x, y: target.y, z: target.z, duration: dur, ease });
   }
 
   applyViewMode(mode) {
