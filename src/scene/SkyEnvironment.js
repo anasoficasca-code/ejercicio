@@ -278,8 +278,8 @@ export class SkyEnvironment {
       this.scene.fog.color.copy(horizon);
       this.scene.background = null;
       if (this.hemiLight) {
-        this.hemiLight.color.copy(zenith || horizon).multiplyScalar(1.6);
-        this.hemiLight.groundColor.copy(horizon).multiplyScalar(0.75);
+        this.hemiLight.color.copy(zenith || horizon).multiplyScalar(1.05);
+        this.hemiLight.groundColor.setHex(0x8d8172);
       }
       const cu = this.cloudMaterial.uniforms;
       cu.uAmbientTop.value.copy(zenith || horizon).multiplyScalar(1.15).lerp(horizon, 0.35);

@@ -69,15 +69,15 @@ export class MasterplanScene {
   // ---------------------------------------------------------------- cielo y sol
   _setupSky() {
     this.scene.fog = new THREE.Fog(0xc9d6e4, 220, 1400);
-    this.hemi = new THREE.HemisphereLight(0xffffff, 0xc8d6e5, 0.95);
+    this.hemi = new THREE.HemisphereLight(0xffffff, 0x928677, 0.4);
     this.scene.add(this.hemi);
     this.sun = new THREE.DirectionalLight(0xfffaed, 3.1);
     this.sun.castShadow = true;
     const ms = this.mobile ? 2048 : 4096;
     this.sun.shadow.mapSize.set(ms, ms);
-    this.sun.shadow.normalBias = 0.03;
+    this.sun.shadow.normalBias = 0.018;
     this.sun.shadow.radius = 3;
-    this.sun.shadow.bias = -0.0003;
+    this.sun.shadow.bias = -0.00008;
     const c = this.sun.shadow.camera;
     c.left = -95; c.right = 95; c.top = 95; c.bottom = -95; c.near = 10; c.far = 320;
     this.scene.add(this.sun, this.sun.target);
@@ -132,6 +132,7 @@ export class MasterplanScene {
       puntos: puntos.p, predios: predios.p, project, competencia: project.competencia,
       onPick: (p) => this.onPick?.(p)
     });
+    await this.building.ready;
     const c = this.building.center();
     this.home = { target: new THREE.Vector3(c.x, 7, c.z), pos: new THREE.Vector3(c.x - 62, 40, c.z - 60) };
     this.controls.target.copy(this.home.target);

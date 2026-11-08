@@ -84,7 +84,7 @@ function grayCanvas(values, w, h) {
 // ------------------------------------------------------------------ ladrillo
 /** Tesela de 1,00 × 0,60 m: 4 ladrillos de 25 cm por 8 hiladas de 7,5 cm, trabados a media pieza. */
 function brickMaps() {
-  const W = 512, H = 312, cols = 4, rows = 8, bw = W / cols, bh = H / rows, joint = 3;
+  const W = 1024, H = 624, cols = 4, rows = 8, bw = W / cols, bh = H / rows, joint = 4;
   const rand = rng(7);
   const grain = fbm(W, H, rng(11), [[16, 0.4], [64, 0.35], [128, 0.25]]);
   const blotch = fbm(W, H, rng(12), [[3, 0.6], [6, 0.4]]);
@@ -201,8 +201,8 @@ function build() {
   const steel = std({ color: 0xc9ccd0, metalness: 0.9, roughness: 0.28, envMapIntensity: 1.2 });
   const darkMetal = std({ color: 0x2c2e31, metalness: 0.6, roughness: 0.45, envMapIntensity: 1 });
   // ventanería: vidrio laminado con leve tinte; barandas: vidrio templado claro
-  const windowGlass = fresnelGlass({ color: 0x3f5362, base: 0.66, edge: 0.97, env: 2.0 });
-  const railGlass = fresnelGlass({ color: 0xb9d2d0, base: 0.16, edge: 0.75, env: 1.4, lit: 0 });
+  const windowGlass = fresnelGlass({ color: 0xadb9bb, base: 0.38, edge: 0.92, env: 1.2 });
+  const railGlass = fresnelGlass({ color: 0xe4eeeb, base: 0.10, edge: 0.55, env: 1.0, lit: 0 });
   const grass = std({ color: 0x5f7f3e, roughness: 1 });
   return {
     glass: { '0a64f4': windowGlass, '0080c0': railGlass },

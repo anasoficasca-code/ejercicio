@@ -4,6 +4,7 @@ import { makeTreeImpostors, RealTrees } from './RealTrees.js';
 import { load as loadPBR } from './PBRSurfaces.js';
 import { makeFacadeTextures, makeTileTexture, makeTileNormal, BAY_W } from './FacadeTextures.js';
 import { Church } from './Church.js';
+import { ContextDetails } from './ContextDetails.js';
 
 /**
  * CityContext — contexto real de Galerías / Teusaquillo con la misma técnica del masterplan
@@ -380,6 +381,7 @@ export class CityContext {
     try { await this._loadDEM(); } catch (e) { console.warn('DEM no disponible', e); }
     [L3, L2, L1, L0].forEach((L) => L && this._applyHeights(L));
     this._buildBuildings(this.buildingList, L0 || L1, L1, L2);
+    this.details = new ContextDetails(this.group, this.buildingList, (x, z) => this.heightAt(x, z), this.mobile);
     this.mzRealMat = this._manzanaRealMat(L1);
     this.setTheme(this.theme);
     await near;
@@ -484,6 +486,7 @@ export class CityContext {
             // manchas de humedad y polvo sobre la placa
             vec2 q = vCW.xz * 0.18 + vSeed * 31.0, i0 = floor(q), f0 = fract(q); f0 = f0 * f0 * (3.0 - 2.0 * f0);
             float n = mix(mix(hsh(i0), hsh(i0 + vec2(1.0, 0.0)), f0.x), mix(hsh(i0 + vec2(0.0, 1.0)), hsh(i0 + vec2(1.0, 1.0)), f0.x), f0.y);
+            rc = pow(rc, vec3(2.2));
             diffuseColor.rgb *= rc * (0.95 + 0.06 * tileN) * (0.82 + 0.26 * n);
           } else {
             // fachada PBR: paleta bogotana (ladrillo, pañete crema, concreto gris) con relieve y luz horneada
@@ -553,7 +556,9 @@ export class CityContext {
             ao *= 1.0 - win * (0.45 * smoothstep(0.55, 1.0, wy) + 0.3 * (1.0 - smoothstep(0.0, 0.14, min(wx, 1.0 - wx))));
             ao *= 1.0 - 0.3 * (1.0 - win) * step(0.25, fx) * step(fx, 0.75) * smoothstep(0.28, 0.36, fy) * step(fy, 0.36);
             ao *= 1.0 - (isBrick ? 0.3 * joint * (1.0 - dAA) : 0.0);
-            diffuseColor.rgb = mix(mix(base * (1.0 - band), glass, win), mix(base, vec3(0.16, 0.18, 0.2), 0.2), aa) * mix(ao, 1.0, aa * 0.6);
+            base = pow(base, vec3(2.2));
+            glass = pow(glass, vec3(2.2));
+            diffuseColor.rgb = mix(mix(base * (1.0 - band), glass, win), mix(base, pow(vec3(0.16, 0.18, 0.2), vec3(2.2)), 0.2), aa) * mix(ao, 1.0, aa * 0.6);
             {
               float onN = step(0.7, hsh(cell + 21.3)) * uNight;
               vec3 warmN = mix(vec3(1.0, 0.66, 0.34), vec3(1.0, 0.85, 0.62), hsh(cell + 5.5));
@@ -985,6 +990,7 @@ export class CityContext {
 
   setTheme(theme) {
     this.theme = theme;
+    if (this.details) this.details.group.visible = theme === 'realista';
     const real = theme === 'realista';
     const tinted = ['usos', 'valor', 'altura'].includes(theme);
     this.manzanas.material = real && this.mzRealMat ? this.mzRealMat : this.mzColorMat; // realista: césped / concreto

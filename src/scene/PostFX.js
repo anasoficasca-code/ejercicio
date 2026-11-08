@@ -59,9 +59,9 @@ export class PostFX {
     this.low = mobile || /Intel|UHD|HD Graphics|Iris|Mali|Adreno|PowerVR|SwiftShader|llvmpipe|Microsoft Basic/i.test(gpu);
     this.gpu = gpu;
 
-    // Tono "render de masterplan": ACES, luminoso y saturado (como los renders de Umbra / Lumion)
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.95;
+    // Respuesta fotográfica: AgX conserva los tonos de los materiales en altas luces.
+    renderer.toneMapping = THREE.AgXToneMapping;
+    renderer.toneMappingExposure = 1.08;
 
     const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: this.low ? 2 : 4 });
     this.composer = new EffectComposer(renderer, rt);
@@ -77,7 +77,7 @@ export class PostFX {
       this.ao.blendIntensity = 0.85;
       this.ao.updateGtaoMaterial({ radius: 1.6, distanceExponent: 1.4, thickness: 2.0, scale: 1.0, samples: this.low ? 8 : 12, distanceFallOff: 1.0 });
       this.ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: this.low ? 6 : 12 });
-      this.aoExterior = !this.low;      // en exterior solo con GPU dedicada
+      this.aoExterior = !this.low;      // conservar fluidez en GPU integrada
       this.ao.enabled = this.aoExterior;
       this.composer.addPass(this.ao);
     }
@@ -88,7 +88,7 @@ export class PostFX {
       vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
       fragmentShader: 'uniform sampler2D tDiffuse; varying vec2 vUv; void main(){ vec4 c = texture2D(tDiffuse, vUv); bool bad = any(isnan(c.rgb)) || any(isinf(c.rgb)); gl_FragColor = vec4(bad ? vec3(0.0) : clamp(c.rgb, 0.0, 60.0), c.a); }'
     }));
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0.12, 0.4, 0.96);
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0.055, 0.3, 1.25);
     this.composer.addPass(this.bloom);
 
     // profundidad de campo sutil (solo dentro de las habitaciones y con GPU dedicada)
@@ -99,8 +99,8 @@ export class PostFX {
     this.grade = new ShaderPass(GradeShader);
     const u = this.grade.uniforms;
     // cámara real: color neutro, contraste suave, viñeta de lente leve
-    u.uContrast.value = 1.04; u.uSaturation.value = 1.0; u.uVignette.value = 0.16;
-    u.uWarm.value.set(1.0, 1.0, 0.99); u.uGrain.value = 0.004; u.uLift.value = 0.012;
+    u.uContrast.value = 1.04; u.uSaturation.value = 0.92; u.uVignette.value = 0.16;
+    u.uWarm.value.set(1.0, 1.0, 0.99); u.uGrain.value = 0.004; u.uLift.value = 0.004;
     this.composer.addPass(this.grade);
     this.composer.addPass(new OutputPass());
   }
@@ -113,8 +113,8 @@ export class PostFX {
       u.uWarm.value.set(1.04, 1.0, 0.93); u.uLift.value = 0.006; u.uGrain.value = 0.006;
       this.bokeh.enabled = !this.low;
     } else {
-      u.uContrast.value = 1.04; u.uSaturation.value = 1.0; u.uVignette.value = 0.16;
-      u.uWarm.value.set(1.0, 1.0, 0.99); u.uLift.value = 0.012; u.uGrain.value = 0.004;
+      u.uContrast.value = 1.04; u.uSaturation.value = 0.92; u.uVignette.value = 0.16;
+      u.uWarm.value.set(1.0, 1.0, 0.99); u.uLift.value = 0.004; u.uGrain.value = 0.004;
       this.bokeh.enabled = false;
     }
   }
