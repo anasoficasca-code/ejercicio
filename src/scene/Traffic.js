@@ -187,6 +187,29 @@ export class Traffic {
     }
   }
 
+  /**
+   * Holgura de un carro parqueado en (x, z): distancia `d` al eje de la vía más cercana, dirección (nx, nz)
+   * del eje hacia el punto y distancia mínima `need` para no invadir el carril de los carros en movimiento
+   * (centro del carril más exterior + medio carro + medio carro parqueado + 25 cm).
+   */
+  roadClearance(x, z) {
+    let best = null;
+    const P = new THREE.Vector2(x, z), A = new THREE.Vector2(), AB = new THREE.Vector2(), Q = new THREE.Vector2();
+    for (const e of this.edges) {
+      for (let i = 1; i < e.pts.length; i++) {
+        A.copy(e.pts[i - 1]); AB.subVectors(e.pts[i], A);
+        const t = Math.max(0, Math.min(1, P.clone().sub(A).dot(AB) / Math.max(1e-6, AB.lengthSq())));
+        Q.copy(A).addScaledVector(AB, t);
+        const d = P.distanceTo(Q);
+        if (!best || d < best.d) {
+          const outer = e.oneway ? ((e.lanes - 1) / 2) * LANE : LANE / 2;
+          best = { d, nx: (P.x - Q.x) / (d || 1), nz: (P.y - Q.y) / (d || 1), need: outer + 0.95 + 0.95 + 0.25 };
+        }
+      }
+    }
+    return best;
+  }
+
   /** ¿El punto (x, z) cae sobre alguno de los andenes `polys`? */
   _onSidewalk(x, z, polys) {
     return polys.some((poly) => {

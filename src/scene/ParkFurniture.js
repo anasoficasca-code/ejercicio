@@ -144,18 +144,201 @@ export function bin() {
   return g;
 }
 
-/** Matera de concreto con arbusto. */
-export function planter(w = 1.6, d = 0.6) {
+/** Matera de concreto con arbustos, pastos ornamentales y flores (plantación mixta, no esferas lisas). */
+export function planter(w = 1.6, d = 0.6, seed = 1) {
   const g = new THREE.Group();
   box(g, w, 0.5, d, M.concrete, 0, 0.25, 0);
   box(g, w - 0.1, 0.05, d - 0.1, M.soil, 0, 0.5, 0);
-  const n = Math.max(1, Math.round(w / 0.6));
+  const r = rnd(seed * 7 + Math.round(w * 10));
+  const n = Math.max(1, Math.round(w / 0.55));
   for (let k = 0; k < n; k++) {
-    const s = new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 8), M.shrub);
-    s.position.set(-w / 2 + (k + 0.5) * (w / n), 0.68, 0);
-    s.scale.set(1, 0.8, d / 0.7);
-    g.add(s);
+    const x = -w / 2 + (k + 0.5) * (w / n) + (r() - 0.5) * 0.12;
+    const kind = r();
+    const p = kind < 0.55 ? shrub(0.24 + r() * 0.1, seed + k) : kind < 0.8 ? grass(0.5 + r() * 0.35, seed + k) : flowering(0.22 + r() * 0.06, seed + k);
+    p.position.set(x, 0.5, (r() - 0.5) * (d - 0.3));
+    g.add(p);
   }
+  return g;
+}
+
+/** Generador pseudoaleatorio con semilla (las plantas no cambian entre recargas). */
+function rnd(seed) { let s = (seed * 2654435761) >>> 0; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+
+/** Malla de follaje irregular: icosaedro con bultos (lóbulos de hojas) y la textura de hojas del seto. */
+function leafBlob(rad, seed, sy = 0.85) {
+  const geo = new THREE.IcosahedronGeometry(rad, 2);
+  const p = geo.attributes.position, r = rnd(seed), a = r() * 9, b = r() * 9;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const k = 1 + 0.16 * Math.sin(x * 9 + a) * Math.cos(z * 8 + b) + 0.1 * Math.sin(y * 13 + a * b);
+    p.setXYZ(i, x * k, Math.max(y * k * sy, -rad * 0.35), z * k);
+  }
+  geo.computeVertexNormals();
+  return new THREE.Mesh(geo, foliageMaps());
+}
+
+/** Arbusto de 3 a 5 lóbulos de follaje (buxus / pittosporum). */
+export function shrub(rad = 0.3, seed = 1) {
+  const g = new THREE.Group(), r = rnd(seed + 11);
+  const n = 3 + Math.floor(r() * 3);
+  for (let k = 0; k < n; k++) {
+    const s = rad * (0.62 + r() * 0.45), ang = (k / n) * Math.PI * 2 + r();
+    const m = leafBlob(s, seed * 13 + k);
+    m.position.set(Math.cos(ang) * rad * 0.45, s * 0.75 + (k === 0 ? rad * 0.25 : 0), Math.sin(ang) * rad * 0.45);
+    g.add(m);
+  }
+  return g;
+}
+
+let grassMat = null;
+/** Pasto ornamental (cola de zorro / stipa): hojas finas arqueadas en penacho. */
+export function grass(h = 0.6, seed = 1) {
+  grassMat ??= new THREE.MeshStandardMaterial({ color: 0x8f9a55, roughness: 0.85, side: THREE.DoubleSide });
+  const g = new THREE.Group(), r = rnd(seed + 29);
+  const blade = new THREE.PlaneGeometry(0.035, h, 1, 4);
+  blade.translate(0, h / 2, 0);
+  const bp = blade.attributes.position;
+  for (let i = 0; i < bp.count; i++) { const y = bp.getY(i) / h; bp.setZ(i, y * y * h * 0.35); bp.setX(i, bp.getX(i) * (1 - y * 0.8)); }
+  blade.computeVertexNormals();
+  for (let k = 0; k < 26; k++) {
+    const m = new THREE.Mesh(blade, grassMat);
+    m.rotation.set(0, r() * Math.PI * 2, 0);
+    m.scale.setScalar(0.7 + r() * 0.5);
+    m.position.set((r() - 0.5) * 0.12, 0, (r() - 0.5) * 0.12);
+    g.add(m);
+  }
+  return g;
+}
+
+const BLOOMS = [0xf2f0ea, 0xe9a3b8, 0xf0c64a, 0xb48ad6, 0xe76f51];
+const bloomMats = BLOOMS.map((c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 }));
+/** Arbusto florecido: follaje con racimos de flores (blanco, rosa, amarillo, lila o coral). */
+export function flowering(rad = 0.25, seed = 1) {
+  const g = shrub(rad, seed), r = rnd(seed + 41);
+  const mat = bloomMats[Math.floor(r() * bloomMats.length)];
+  const fl = new THREE.IcosahedronGeometry(0.035, 0);
+  for (let k = 0; k < 22; k++) {
+    const th = r() * Math.PI * 2, ph = r() * Math.PI * 0.45;
+    const m = new THREE.Mesh(fl, mat);
+    m.position.set(Math.cos(th) * Math.sin(ph) * rad * 1.05, rad * 0.8 + Math.cos(ph) * rad * 0.85, Math.sin(th) * Math.sin(ph) * rad * 1.05);
+    g.add(m);
+  }
+  return g;
+}
+
+/** Cantero de jardín (sin matera): masas de arbustos, pastos y flores sobre tierra con mantillo. */
+export function gardenBed(w, d, seed = 1) {
+  const g = new THREE.Group(), r = rnd(seed);
+  box(g, w, 0.08, d, M.soil, 0, 0.04, 0);
+  const n = Math.max(3, Math.round((w * d) / 0.45));
+  for (let k = 0; k < n; k++) {
+    const kind = r();
+    const p = kind < 0.5 ? shrub(0.25 + r() * 0.18, seed + k) : kind < 0.78 ? grass(0.45 + r() * 0.4, seed + k) : flowering(0.2 + r() * 0.08, seed + k);
+    p.position.set((r() - 0.5) * (w - 0.3), 0.06, (r() - 0.5) * (d - 0.3));
+    p.rotation.y = r() * 6.28;
+    g.add(p);
+  }
+  return g;
+}
+
+// ------------------------------------------------------------------ terraza de restaurante
+const R = {
+  top: new THREE.MeshStandardMaterial({ color: 0xe8e2d6, roughness: 0.35 }),                      // mármol claro
+  iron: new THREE.MeshStandardMaterial({ color: 0x1d1e20, roughness: 0.45, metalness: 0.6 }),
+  rattan: new THREE.MeshStandardMaterial({ color: 0xb08a5c, roughness: 0.8 }),
+  canvas: new THREE.MeshStandardMaterial({ color: 0xece4d4, roughness: 0.9, side: THREE.DoubleSide }),
+  awning: new THREE.MeshStandardMaterial({ color: 0x2f4a3a, roughness: 0.85, side: THREE.DoubleSide }),
+  bulb: new THREE.MeshStandardMaterial({ color: 0xfff1d0, emissive: 0xffc46b, emissiveIntensity: 0.4, roughness: 0.3 }),
+  wire: new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 })
+};
+/** Bombillos de la guirnalda: se encienden más al atardecer (ver setRestaurantNight). */
+export function setRestaurantNight(v) { R.bulb.emissiveIntensity = 0.4 + v * 5.5; }
+
+/** Silla bistró de ratán con estructura negra, mirando hacia +z. */
+function bistroChair() {
+  const g = new THREE.Group();
+  for (const [x, z] of [[-0.19, -0.19], [0.19, -0.19], [-0.19, 0.19], [0.19, 0.19]]) cyl(g, 0.014, 0.45, R.iron, x, 0.225, z, 6);
+  box(g, 0.44, 0.05, 0.42, R.rattan, 0, 0.47, 0);
+  box(g, 0.44, 0.42, 0.04, R.rattan, 0, 0.72, -0.2).rotation.x = -0.08;
+  return g;
+}
+
+/** Mesa bistró redonda (Ø 70 cm) de mármol con pie de hierro y dos sillas enfrentadas. */
+export function bistroSet(chairs = 2) {
+  const g = new THREE.Group();
+  cyl(g, 0.2, 0.03, R.iron, 0, 0.015, 0, 16);
+  cyl(g, 0.03, 0.72, R.iron, 0, 0.37, 0, 8);
+  cyl(g, 0.35, 0.035, R.top, 0, 0.74, 0, 24);
+  const vase = cyl(g, 0.03, 0.1, R.top, 0, 0.81, 0, 8);
+  vase.material = R.iron;
+  for (let k = 0; k < chairs; k++) {
+    const a = (k / chairs) * Math.PI * 2 + Math.PI / 2;
+    const c = bistroChair();
+    c.position.set(Math.cos(a) * 0.62, 0, Math.sin(a) * 0.62);
+    c.rotation.y = -a - Math.PI / 2;
+    g.add(c);
+  }
+  return g;
+}
+
+/** Parasol de mercado (Ø 2,6 m) de lona crema con mástil de madera. */
+export function parasol() {
+  const g = new THREE.Group();
+  cyl(g, 0.025, 2.35, M.wood, 0, 1.175, 0, 8);
+  const top = new THREE.Mesh(new THREE.ConeGeometry(1.3, 0.55, 8, 1, true), R.canvas);
+  top.position.y = 2.32;
+  g.add(top);
+  cyl(g, 0.22, 0.06, R.iron, 0, 0.03, 0, 12);
+  return g;
+}
+
+/** Toldo inclinado de lona verde oscuro sobre la fachada (sale `depth` m del muro hacia −z). */
+export function awning(len, depth = 1.5) {
+  const g = new THREE.Group();
+  const geo = new THREE.PlaneGeometry(len, Math.hypot(depth, 0.45));
+  const m = new THREE.Mesh(geo, R.awning);
+  m.rotation.x = Math.PI / 2 - Math.atan2(0.45, depth);
+  m.position.set(0, 2.85 - 0.225, -depth / 2);
+  g.add(m);
+  const val = new THREE.Mesh(new THREE.PlaneGeometry(len, 0.22), R.awning);   // faldón
+  val.position.set(0, 2.29, -depth);
+  g.add(val);
+  for (const x of [-len / 2 + 0.05, len / 2 - 0.05]) tube(g, [x, 2.85, 0], [x, 2.4, -depth], 0.015, R.iron);
+  return g;
+}
+
+/**
+ * Guirnalda de bombillos colgada entre dos puntos con catenaria. Los bombillos son una InstancedMesh
+ * (una sola llamada de dibujo aunque sean decenas).
+ */
+export function stringLights(a, b, sag = 0.45, n = 14) {
+  const g = new THREE.Group();
+  const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b);
+  const pts = [];
+  for (let i = 0; i <= 24; i++) {
+    const t = i / 24, p = A.clone().lerp(B, t);
+    p.y -= sag * 4 * t * (1 - t);
+    pts.push(p);
+  }
+  const curve = new THREE.CatmullRomCurve3(pts);
+  g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 32, 0.006, 4), R.wire));
+  const im = new THREE.InstancedMesh(new THREE.SphereGeometry(0.045, 8, 6), R.bulb, n);
+  const d = new THREE.Object3D();
+  for (let i = 0; i < n; i++) {
+    const p = curve.getPoint((i + 0.5) / n);
+    d.position.set(p.x, p.y - 0.06, p.z);
+    d.updateMatrix();
+    im.setMatrixAt(i, d.matrix);
+  }
+  g.add(im);
+  return g;
+}
+
+/** Poste de hierro de 3 m para la guirnalda, con base de concreto. */
+export function lightPost() {
+  const g = new THREE.Group();
+  cyl(g, 0.15, 0.25, M.concrete, 0, 0.125, 0, 12);
+  cyl(g, 0.035, 2.9, R.iron, 0, 1.6, 0, 8);
   return g;
 }
 

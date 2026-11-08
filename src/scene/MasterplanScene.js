@@ -93,12 +93,17 @@ export class MasterplanScene {
     const night = Math.max(ss(17.1, 18.0, hour), 1 - ss(5.9, 6.5, hour));
     // hora dorada (como en los renders): sol más cálido y fuerte, cielo de relleno más tenue
     const golden = ss(15.4, 16.5, hour) * (1 - ss(17.35, 17.85, hour));
+    // mañana: sol bajo y tibio; mediodía: luz neutra un poco más contenida (no se quema el pañete blanco)
+    const morning = ss(5.9, 6.7, hour) * (1 - ss(8.3, 9.6, hour));
+    const noon = ss(10.4, 11.4, hour) * (1 - ss(13.6, 14.6, hour));
     this.sun.color.lerp(this._goldenTint ||= new THREE.Color(1.0, 0.6, 0.32), golden * 0.55);
-    this.sun.intensity *= 1 + golden * 0.45;
-    this._hemiBase = 0.4 * (1 - golden * 0.3);
+    this.sun.color.lerp(this._morningTint ||= new THREE.Color(1.0, 0.8, 0.62), morning * 0.4);
+    this.sun.intensity *= 1 + golden * 0.45 + morning * 0.15;
+    // luz de relleno del cielo un poco más alta: las sombras quedan algo más suaves
+    this._hemiBase = 0.46 * (1 - golden * 0.3) * (1 + morning * 0.1);
     this.hemi.intensity = this._hemiBase * (this._cut ? 2.6 : 1);   // planta abierta: más luz de cielo adentro
     this._baseExposure ??= this.renderer.toneMappingExposure;
-    this.renderer.toneMappingExposure = this._baseExposure * (1 + golden * 0.08);
+    this.renderer.toneMappingExposure = this._baseExposure * (1 + golden * 0.08 + morning * 0.05 - noon * 0.05);
     // en la hora dorada los apartamentos y los bañadores de fachada se encienden antes que la calle
     const dusk = Math.max(night, ss(16.3, 17.2, hour) * 0.85);
     setNight(dusk);
@@ -116,7 +121,7 @@ export class MasterplanScene {
   /** Niebla y plano cercano según la distancia de la cámara; el cielo y las nubes la siguen. */
   _updateRange() {
     const cam = this.camera, dist = cam.position.distanceTo(this.controls.target);
-    const near = THREE.MathUtils.clamp(dist * 0.012, 0.3, 30);
+    const near = THREE.MathUtils.clamp(dist * 0.012, 0.06, 30);   // adentro de un apartamento la cámara queda cerca
     if (Math.abs(near - cam.near) > 0.02 * cam.near) { cam.near = near; cam.updateProjectionMatrix(); }
     // bruma de altura (perspectiva aérea): los Cerros y el fondo se aclaran como en las fotos de dron
     this.scene.fog.near = 120 + dist * 0.6;
@@ -146,6 +151,7 @@ export class MasterplanScene {
     this.building.setNight(this._dusk ?? 0);
     // tráfico sobre las calles reales: carros en movimiento, semáforos y cebras
     if (vias) { try { this.traffic = new Traffic(this.scene, vias, { mobile: this.mobile, andenes }); this.traffic.setNight(this._night || 0); } catch (e) { console.warn('tráfico', e); } }
+    this.building.parkCars(this.traffic);   // fuera del carril de los carros que circulan
     this.pois = new PoiLayer(this.scene, {
       puntos: puntos.p, predios: predios.p, project, competencia: project.competencia,
       onPick: (p) => this.onPick?.(p)
@@ -210,6 +216,17 @@ export class MasterplanScene {
 
     if (s.viewMode !== this._mode) { this._mode = s.viewMode; this.applyViewMode(s.viewMode); }
     if (s.selectedUnitId !== this._sel) { this._sel = s.selectedUnitId; if (sel) this.focusUnit(sel.id); }
+    // vista interior (cocina o habitación) de la unidad elegida
+    const iv = sel && s.interiorUnit === sel.id ? s.interiorView : null;
+    if (iv !== this._iv) {
+      const was = this._iv;
+      this._iv = iv;
+      this.building.setInterior(!!iv);
+      this._minDist ??= this.controls.minDistance;
+      this.controls.minDistance = iv ? 0.3 : this._minDist;
+      if (iv) this.viewInterior(sel, iv);
+      else if (was && sel) this.focusUnit(sel.id);
+    }
     this.pois.setCompact(s.viewMode === 'exterior' && !!sel);
   }
 
@@ -242,6 +259,25 @@ export class MasterplanScene {
     const back = this.camera.position.clone().sub(this.controls.target).setY(0).normalize();
     if (back.lengthSq() < 0.1) back.set(-0.7, 0, -0.7);
     this.flyTo(p.clone().addScaledVector(back, 26).setY(p.y + 22), p.clone().setY(p.y - 1), 1.3);
+  }
+
+  /**
+   * Compila todos los materiales antes de la intro (con el mobiliario visible un momento), para que la
+   * llegada no se trabe compilando shaders cuando aparecen los pisos.
+   */
+  async precompile() {
+    const b = this.building;
+    b.aptFurniture.forEach((m) => { m.visible = true; });
+    b.floorGroups.forEach((g) => { g.visible = true; });
+    b.roof.visible = true;
+    try { await (this.renderer.compileAsync ? this.renderer.compileAsync(this.scene, this.camera) : this.renderer.compile(this.scene, this.camera)); } catch (e) { console.warn('precompilación', e); }
+    b.aptFurniture.forEach((m) => { m.visible = false; });
+  }
+
+  /** Entra al apartamento: la cámara baja a la altura de los ojos mirando la cocina o la habitación. */
+  viewInterior(unit, kind) {
+    const { pos, target } = this.building.interiorCamera(unit, kind);
+    this.flyTo(pos, target, 2.2, 'power3.inOut');
   }
 
   focusPoint(x, z, dist = 260) {

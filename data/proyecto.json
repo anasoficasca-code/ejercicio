@@ -145,9 +145,8 @@
     "nota": "Edificio modelado en Revit (ejercicio2.rvt): planta de 24,84 × 14,00 m, 6 pisos de 3,10 m y punto fijo central de 27,08 m². Piso 1: lobby y zonas sociales; pisos 2 a 6: 4 apartamentos por piso (20 en total), 2 tipo A sobre la Calle 56 y 2 tipo B hacia el patio, cada uno con sala-comedor-cocina, 2 alcobas, 2 baños, ropas y depósito; cubierta: terraza comunal. Antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m (POT, Decreto 555 de 2021).",
     "piso1": [
       "Lobby de acceso",
-      "Salón social",
+      "Restaurante con terraza",
       "Sala de cine",
-      "Café lounge",
       "Bicicletero"
     ]
   },
@@ -656,9 +655,8 @@
     "unidades": 20,
     "piso1": [
       "Lobby de acceso",
-      "Salón social",
+      "Restaurante con terraza",
       "Sala de cine",
-      "Café lounge",
       "Bicicletero"
     ],
     "cubierta": [

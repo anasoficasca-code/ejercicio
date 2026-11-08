@@ -7,16 +7,25 @@ export class UnitDetailCard {
     this.container = container;
     this.container.className = 'room-detail-card';
     this.container.addEventListener('click', (e) => {
-      if (e.target.closest('#btn-close-detail')) store.setState({ selectedUnitId: null });
+      const iv = e.target.closest('[data-iv]');
+      if (iv) store.setState({ interiorView: iv.dataset.iv || null, interiorUnit: store.state.selectedUnitId });
+      else if (e.target.closest('#btn-close-detail')) store.setState({ selectedUnitId: null, interiorView: null });
       else if (e.target.closest('#btn-view-gallery')) onOpenGallery(store.getSelectedUnit());
     });
     store.subscribe(() => this.render());
   }
 
+  /** Marca el botón de la vista actual (planta, cocina o habitación) sin rehacer la tarjeta. */
+  syncViews(u) {
+    const s = store.state, cur = s.interiorUnit === u.id ? s.interiorView || '' : '';
+    this.container.querySelectorAll('[data-iv]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.iv === cur)));
+    this.container.classList.toggle('is-interior', !!cur);
+  }
+
   render() {
     const u = store.getSelectedUnit();
     if (!u) { this.container.classList.remove('visible'); this._id = null; return; }
-    if (u.id === this._id) return;
+    if (u.id === this._id) { this.syncViews(u); return; }
     this._id = u.id;
     const p = store.state.project;
     const apt = u.typology === 'Apartamento';
@@ -24,6 +33,11 @@ export class UnitDetailCard {
       <button class="detail-close-btn" id="btn-close-detail">✕</button>
       <div class="detail-title">${u.title}</div>
       <div class="detail-subtitle">${p.ubicacion.direccion} · ${p.ubicacion.barrio}</div>
+      ${apt ? `<div class="view-seg" role="group" aria-label="Recorrer el apartamento">
+        <button data-iv="" aria-pressed="true">Planta</button>
+        <button data-iv="cocina" aria-pressed="false">Cocina</button>
+        <button data-iv="habitacion" aria-pressed="false">Habitación</button>
+      </div>` : ''}
       <div class="detail-props">
         <div class="detail-prop-line"><span class="label">Piso:</span> ${u.floor} de ${p.proyectoActual.pisos}</div>
         <div class="detail-prop-line"><span class="label">Tipología:</span> ${u.typology}</div>
@@ -42,6 +56,7 @@ export class UnitDetailCard {
         </button>
       </div>`;
     this.container.classList.add('visible');
+    this.syncViews(u);
     // el precio cuenta hasta su valor al abrir la unidad
     const pv = this.container.querySelector('.price-val'), g = window.gsap;
     if (pv && g && !matchMedia('(prefers-reduced-motion: reduce)').matches) {

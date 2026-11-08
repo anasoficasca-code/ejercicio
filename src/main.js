@@ -52,6 +52,8 @@ class App {
       await Promise.race([this.scene.city.ready, new Promise((r) => setTimeout(r, 7000))]);
       const hour = document.getElementById('sky-hour');
       this.scene.setHour(parseFloat(hour.value));
+      this.loading.set(0.95, 'Preparando el recorrido…');
+      await this.scene.precompile();
       this.loading.done();
       // llegada: la cámara baja sobre Galerías hasta la esquina mientras se encienden las luces de la tarde
       this.intro = new Intro({

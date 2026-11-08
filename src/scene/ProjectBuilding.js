@@ -5,7 +5,7 @@ import { architectureMaterial, boxUV, windowMaterials } from './BuildingMaterial
 import { interiorMaterial, withOakFloor } from './InteriorMaterials.js';
 import { applyPBR, SURFACES } from './PBRSurfaces.js';
 import { BalconyPlants } from './BalconyPlants.js';
-import { bench, lamp, bikeRack, bin, planter, bollard, hedge, place, car } from './ParkFurniture.js';
+import { bench, lamp, bikeRack, bin, planter, bollard, hedge, place, car, gardenBed, shrub, bistroSet, parasol, awning, stringLights, lightPost, setRestaurantNight } from './ParkFurniture.js';
 
 /**
  * ProjectBuilding — el proyecto sobre el englobe del Parqueadero Divino Salvador (cinco lotes catastrales,
@@ -141,6 +141,7 @@ export class ProjectBuilding {
     this._buildSite();
     for (let i = 0; i < this.floors; i++) this._buildFloor(i);
     this.balconyPlants = new BalconyPlants(this.floorGroups, FLOOR_H);
+    this._buildDecor();
     this.roof = new THREE.Group();
     this.roof.name = 'Cubierta';
     this.plate.add(this.roof);
@@ -274,15 +275,19 @@ export class ProjectBuilding {
     const g = (w, d, x, z, mat = M.grass, h = 0.06) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x + w / 2, h / 2, z + d / 2); m.receiveShadow = true; groundUV(m); f.add(m); return m; };
     // antejardines verdes sobre la Calle 56 y la Carrera 18, con el acceso peatonal al lobby
     g(this.ox + 2.5 - 1.2, ant - 0.4, 0.2, 0.2);
-    g(xMax - (this.ox + 5.5) - 0.4, ant - 0.4, this.ox + 5.5, 0.2);
+    g(12.0 - 5.5, ant - 0.4, this.ox + 5.5, 0.2);                                   // hasta donde empieza el restaurante
+    if (xMax - (this.ox + PW) > 0.8) g(xMax - (this.ox + PW) - 0.5, ant - 0.4, this.ox + PW + 0.1, 0.2);
     g(ant - 0.4, zMax - ant - 0.4, Math.max(0, this.ox - ant) + 0.2, ant);
-    // patio posterior: jardín de césped con sendero de piedra, jardineras bajas y bancas (sin juegos infantiles)
+    this._buildRestaurant();
+    // patio posterior: jardín de césped con sendero de piedra, canteros plantados y bancas
     const pz = this.oz + PD + 0.6;
     g(PW - 2, zMax - pz - back + 2.2, this.ox + 1, pz, M.grass);
     g(1.4, zMax - pz - back + 1.4, this.ox + 9.5, pz + 0.4, M.paving, 0.08);           // sendero hacia el fondo
     g(PW - 4, 1.2, this.ox + 2, pz + 3.6, M.paving, 0.08);                             // sendero transversal
-    for (const [x, z, w] of [[this.ox + 2.2, pz + 6, 5], [this.ox + 12.5, pz + 6, 6], [this.ox + 19.5, pz + 0.8, 4.5]]) {
-      place(f, planter(w, 0.9), x + w / 2, z + 0.45, 0);
+    // canteros de jardín: arbustos de varios lóbulos, pastos ornamentales y flores (antes, materas con esferas)
+    for (const [x, z, w, d, s] of [[this.ox + 2.2, pz + 5.8, 5, 1.5, 3], [this.ox + 12.5, pz + 5.8, 6, 1.5, 5], [this.ox + 19.5, pz + 0.7, 4.5, 1.4, 7],
+      [this.ox + 1.2, pz + 0.7, 3.2, 1.2, 9], [this.ox + 11.2, pz + 0.7, 1.8, 2.6, 11]]) {
+      place(f, gardenBed(w, d, s), x + w / 2, z + d / 2, 0, 0.05);
     }
     for (const x of [this.ox + 3.5, this.ox + 6.5]) place(f, bench(), x, pz + 3.0, 0);
     // bancas, luminarias y canecas alrededor del patio
@@ -299,18 +304,15 @@ export class ProjectBuilding {
     for (const x of [this.ox + 2.4, this.ox + 3.2, this.ox + 4.0]) place(f, bollard(), x, 0.4);
     // setos bajos de cerramiento sobre los antejardines (con el acceso peatonal y vehicular libres)
     place(f, hedge(this.ox + 0.4), (this.ox + 0.4) / 2, 0.45);
-    place(f, hedge(xMax - (this.ox + 13) - 7), this.ox + 13 + (xMax - (this.ox + 13) - 7) / 2, 0.45);
     place(f, hedge(zMax - ant - 2), Math.max(0, this.ox - ant) + 0.45, ant + 1 + (zMax - ant - 2) / 2, Math.PI / 2);
     // rampa al sótano de parqueaderos (44 cupos + 9 de visitantes según la lámina) sobre el costado oriental
     const rx = this.ox + PW + 1.5;
     g(Math.min(4.2, xMax - rx - 0.5), zMax - ant - 1, rx, ant + 0.5, M.asphalt, 0.05);
-    // carros parqueados sobre la Calle 56 y la Carrera 18 (modelos del masterplan La Fontana)
+    // carros parqueados sobre la Calle 56 y la Carrera 18: se ubican cuando existe el tráfico (parkCars),
+    // corridos hacia el andén si invadían el carril por donde pasan los carros en movimiento
     const west = Math.min(...this.poly.filter((p) => p[1] < 25).map((p) => p[0]));
-    car(f, 'sedan', 7, -3.9, Math.PI / 2, -0.34);
-    car(f, 'taxi', 13.5, -3.9, Math.PI / 2, -0.34);
-    car(f, 'suv', 20, -3.9, -Math.PI / 2, -0.34);
-    car(f, 'sedan', west - 3.9, 12, 0, -0.34);
-    car(f, 'suv', west - 3.9, 19, Math.PI, -0.34);
+    this._parked = [['sedan', 7, -3.9, Math.PI / 2], ['taxi', 13.5, -3.9, Math.PI / 2], ['suv', 20, -3.9, -Math.PI / 2],
+      ['sedan', west - 3.9, 12, 0], ['suv', west - 3.9, 19, Math.PI]];
     // arborización con los árboles 3D del masterplan La Fontana: andenes, antejardines y patio
     this._treePts = [];
     const tree = (x, z, sp) => this._treePts.push([x, z, sp]);
@@ -359,8 +361,66 @@ export class ProjectBuilding {
     this.plate.add(lights);
   }
 
+  /**
+   * Restaurante del piso 1 sobre la Calle 56 (antes salón social) con terraza en el antejardín: deck de
+   * madera, doce mesas bistró de mármol con sillas de ratán, parasoles crema, toldo verde sobre la fachada,
+   * materas en el borde del andén y guirnaldas de bombillos que se encienden al atardecer.
+   */
+  _buildRestaurant() {
+    const f = this.frame, ox = this.ox, z0 = 0.25, z1 = this.oz - 0.15, x0 = ox + 12.3, x1 = ox + PW;
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 0.07, z1 - z0), M.deck);
+    deck.position.set((x0 + x1) / 2, 0.035, (z0 + z1) / 2);
+    deck.receiveShadow = true;
+    groundUV(deck);
+    f.add(deck);
+    const rows = [z0 + 0.85, z0 + 2.25];
+    for (let k = 0; k < 6; k++) {
+      const x = x0 + 1.1 + k * 2.1;
+      if (x > x1 - 0.8) break;
+      rows.forEach((z, j) => place(f, bistroSet(2), x, z, (k + j) % 2 ? Math.PI / 2 : 0, 0.07));
+      if (k % 2 === 0) place(f, parasol(), x, rows[0], 0, 0.07);
+    }
+    place(f, awning(x1 - x0, 1.6), (x0 + x1) / 2, this.oz, 0);
+    // guirnaldas en zigzag entre los postes del borde y la fachada (por encima del toldo)
+    const posts = [];
+    for (let x = x0 + 0.2; x <= x1 + 0.01; x += (x1 - x0 - 0.4) / 3) posts.push(x);
+    posts.forEach((x) => place(f, lightPost(), x, 0.18));
+    for (let i = 0; i < posts.length - 1; i++) {
+      const xm = (posts[i] + posts[i + 1]) / 2;
+      f.add(stringLights([posts[i], 3.05, 0.18], [xm, 3.0, this.oz - 0.05], 0.35, 9));
+      f.add(stringLights([xm, 3.0, this.oz - 0.05], [posts[i + 1], 3.05, 0.18], 0.35, 9));
+      f.add(stringLights([posts[i], 3.05, 0.18], [posts[i + 1], 3.05, 0.18], 0.4, 12));
+      place(f, planter(Math.min(2.6, posts[i + 1] - posts[i] - 0.6), 0.42, 20 + i), xm, 0.24, 0, 0.0);
+    }
+    // arbustos a la entrada del restaurante (junto al bicicletero)
+    place(f, shrub(0.38, 77), x0 - 0.4, 0.6);
+  }
+
+  /**
+   * Carros parqueados junto al lote: cada uno se corre hacia el andén lo necesario para quedar fuera del
+   * carril de los carros en movimiento (Traffic.roadClearance); si no cabe, no se dibuja.
+   */
+  parkCars(traffic) {
+    if (this._parkedDone) return;
+    this._parkedDone = true;
+    this.group.updateMatrixWorld(true);
+    const w = new THREE.Vector3();
+    for (const [kind, x, z, ry] of this._parked || []) {
+      this.frame.localToWorld(w.set(x, 0, z));
+      const c = traffic?.roadClearance(w.x, w.z);
+      if (c && c.d < c.need) {
+        const push = c.need - c.d;
+        if (push > 2.6) continue;                          // tendría que subirse al andén: se omite
+        w.x += c.nx * push; w.z += c.nz * push;
+      }
+      const p = this.frame.worldToLocal(w.clone());
+      car(this.frame, kind, p.x, p.z, ry, -0.34);
+    }
+  }
+
   /** 0 de día, 1 de noche: bañadores de fachada y luminarias de piso. */
   setNight(v) {
+    setRestaurantNight(v);
     if (!this.washMat) return;
     this.washMat.opacity = v * 0.5;
     this.fixtureMat.emissiveIntensity = v * 5;
@@ -405,7 +465,7 @@ export class ProjectBuilding {
     if (i === 0) {
       const zc = (title, quad, facades) => ({ typology: 'Zona común', title, facades, area: +area(Q[quad]).toFixed(1) });
       mk('lobby', 'NW', { ...zc('Lobby de acceso y bicicletero', 'NW', 'Calle 56 y Carrera 18'), location: 'Esquina Calle 56 con Carrera 18' });
-      mk('salon', 'NE', { ...zc('Salón social y café lounge', 'NE', 'Calle 56'), location: 'Sobre la Calle 56' });
+      mk('salon', 'NE', { ...zc('Restaurante con terraza', 'NE', 'Calle 56'), location: 'Sobre la Calle 56 · terraza en el antejardín' });
       mk('cine', 'SW', { ...zc('Sala de cine', 'SW', 'Carrera 18 y patio'), location: 'Hacia el patio' });
       mk('gym', 'SE', { ...zc('Gimnasio y salón de juegos', 'SE', 'Patio'), location: 'Hacia el patio' });
     } else {
@@ -459,10 +519,76 @@ export class ProjectBuilding {
   }
 
   /**
+   * Tapetes y matas de los apartamentos (pisos 2 a 6), como en los renders de venta: tapete crema bajo la
+   * sala y la cama principal y una mata en matera junto al ventanal de la sala. Solo se ven en el piso abierto.
+   */
+  _buildDecor() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#d8ccb8'; ctx.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 2600; i++) { ctx.fillStyle = `rgba(${Math.random() < 0.5 ? '245,238,226' : '170,155,132'},0.35)`; ctx.fillRect(Math.random() * 256, Math.random() * 256, 3, 2); }
+    ctx.strokeStyle = 'rgba(140,120,96,0.6)'; ctx.lineWidth = 6; ctx.strokeRect(10, 10, 236, 236);
+    const map = new THREE.CanvasTexture(c); map.colorSpace = THREE.SRGBColorSpace;
+    const rugMat = new THREE.MeshStandardMaterial({ map, roughness: 1 });
+    const potMat = new THREE.MeshStandardMaterial({ color: 0xd9d2c6, roughness: 0.7 });
+    // [x0, z0, x1, z1] de los tapetes y (x, z) de la mata para A y B; C y D son su espejo
+    const A = { rugs: [[1.0, 0.35, 5.1, 2.45], [8.7, 0.6, 10.8, 2.7]], plant: [0.6, 0.6] };
+    const B = { rugs: [[1.1, 11.4, 5.4, 13.6], [9.0, 11.7, 11.0, 13.7]], plant: [0.6, 13.4] };
+    const mir = (o) => ({ rugs: o.rugs.map(([x0, z0, x1, z1]) => [PW - x1, z0, PW - x0, z1]), plant: [PW - o.plant[0], o.plant[1]] });
+    for (let f = 1; f < this.floors; f++) {
+      const y = f * FLOOR_H - 0.13;                         // sobre la losa (su cara superior queda 14 cm bajo el nivel)
+      for (const apt of [A, B, mir(A), mir(B)]) {
+        for (const [x0, z0, x1, z1] of apt.rugs) {
+          const rug = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 0.012, z1 - z0), rugMat);
+          rug.position.set((x0 + x1) / 2, y + 0.006, (z0 + z1) / 2);
+          rug.receiveShadow = true;
+          this.floorGroups[f].add(rug);
+          rug.userData.floorIndex = f; this.aptFurniture.push(rug);
+        }
+        const pot = new THREE.Group();
+        const p = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.15, 0.42, 16), potMat);
+        p.position.y = 0.21; pot.add(p);
+        const s = shrub(0.32, f * 7 + Math.round(apt.plant[0])); s.position.y = 0.42; s.scale.set(1, 1.5, 1); pot.add(s);
+        pot.position.set(apt.plant[0], y, apt.plant[1]);
+        pot.traverse((m) => { if (m.isMesh) { m.castShadow = true; } });
+        this.floorGroups[f].add(pot);
+        pot.userData.floorIndex = f; this.aptFurniture.push(pot);
+      }
+    }
+  }
+
+  /**
+   * Cámara a la altura de los ojos dentro de un apartamento: 'cocina' (desde la sala hacia la cocina y el
+   * comedor) o 'habitacion' (desde la puerta hacia la cama principal). Coordenadas de la planta de Revit.
+   */
+  interiorCamera(unit, kind) {
+    const n = +String(unit.id).slice(-1);                  // x01 A · x02 C · x03 B · x04 D
+    const VIEWS = {
+      // la habitación se mira desde la franja libre entre el ventanal y el clóset (el baño privado ocupa la otra esquina)
+      A: { cocina: [[4.6, 1.0], [0.6, 5.6]], habitacion: [[11.75, 0.55], [8.6, 1.65]] },
+      B: { cocina: [[4.8, 13.4], [1.0, 8.8]], habitacion: [[11.9, 13.55], [8.8, 12.7]] }
+    };
+    const v = VIEWS[n === 1 || n === 2 ? 'A' : 'B'][kind];
+    const mx = (x) => (n === 2 || n === 4 ? PW - x : x);
+    const y0 = (unit.floor - 1) * FLOOR_H;
+    return {
+      pos: this.world(mx(v[0][0]), y0 + 1.5, v[0][1]),
+      target: this.world(mx(v[1][0]), y0 + (kind === 'cocina' ? 1.0 : 0.55), v[1][1])
+    };
+  }
+
+  /** Dentro de un apartamento se ocultan los volúmenes de selección (teñirían toda la vista). */
+  setInterior(on) {
+    this._interior = on;
+    for (const v of this.unitVolumes) { v.material.visible = !on && v.material.visible; v.children[0].material.visible = !on && v.children[0].material.visible; }
+  }
+
+  /**
    * El edificio se arma piso por piso (para la llegada de la intro): cada piso cae desde arriba sobre el
    * anterior y al final la cubierta con la pérgola. Devuelve la línea de tiempo de GSAP.
    */
-  assemble({ delay = 0, step = 0.32 } = {}) {
+  assemble({ delay = 0, step = 0.62 } = {}) {
     const g = window.gsap;
     if (!g || matchMedia('(prefers-reduced-motion: reduce)').matches) return null;
     const layers = [...this.floorGroups, this.roof];
@@ -471,7 +597,7 @@ export class ProjectBuilding {
     const tl = g.timeline({ delay, onComplete: () => { this._assembling = false; this.setCut(this.cut ?? null); } });
     layers.forEach((l, i) => {
       tl.call(() => { l.visible = true; }, null, i * step)
-        .fromTo(l.position, { y: 16 }, { y: 0, duration: 0.9, ease: 'power4.out' }, i * step);
+        .fromTo(l.position, { y: 14 }, { y: 0, duration: 1.5, ease: 'power3.out' }, i * step);
     });
     return tl;
   }
@@ -484,10 +610,11 @@ export class ProjectBuilding {
       // el cursor, al seleccionarlas o al filtrar; así el edificio se ve como un render, sin el tinte rojo
       v.visible = inFilter || sel;
       const touring = document.body.classList.contains('is-touring');
-      const shown = sel || hov || (inFilter && (show || (!!filter && !touring)));
+      const shown = !this._interior && (sel || hov || (inFilter && (show || (!!filter && !touring))));
       v.material.visible = shown;
       v.children[0].material.visible = shown;
-      v.material.opacity = sel ? 0.3 : hov ? 0.34 : 0.16;
+      // la unidad elegida casi sin tinte: el borde la marca y el interior se ve con sus acabados reales
+      v.material.opacity = sel ? 0.05 : hov ? 0.34 : 0.16;
       v.material.color.setHex(sel ? 0x1f4f8f : 0x3a78c2);
       v.children[0].material.opacity = sel ? 1 : 0.7;
     }

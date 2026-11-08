@@ -37,7 +37,7 @@ function woodGrain(seed) {
   });
 }
 
-/** Piso laminado de roble claro: tablas de 1,20 × 0,19 m con juntas y tono variable. Tesela de 2,4 m. */
+/** Piso de nogal: tablas de 1,20 × 0,19 m con juntas, veta y tono variable (como los renders). Tesela de 2,4 m. */
 function oakPlanks() {
   const r = rng(91);
   const map = canvasTex(1024, 1024, (ctx, w, h) => {
@@ -45,26 +45,55 @@ function oakPlanks() {
     for (let j = 0; j < rows; j++) {
       const off = (j % 3) * (w / 6);
       for (let k = -1; k < 3; k++) {
-        const x = off + k * (w / 2), tone = 0.86 + r() * 0.2;
-        ctx.fillStyle = `rgb(${Math.round(201 * tone)},${Math.round(165 * tone)},${Math.round(124 * tone)})`;
+        const x = off + k * (w / 2), tone = 0.82 + r() * 0.26;
+        ctx.fillStyle = `rgb(${Math.round(112 * tone)},${Math.round(70 * tone)},${Math.round(44 * tone)})`;
         ctx.fillRect(x, j * rowH, w / 2, rowH);
         for (let s = 0; s < 22; s++) {
-          ctx.strokeStyle = `rgba(110,74,40,${0.05 + r() * 0.08})`;
+          ctx.strokeStyle = `rgba(${r() < 0.5 ? '52,30,16' : '150,100,62'},${0.06 + r() * 0.1})`;
           ctx.lineWidth = 0.6 + r() * 1.6;
           const y = j * rowH + r() * rowH;
           ctx.beginPath(); ctx.moveTo(x, y);
           for (let q = 0; q <= w / 2; q += 24) ctx.lineTo(x + q, y + Math.sin(q / 50 + s) * 1.6);
           ctx.stroke();
         }
-        ctx.fillStyle = 'rgba(70,48,28,0.55)';
+        ctx.fillStyle = 'rgba(30,18,10,0.6)';
         ctx.fillRect(x, j * rowH, 2, rowH);
       }
-      ctx.fillStyle = 'rgba(70,48,28,0.5)';
+      ctx.fillStyle = 'rgba(30,18,10,0.55)';
       ctx.fillRect(0, j * rowH, w, 2);
     }
   }, true, 1 / 2.4);
   return map;
 }
+
+/** Porcelanato claro tipo travertino (baños, pasillos, ropas y punto fijo): piezas de 60 × 60 cm. Tesela de 1,2 m. */
+function lightTiles() {
+  const r = rng(57);
+  return canvasTex(512, 512, (ctx, w, h) => {
+    const n = 2, s = w / n;
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      const t = 0.94 + r() * 0.08;
+      ctx.fillStyle = `rgb(${Math.round(226 * t)},${Math.round(216 * t)},${Math.round(200 * t)})`;
+      ctx.fillRect(i * s, j * s, s, s);
+      for (let k = 0; k < 90; k++) {               // poros y vetas suaves del travertino
+        ctx.fillStyle = `rgba(${r() < 0.5 ? '180,166,144' : '245,238,226'},${0.1 + r() * 0.2})`;
+        ctx.fillRect(i * s + r() * s, j * s + r() * s, 2 + r() * 14, 1 + r() * 2);
+      }
+    }
+    ctx.fillStyle = 'rgba(150,138,120,0.7)';
+    for (let k = 0; k <= n; k++) { ctx.fillRect(k * s - 1, 0, 2, h); ctx.fillRect(0, k * s - 1, w, 2); }
+  }, true, 1 / 1.2);
+}
+
+/**
+ * Zonas de piso claro en la planta tipo (metros desde la esquina Calle 56 / Carrera 18, x oriente, z sur):
+ * baños, ropas, depósitos y pasillos de los apartamentos A y B (de Revit) y sus espejos C y D, más el punto fijo.
+ */
+const PW = 24.84;
+const ZONES_A = [[3.04, 5.15, 4.23, 7.75], [4.34, 5.15, 6.23, 7.75], [6.34, 5.15, 7.73, 7.75], [10.24, 2.5, 12.06, 4.36], [2.98, 3.9, 9.41, 5.1], [7.78, 5.1, 9.41, 7.83]];
+const ZONES_B = [[4.44, 7.91, 5.83, 9.34], [5.94, 7.91, 7.93, 9.34], [8.04, 7.91, 9.33, 9.34], [10.64, 11.05, 12.22, 12.54], [4.38, 9.4, 12.3, 11.0]];
+const mirror = ([x0, z0, x1, z1]) => [PW - x1, z0, PW - x0, z1];
+export const FLOOR_ZONES = [...ZONES_A, ...ZONES_B, ...ZONES_A.map(mirror), ...ZONES_B.map(mirror), [9.41, 4.44, 15.26, 9.52]];
 
 /** Trama de tela (relieve): urdimbre y trama finas. Tesela de 0,25 m. */
 function fabricBump() {
@@ -96,6 +125,7 @@ function build() {
 
 const RULES = [
   [/glass|vidrio/i, 'glass'],
+  [/finsa-cabinets|cabinets-pro|larder|pro base/i, 'wood'],          // gabinetes de cocina: frentes de nogal
   [/leather|cuero/i, 'leather'],
   [/fabric|textil|textile|linen|lino|polyester|seat|lyris|carpet|tapete|cushion|cojin|bed|cama|sofa|couch|lana|wool/i, 'fabric'],
   [/porcel|ceram|sanitary|toilet|lavamanos|basin|vitreous/i, 'porcelain'],
@@ -117,30 +147,49 @@ export function interiorMaterial(hex, name = '', glass = false) {
   let c = new THREE.Color(hex);
   // los grises puros de Revit ("por defecto") se leen como plástico barato: un blanco hueso cálido
   if (kind === 'plain' && Math.abs(c.r - c.g) < 0.02 && Math.abs(c.g - c.b) < 0.02 && c.r > 0.55) c = new THREE.Color(0xe9e4dc);
+  // paleta de los renders de venta: nogal, tela crema, cuero café y mármol cálido
+  const luma = 0.3 * c.r + 0.59 * c.g + 0.11 * c.b;
+  if (kind === 'wood') c = new THREE.Color(0x4a2b18).multiplyScalar(0.9 + 0.2 * Math.min(1, luma));
+  if (kind === 'fabric' && luma < 0.8) c = new THREE.Color(luma < 0.25 ? 0x4a3f36 : 0xe2d6c3);
+  if (kind === 'leather') c = new THREE.Color(0x6a4430);
+  if (kind === 'stone') c = new THREE.Color(0xebe3d5);
   const m = lib[kind](c);
   lib.cache.set(key, m);
   return m;
 }
 
-/** Piso de roble para las caras horizontales hacia arriba de las losas (dentro de los apartamentos). */
-let oak = null;
+/**
+ * Piso de las caras horizontales hacia arriba de las losas (dentro de los apartamentos): nogal en salas,
+ * comedores y alcobas; porcelanato claro en las zonas de FLOOR_ZONES (baños, pasillos, ropas, punto fijo).
+ */
+let oak = null, tiles = null;
+const zoneVecs = FLOOR_ZONES.map(([x0, z0, x1, z1]) => new THREE.Vector4(x0, z0, x1, z1));
 export function withOakFloor(material, maxY = 18300) {
   oak ??= oakPlanks();
+  tiles ??= lightTiles();
   if (material.userData.oak) return material;
   material.userData.oak = true;
   const prev = material.onBeforeCompile;
   material.onBeforeCompile = (sh, r) => {
     prev?.(sh, r);
     sh.uniforms.tOak = { value: oak };
+    sh.uniforms.tTile = { value: tiles };
+    sh.uniforms.uZones = { value: zoneVecs };
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vOakP; varying float vOakUp;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvOakP = position; vOakUp = normal.y;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform sampler2D tOak; varying vec3 vOakP; varying float vOakUp;')
+      .replace('#include <common>', `#include <common>\nuniform sampler2D tOak, tTile; uniform vec4 uZones[${zoneVecs.length}]; varying vec3 vOakP; varying float vOakUp;`)
       .replace('#include <map_fragment>', `#include <map_fragment>
         if (vOakUp > 0.9 && vOakP.y < ${maxY.toFixed(1)}) {
-          vec3 oakC = texture2D(tOak, vOakP.xz * 0.001 / 2.4).rgb;
-          diffuseColor.rgb = oakC;   // la textura es sRGB: WebGL2 ya la entrega en lineal
+          vec2 pm = vOakP.xz * 0.001;
+          float light = 0.0;
+          for (int i = 0; i < ${zoneVecs.length}; i++) {
+            vec4 z = uZones[i];
+            light = max(light, step(z.x, pm.x) * step(pm.x, z.z) * step(z.y, pm.y) * step(pm.y, z.w));
+          }
+          // las texturas son sRGB: WebGL2 ya las entrega en lineal
+          diffuseColor.rgb = mix(texture2D(tOak, pm / 2.4).rgb, texture2D(tTile, pm / 1.2).rgb, light);
         }`);
   };
   const key = material.customProgramCacheKey?.bind(material);

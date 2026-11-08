@@ -61,10 +61,10 @@ export class Intro {
     const hour = { h: 15.6 };
     // mientras la cámara baja, el edificio se arma piso por piso sobre el lote
     const started = performance.now();
-    s.building.ready?.then(() => s.building.assemble({ delay: Math.max(0, 1.4 - (performance.now() - started) / 1000) }));
+    s.building.ready?.then(() => s.building.assemble({ delay: Math.max(0, 1.0 - (performance.now() - started) / 1000) }));
     this.tl = g.timeline({ onComplete: () => { s.controls.enabled = true; } })
-      .to(s.camera.position, { x: home.pos.x, y: home.pos.y, z: home.pos.z, duration: 6.2, ease: 'power3.inOut' }, 0)
-      .to(s.controls.target, { x: home.target.x, y: home.target.y, z: home.target.z, duration: 6.2, ease: 'power3.inOut' }, 0)
+      .to(s.camera.position, { x: home.pos.x, y: home.pos.y, z: home.pos.z, duration: 7.6, ease: 'power3.inOut' }, 0)
+      .to(s.controls.target, { x: home.target.x, y: home.target.y, z: home.target.z, duration: 7.6, ease: 'power3.inOut' }, 0)
       .to(hour, { h: 16.9, duration: 5.2, ease: 'sine.inOut', onUpdate: () => { s.setHour(hour.h); syncSlider(hour.h); } }, 0.6)
       .fromTo(this.el.querySelectorAll('.ai-ch'), { yPercent: 110, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.1, stagger: 0.09, ease: 'expo.out' }, 0.5)
       .fromTo(this.el.querySelector('.ai-sub'), { opacity: 0, letterSpacing: '0.6em' }, { opacity: 1, letterSpacing: '0.32em', duration: 1.4, ease: 'power2.out' }, 1.2)

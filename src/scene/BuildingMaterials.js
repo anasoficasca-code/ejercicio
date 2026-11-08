@@ -175,15 +175,18 @@ function build() {
   const windowGlass = fresnelGlass({ color: 0xadb9bb, base: 0.38, edge: 0.92, env: 1.2 });
   const railGlass = fresnelGlass({ color: 0xe4eeeb, base: 0.10, edge: 0.55, env: 1.0, lit: 0 });
   const grass = std({ color: 0x5f7f3e, roughness: 1 });
+  // interiores como los renders de venta: muros de placa de yeso en beige cálido y puertas de nogal
+  const warmWall = std({ ...paint, color: 0xe9ddca, roughness: 0.9, normalScale: new THREE.Vector2(0.25, 0.25), envMapIntensity: 0.4 });
+  const walnut = std({ color: 0x55341f, roughness: 0.55, envMapIntensity: 0.7 });
   return {
     glass: { '0a64f4': windowGlass, '0080c0': railGlass },
     byHex: {
-      '82482d': brickMat, '764633': brickDark, '52321d': brickDark,
+      '82482d': brickMat, '764633': walnut, '52321d': brickDark,
       'd2c8aa': stuccoMat, 'ded08b': stuccoMat,
       '95c4ee': slabEdge, 'f7f7ef': slabEdge, 'f7f7f7': slabEdge,
-      'f9f9f9': whitePaint, 'ffffff': whitePaint,
-      '808080': concreteMat, 'c0c0c0': concreteMat, '7f7f7f': concreteMat, '787878': concreteMat,
-      '977b4c': bronze, 'e0b27e': bronzeLight, 'd29f5f': bronzeLight, '39301e': bronze,
+      'f9f9f9': warmWall, 'ffffff': whitePaint,
+      '808080': warmWall, 'c0c0c0': concreteMat,     // 808080: cara interior de los muros de fachada y del punto fijo '7f7f7f': concreteMat, '787878': concreteMat,
+      '977b4c': bronze, 'e0b27e': bronzeLight, 'd29f5f': walnut, '39301e': bronze,
       'ecefef': steel, 'b4b4b4': steel, '505050': darkMetal,
       '85b22c': grass
     }

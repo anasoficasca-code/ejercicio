@@ -12,6 +12,8 @@ export class MasterplanStore {
       activeTypology: null,          // 'Apartamento' | 'Zona común'
       selectedUnitId: null,
       hoveredUnitId: null,
+      interiorView: null,            // null (planta abierta) | 'cocina' | 'habitacion'
+      interiorUnit: null,            // unidad a la que pertenece la vista interior
       activeTab: 'inmuebles',        // 'ubicacion' | 'urbanismo' | 'inmuebles' | 'mercado' | 'predios' | 'galeria'
       viewMode: 'exterior',          // 'exterior' | 'contexto' | 'top'
       cityTheme: 'realista',         // 'realista' | 'maqueta' | 'usos' | 'valor' | 'altura'
