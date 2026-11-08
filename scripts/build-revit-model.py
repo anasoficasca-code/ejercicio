@@ -14,9 +14,9 @@ Uso: python scripts/build-revit-model.py revit_geom.json   (revit_geom.json sale
 import json, math, struct, sys
 from pathlib import Path
 
-src = Path(sys.argv[1])
 out_dir = Path(__file__).resolve().parent.parent / 'assets' / 'models'
-raw = json.loads(src.read_text())
+# uno o varios JSON de export-revit-geometry.py (p. ej. arquitectura y mobiliario por separado)
+raw = [m for f in sys.argv[1:] for m in json.loads(Path(f).read_text())]
 
 # las categorías se agrupan en capas para poder encender y apagar el mobiliario en la web
 LAYER = {'Furniture': 'mobiliario', 'Plumbing Fixtures': 'mobiliario', 'Casework': 'mobiliario',
@@ -25,13 +25,14 @@ LAYER = {'Furniture': 'mobiliario', 'Plumbing Fixtures': 'mobiliario', 'Casework
 groups = {}
 for m in raw:
     layer = LAYER.get(m['cat'], 'arquitectura')
-    key = (m['floor'], m['color'], m['glass'], layer)
+    # el nombre del material (tela, madera, porcelana…) le permite a la web darle un acabado real
+    key = (m['floor'], m['color'], m['glass'], layer, m.get('mat', ''))
     groups.setdefault(key, []).append(m)
 
 blob = bytearray()
 meshes = []
 tri_total = 0
-for (floor, color, glass, layer), parts in sorted(groups.items()):
+for (floor, color, glass, layer, matname), parts in sorted(groups.items()):
     vmap, pos, nor, idx = {}, [], [], []
     for m in parts:
         p, ii = m['p'], m['i']
@@ -58,6 +59,8 @@ for (floor, color, glass, layer), parts in sorted(groups.items()):
     tri_total += len(idx) // 3
     entry = {'floor': floor, 'color': '#' + color, 'glass': bool(glass), 'layer': layer,
              'vertices': len(pos), 'indices': len(idx)}
+    if matname:
+        entry['mat'] = matname
     entry['position'] = len(blob)
     for v in pos:
         blob += struct.pack('<3h', *v)

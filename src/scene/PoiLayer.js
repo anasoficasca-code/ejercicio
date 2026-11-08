@@ -8,8 +8,8 @@ import { distanceM, fmtDist, fmtMillones } from '../geo.js';
  * Las posiciones vienen de data/geometry/puntos.json (geocodificadas con placas de Catastro).
  */
 export const TIPOS = {
-  proyecto: { label: 'Proyecto', color: '#d81e28' },
-  competencia: { label: 'Competencia', color: '#c8a46e' },
+  proyecto: { label: 'Proyecto', color: '#1f4f8f' },
+  competencia: { label: 'Competencia', color: '#8fb4dc' },
   comercio: { label: 'Comercio', color: '#e5869d' },
   educacion: { label: 'Educación', color: '#5d9be0' },
   salud: { label: 'Salud', color: '#3fb68b' },
@@ -55,7 +55,7 @@ export class PoiLayer {
       if (l.id === 'lote-02' || l.id === 'englobe') continue;
       const info = project.predios.find((k) => k.id === l.id);
       const c = l.pts.reduce((s, q) => [s[0] + q[0] / l.pts.length, s[1] + q[1] / l.pts.length], [0, 0]);
-      const el = this._pin(info.nombre, `${info.direccion} · ${info.areaM2.toLocaleString('es-CO')} m²`, '#c8a46e', 'poi-pin lote');
+      const el = this._pin(info.nombre, `${info.direccion} · ${info.areaM2.toLocaleString('es-CO')} m²`, '#8fb4dc', 'poi-pin lote');
       el.onclick = () => onPick?.({ tipo: 'predio', id: l.id });
       this._add(el, c[0], 16, c[1], 'predios');
     }

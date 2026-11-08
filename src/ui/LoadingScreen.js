@@ -1,5 +1,5 @@
 /**
- * LoadingScreen — pantalla de carga con la marca Aurea Residencial mientras se descargan los datos de
+ * LoadingScreen — pantalla de carga con la marca Distrito Arboleda mientras se descargan los datos de
  * Catastro, el modelo de Revit y la ortofoto. La barra es una línea de ladrillo que crece bajo la marca.
  */
 export class LoadingScreen {
@@ -7,7 +7,7 @@ export class LoadingScreen {
     const el = document.createElement('div');
     el.className = 'ls-wrap';
     el.innerHTML = `
-      <div class="ls-mark"><span class="ls-word">Aurea</span><span class="ls-res">Residencial</span></div>
+      <div class="ls-mark"><span class="ls-res">Distrito</span><span class="ls-word">Arboleda</span></div>
       <div class="ls-bar"><i></i></div>
       <div class="ls-msg" role="status">Preparando la escena…</div>
       <img class="ls-logo" src="./assets/branding/jmc-logo-wide.png" alt="Un proyecto de JMC Arquitectura">`;

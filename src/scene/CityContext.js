@@ -89,6 +89,30 @@ const SIN_DATO = '#d6d1c7';
 const MAQUETA_MZ = '#e3ded4';
 const MAQUETA_BLD = '#f3f0ea';
 
+/**
+ * Retira la huella `d` metros hacia adentro: deja la franja de antejardín frente al andén y la separación
+ * entre construcciones vecinas que en Catastro vienen pegadas. Si el polígono es muy pequeño o el retiro
+ * lo deforma, se deja como viene.
+ */
+function insetFootprint(pts, d) {
+  const n = pts.length, a0 = Math.abs(signedArea(pts));
+  if (n < 3 || a0 < 40) return pts;
+  const attempt = (sg) => pts.map((c, i) => {
+    const p = pts[(i - 1 + n) % n], q = pts[(i + 1) % n];
+    const l1 = Math.hypot(c[0] - p[0], c[1] - p[1]) || 1, l2 = Math.hypot(q[0] - c[0], q[1] - c[1]) || 1;
+    const n1 = [-(c[1] - p[1]) / l1 * sg, (c[0] - p[0]) / l1 * sg], n2 = [-(q[1] - c[1]) / l2 * sg, (q[0] - c[0]) / l2 * sg];
+    let mx = n1[0] + n2[0], mz = n1[1] + n2[1];
+    const ml = Math.hypot(mx, mz) || 1; mx /= ml; mz /= ml;
+    const k = d / Math.max(0.35, mx * n1[0] + mz * n1[1]);
+    return [c[0] + mx * k, c[1] + mz * k];
+  });
+  for (const sg of [1, -1]) {
+    const r = attempt(sg), a = signedArea(r);
+    if (Math.sign(a) === Math.sign(signedArea(pts)) && Math.abs(a) < a0 && Math.abs(a) > a0 * 0.55) return r;
+  }
+  return pts;
+}
+
 function signedArea(p) {
   let a = 0;
   for (let i = 0; i < p.length; i++) {
@@ -192,7 +216,8 @@ export class CityContext {
     const nave = parts.length ? parts.reduce((a, b) => (area(b) > area(a) ? b : a)) : null;
     const tower = parts.filter((b) => b !== nave).reduce((a, b) => (!a || b.p > a.p ? b : a), null);
     if (nave && tower) this.church = new Church(this.group, { nave, tower, textures: this.textures });
-    this.buildingList = all.filter((b) => b !== nave && b !== tower);
+    // retiro de 0,7 m en todas las huellas: antejardín frente al andén y separación entre casas
+    this.buildingList = all.filter((b) => b !== nave && b !== tower).map((b) => ({ ...b, pts: insetFootprint(b.pts, 0.7) }));
     this.groundAO = this._bakeGroundAO(all);
 
     this._buildManzanas();
@@ -864,12 +889,61 @@ export class CityContext {
     if (!pts.length) return;
     this.streetTrees = new THREE.Group();
     this.streetTrees.name = 'Arborización de andenes';
-    new RealTrees().plant(pts, this.streetTrees, { mix: ['ash', 'ash', 'celtis', 'celtis', 'euc'], variants: 2, shadows: !this.mobile });
+    // árboles 3D completos solo cerca del proyecto (con sombra en las dos primeras cuadras);
+    // más lejos, la misma imagen de fresno girada hacia la cámara que usa la arboleda de la ciudad
+    const d = (p) => Math.hypot(p[0], p[2]);
+    const mix = ['ash', 'ash', 'celtis', 'celtis', 'euc'];
+    const trees = new RealTrees();
+    trees.plant(pts.filter((p) => d(p) < 140), this.streetTrees, { mix, variants: 2, shadows: !this.mobile });
+    trees.plant(pts.filter((p) => d(p) >= 140 && d(p) < 230), this.streetTrees, { mix, variants: 2, shadows: false });
+    const far = pts.filter((p) => d(p) >= 230);
+    if (far.length) {
+      const crowns = makeTreeImpostors(far.length);
+      const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), v = new THREE.Vector3();
+      far.forEach(([x, , z], k) => {
+        const r = hash(`${Math.round(x * 3)}_${Math.round(z * 3)}`), h = 7.5 + r * 4;
+        m.compose(v.set(x, this.heightAt(x, z) - 0.1, z), q, s.set(h * (0.9 + r * 0.25), h, 1));
+        crowns.setMatrixAt(k, m);
+      });
+      this.streetTrees.add(crowns);
+    }
     this.group.add(this.streetTrees);
   }
 
   /** Suelo de las manzanas en el tema realista: césped donde la ortofoto es verde, si no concreto gastado. */
+  /**
+   * Parques: manzanas grandes casi sin construcciones (menos del 12 % ocupado). En ellas el suelo es
+   * todo césped en vez de la mezcla de césped y concreto que sale de la ortofoto.
+   */
+  _markParks() {
+    const inside = (x, z, poly) => {
+      let c = false;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const [xi, zi] = poly[i], [xj, zj] = poly[j];
+        if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) c = !c;
+      }
+      return c;
+    };
+    const geo = this.manzanas.geometry, n = geo.attributes.position.count;
+    const park = new Float32Array(n);
+    const cents = this.buildingList.map((b) => [...centroid(b.pts), Math.abs(signedArea(b.pts))]);
+    this.parks = [];
+    for (const rg of this.mzRanges) {
+      const m = rg.it, area = Math.abs(signedArea(m.pts));
+      if (area < 1500) continue;
+      let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+      for (const [x, z] of m.pts) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+      let built = 0;
+      for (const [x, z, a] of cents) if (x > x0 && x < x1 && z > z0 && z < z1 && inside(x, z, m.pts)) built += a;
+      if (built / area > 0.12) continue;
+      this.parks.push(m);
+      for (const [s, e] of rg.parts) park.fill(1, s, e);
+    }
+    geo.setAttribute('aPark', new THREE.BufferAttribute(park, 1));
+  }
+
   _manzanaRealMat(L) {
+    this._markParks();
     const uni = {
       tSat: { value: L.tex }, uSatB: { value: new THREE.Vector4(L.x0, L.zN, L.x1 - L.x0, L.zS - L.zN) },
       tGrass: { value: loadPBR('leafy_grass', 'diff', true) }, tConc: { value: loadPBR('concrete_floor_worn_001', 'diff', true) }
@@ -877,15 +951,20 @@ export class CityContext {
     const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, metalness: 0 });
     mat.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, uni);
-      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vMW;')
-        .replace('#include <project_vertex>', '#include <project_vertex>\nvMW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vMW;\nattribute float aPark;\nvarying float vPark;')
+        .replace('#include <project_vertex>', '#include <project_vertex>\nvMW = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvPark = aPark;');
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <common>', '#include <common>\nvarying vec3 vMW;\nuniform sampler2D tSat, tGrass, tConc; uniform vec4 uSatB;')
+        .replace('#include <common>', '#include <common>\nvarying vec3 vMW;\nvarying float vPark;\nuniform sampler2D tSat, tGrass, tConc; uniform vec4 uSatB;')
         .replace('#include <map_fragment>', `
           vec2 w = vMW.xz; vec2 st = (w - uSatB.xy) / uSatB.zw; st.y = 1.0 - st.y;
-          vec3 s = texture2D(tSat, st).rgb;
-          float veg = smoothstep(0.09, 0.16, (s.g - max(s.r, s.b)) / max(s.g, 0.015));
-          vec3 grass = texture2D(tGrass, w / 2.4).rgb, conc = texture2D(tConc, w / 3.0).rgb * vec3(1.03, 1.0, 0.95);
+          // máscara de vegetación promediada en ~6 m: zonas verdes continuas en vez de manchas sueltas
+          vec2 o = 3.0 / uSatB.zw;
+          vec3 s = (texture2D(tSat, st).rgb * 2.0 + texture2D(tSat, st + vec2(o.x, 0.0)).rgb + texture2D(tSat, st - vec2(o.x, 0.0)).rgb
+                  + texture2D(tSat, st + vec2(0.0, o.y)).rgb + texture2D(tSat, st - vec2(0.0, o.y)).rgb) / 6.0;
+          float veg = smoothstep(0.06, 0.2, (s.g - max(s.r, s.b)) / max(s.g, 0.015));
+          veg = max(veg, vPark);
+          vec3 grass = texture2D(tGrass, w / 2.4).rgb * mix(vec3(1.0), vec3(0.62, 0.9, 0.45), vPark);
+          vec3 conc = texture2D(tConc, w / 3.0).rgb * vec3(1.03, 1.0, 0.95);
           diffuseColor.rgb *= mix(conc, grass, veg);`);
     };
     mat.customProgramCacheKey = () => 'manzana_realista';

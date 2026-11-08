@@ -30,6 +30,7 @@ export class MasterplanScene {
     this.renderer.toneMappingExposure = 1.35;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.autoUpdate = false;   // ver render(): un cuadro de cada dos
     container.appendChild(this.renderer.domElement);
 
     this.labels = new CSS2DRenderer();
@@ -94,8 +95,10 @@ export class MasterplanScene {
     const golden = ss(15.4, 16.5, hour) * (1 - ss(17.35, 17.85, hour));
     this.sun.color.lerp(this._goldenTint ||= new THREE.Color(1.0, 0.6, 0.32), golden * 0.55);
     this.sun.intensity *= 1 + golden * 0.45;
-    this.hemi.intensity = 0.4 * (1 - golden * 0.3);
-    this.renderer.toneMappingExposure = 1.35 + golden * 0.12;
+    this._hemiBase = 0.4 * (1 - golden * 0.3);
+    this.hemi.intensity = this._hemiBase * (this._cut ? 2.6 : 1);   // planta abierta: más luz de cielo adentro
+    this._baseExposure ??= this.renderer.toneMappingExposure;
+    this.renderer.toneMappingExposure = this._baseExposure * (1 + golden * 0.08);
     // en la hora dorada los apartamentos y los bañadores de fachada se encienden antes que la calle
     const dusk = Math.max(night, ss(16.3, 17.2, hour) * 0.85);
     setNight(dusk);
@@ -199,7 +202,11 @@ export class MasterplanScene {
 
     const sel = store.getSelectedUnit();
     const cut = sel ? sel.floor : (s.activeFloor || null);
-    if (cut !== this._cut) { this._cut = cut; this.building.setCut(cut); }
+    if (cut !== this._cut) {
+      this._cut = cut;
+      this.building.setCut(cut);
+      if (this._hemiBase != null) this.hemi.intensity = this._hemiBase * (cut ? 2.6 : 1);
+    }
 
     if (s.viewMode !== this._mode) { this._mode = s.viewMode; this.applyViewMode(s.viewMode); }
     if (s.selectedUnitId !== this._sel) { this._sel = s.selectedUnitId; if (sel) this.focusUnit(sel.id); }
@@ -286,8 +293,37 @@ export class MasterplanScene {
     this.postfx?.setSize(w, h);
   }
 
+  /**
+   * Calidad adaptable: si el cuadro tarda más de ~24 ms (menos de 42 fps) durante 2 s, baja la
+   * resolución un escalón; en el último escalón apaga la oclusión ambiental. Nunca sube de nuevo
+   * para no oscilar.
+   */
+  _adapt(dt) {
+    const a = (this._perf ||= { t: 0, n: 0, sum: 0, pr: null, warm: 0 });
+    // los primeros segundos después de cargar no cuentan: se están subiendo texturas a la GPU
+    if (!this.home || (a.warm += dt) < 10) return;
+    a.t += dt; a.n++; a.sum += dt;
+    if (a.t < 2) return;
+    const avg = a.sum / a.n;
+    a.t = a.n = a.sum = 0;
+    if (avg < 0.024 || document.hidden) return;
+    a.pr ??= this.renderer.getPixelRatio();
+    if (a.pr > 0.9) {
+      a.pr = Math.max(0.85, a.pr - 0.2);
+      this.renderer.setPixelRatio(a.pr);
+      this.postfx?.setPixelRatio(a.pr);
+      this.onResize();
+    } else if (this.postfx?.ao?.enabled) {
+      this.postfx.ao.enabled = false;
+    }
+  }
+
   render() {
     const dt = Math.min(this.clock.getDelta(), 0.1);
+    this._adapt(dt);
+    // las sombras se recalculan un cuadro de cada dos (el sol y casi todo el barrio están quietos)
+    this._frame = (this._frame || 0) + 1;
+    this.renderer.shadowMap.needsUpdate = this._frame % 2 === 0;
     this.skyEnv.update(dt);
     this.controls.update();
     this._updateRange();

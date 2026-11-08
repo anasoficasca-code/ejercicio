@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { RealTrees } from './RealTrees.js';
 import { architectureMaterial, boxUV } from './BuildingMaterials.js';
+import { interiorMaterial, withOakFloor } from './InteriorMaterials.js';
 import { applyPBR, SURFACES } from './PBRSurfaces.js';
 import { BalconyPlants } from './BalconyPlants.js';
-import { bench, lamp, swingSet, slide, seesaw, bikeRack, bin, planter, bollard, hedge, place, car } from './ParkFurniture.js';
+import { bench, lamp, bikeRack, bin, planter, bollard, hedge, place, car } from './ParkFurniture.js';
 
 /**
  * ProjectBuilding — el proyecto sobre el englobe del Parqueadero Divino Salvador (cinco lotes catastrales,
@@ -133,6 +134,7 @@ export class ProjectBuilding {
     this.frame.add(this.plate);
 
     this.floorGroups = [];
+    this.aptFurniture = [];
     this.unitVolumes = [];
     this.units = [];
     this._buildSite();
@@ -163,9 +165,17 @@ export class ProjectBuilding {
       g.setAttribute('normal', new THREE.InterleavedBufferAttribute(nb, 3, 0, true));
       g.setIndex(new THREE.BufferAttribute(m.index32 ? new Uint32Array(bin, m.index, m.indices) : new Uint16Array(bin, m.index, m.indices), 1));
       g.computeBoundingSphere();
-      const real = m.layer === 'arquitectura' ? architectureMaterial(m.color, m.glass) : null;
-      const mat = real || revitMaterial(m.color, m.glass);
-      if (mat.map || mat.normalMap) {
+      const arq = m.layer === 'arquitectura';
+      const real = arq ? architectureMaterial(m.color, m.glass) : interiorMaterial(m.color, m.mat, m.glass);
+      let mat = real || revitMaterial(m.color, m.glass);
+      // losas: piso de roble en las caras que miran hacia arriba (apartamentos y balcones, no la terraza).
+      // Copia propia sin el relieve mineral, para que la madera se vea lisa.
+      if (arq && !m.glass && m.floor < this.floors && /^#(95c4ee|c0c0c0|f7f7ef|787878|7f7f7f)$/i.test(m.color)) {
+        this._oakMats ||= new Map();
+        if (!this._oakMats.has(mat)) this._oakMats.set(mat, withOakFloor(Object.assign(mat.clone(), { normalMap: null, roughnessMap: null, roughness: 0.5 })));
+        mat = this._oakMats.get(mat);
+      }
+      if (mat.map || mat.normalMap || mat.bumpMap) {
         g.setAttribute('uv', new THREE.BufferAttribute(boxUV(new Int16Array(bin, m.position, m.vertices * 3), new Int8Array(bin, m.normal, m.vertices * 4), m.vertices), 2));
       }
       const put = (floor, dy) => {
@@ -178,6 +188,8 @@ export class ProjectBuilding {
         mesh.receiveShadow = !m.glass;
         if (m.glass) mesh.renderOrder = m.color.toLowerCase() === '#0080c0' ? 4 : 3;
         (floor >= this.floors ? this.roof : this.floorGroups[floor]).add(mesh);
+        // los muebles de los apartamentos solo se dibujan en el piso que se abre (ver setCut)
+        if (m.layer === 'mobiliario' && floor >= 1 && floor < this.floors) { mesh.userData.floorIndex = floor; this.aptFurniture.push(mesh); }
       };
       if (m.layer === 'mobiliario' && m.floor === TEMPLATE_FLOOR) {
         for (let f = 1; f < this.floors; f++) put(f, (f - TEMPLATE_FLOOR) * FLOOR_H);
@@ -186,6 +198,7 @@ export class ProjectBuilding {
       }
     }
     this.revitTriangles = manifest.triangulos;
+    this.setCut(this.cut);
   }
 
   box(w, h, d, mat, x, y, z, parent) {
@@ -211,15 +224,15 @@ export class ProjectBuilding {
     g(this.ox + 2.5 - 1.2, ant - 0.4, 0.2, 0.2);
     g(xMax - (this.ox + 5.5) - 0.4, ant - 0.4, this.ox + 5.5, 0.2);
     g(ant - 0.4, zMax - ant - 0.4, Math.max(0, this.ox - ant) + 0.2, ant);
-    // patio posterior con parque infantil y franja verde de aislamiento
+    // patio posterior: jardín de césped con sendero de piedra, jardineras bajas y bancas (sin juegos infantiles)
     const pz = this.oz + PD + 0.6;
     g(PW - 2, zMax - pz - back + 2.2, this.ox + 1, pz, M.grass);
-    g(9, 6.5, this.ox + 2.5, pz + 1.0, M.rubber, 0.08);
-    // parque infantil: columpios, rodadero y balancín sobre piso de caucho
-    const px = this.ox + 7, pzz = pz + 4.2;
-    place(f, swingSet(), px - 2.6, pzz, 0);
-    place(f, slide(), px + 1.4, pzz - 1.2, Math.PI);
-    place(f, seesaw(), px + 1.2, pzz + 1.8, 0);
+    g(1.4, zMax - pz - back + 1.4, this.ox + 9.5, pz + 0.4, M.paving, 0.08);           // sendero hacia el fondo
+    g(PW - 4, 1.2, this.ox + 2, pz + 3.6, M.paving, 0.08);                             // sendero transversal
+    for (const [x, z, w] of [[this.ox + 2.2, pz + 6, 5], [this.ox + 12.5, pz + 6, 6], [this.ox + 19.5, pz + 0.8, 4.5]]) {
+      place(f, planter(w, 0.9), x + w / 2, z + 0.45, 0);
+    }
+    for (const x of [this.ox + 3.5, this.ox + 6.5]) place(f, bench(), x, pz + 3.0, 0);
     // bancas, luminarias y canecas alrededor del patio
     for (const x of [this.ox + 13.5, this.ox + 17.5, this.ox + 21.5]) place(f, bench(), x, pz + 1.4, Math.PI);
     for (const x of [this.ox + 12, this.ox + 19.5]) place(f, lamp(), x, pz + 7.2, -Math.PI / 2);
@@ -253,6 +266,7 @@ export class ProjectBuilding {
     for (const z of [6, 14, 22]) tree(west - 1.3, z, 'ash');
     tree(this.ox - ant / 2, ant + 3, 'celtis'); tree(this.ox - ant / 2, ant + 11, 'celtis');
     for (const x of [this.ox + 14, this.ox + 19.5, this.ox + 23]) tree(x, pz + 5.5, 'euc');
+    for (const x of [this.ox + 3, this.ox + 8]) tree(x, pz + 6.8, 'celtis');            // sombra sobre las bancas del jardín
     this._buildFacadeLights();
   }
 
@@ -326,11 +340,11 @@ export class ProjectBuilding {
     const mk = (id, quad, data) => {
       const poly = Q[quad];
       const vol = new THREE.Mesh(prism(inset(poly, 0.3), hIn - 0.14),
-        new THREE.MeshBasicMaterial({ color: 0xd81e28, transparent: true, opacity: 0.16, depthWrite: false }));
+        new THREE.MeshBasicMaterial({ color: 0x2a63ad, transparent: true, opacity: 0.16, depthWrite: false }));
       vol.position.y = y0 + 0.06;
       vol.userData.unitId = id;
       vol.renderOrder = 4;
-      vol.add(new THREE.LineSegments(new THREE.EdgesGeometry(vol.geometry), new THREE.LineBasicMaterial({ color: 0xff5a5f, transparent: true, opacity: 0.8 })));
+      vol.add(new THREE.LineSegments(new THREE.EdgesGeometry(vol.geometry), new THREE.LineBasicMaterial({ color: 0x8fb4dc, transparent: true, opacity: 0.8 })));
       g.add(vol);
       this.unitVolumes.push(vol);
       const cx = poly.reduce((s, p) => s + p[0], 0) / poly.length, cz = poly.reduce((s, p) => s + p[1], 0) / poly.length;
@@ -363,6 +377,14 @@ export class ProjectBuilding {
     this.cut = floor;
     this.floorGroups.forEach((g, i) => { g.visible = floor == null || i < floor; });
     this.roof.visible = floor == null;
+    for (const m of this.aptFurniture) m.visible = floor != null && m.userData.floorIndex === floor - 1;
+    // luz cálida de interior sobre el piso abierto (siempre en la escena para no recompilar materiales)
+    if (!this.interiorLight) {
+      this.interiorLight = new THREE.PointLight(0xffe0b5, 0, 34, 1);
+      this.plate.add(this.interiorLight);
+    }
+    this.interiorLight.intensity = floor != null ? 140 : 0;
+    if (floor != null) this.interiorLight.position.set(PW / 2, (floor - 1) * FLOOR_H + 2.6, PD / 2);
   }
 
   setHighlight({ show, selectedId, hoveredId, filter }) {
@@ -372,11 +394,12 @@ export class ProjectBuilding {
       // con el resaltado apagado las unidades siguen siendo clicables (invisibles) y se ven solo al pasar
       // el cursor, al seleccionarlas o al filtrar; así el edificio se ve como un render, sin el tinte rojo
       v.visible = inFilter || sel;
-      const shown = sel || hov || (inFilter && (show || !!filter));
+      const touring = document.body.classList.contains('is-touring');
+      const shown = sel || hov || (inFilter && (show || (!!filter && !touring)));
       v.material.visible = shown;
       v.children[0].material.visible = shown;
       v.material.opacity = sel ? 0.3 : hov ? 0.34 : 0.16;
-      v.material.color.setHex(sel ? 0xd81e28 : 0xe0484f);
+      v.material.color.setHex(sel ? 0x1f4f8f : 0x3a78c2);
       v.children[0].material.opacity = sel ? 1 : 0.7;
     }
   }

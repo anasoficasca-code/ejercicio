@@ -1,33 +1,37 @@
 <!doctype html>
-<html lang="es" data-type="product">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Aurea Residencial · Apartamentos con balcón en Galerías, Bogotá</title>
-  <meta name="description" content="20 apartamentos de 70 y 78,75 m² con balcón en la Calle 56 con Carrera 18, Galerías, Teusaquillo. Desde $630.000.000. Patio verde, bicicletero y terraza comunal." />
-  <meta name="page-type" content="product" />
-  <meta name="site-kind" content="other" />
-  <meta name="theme-color" content="#f5f5f2" />
+  <title>Distrito Arboleda · Apartamentos con balcón en Galerías, Bogotá</title>
+  <meta name="description" content="Distrito Arboleda: 20 apartamentos de 70 y 78,75 m² con balcón en la Calle 56 con Carrera 18, Galerías, Teusaquillo. Desde $630.000.000. Terraza comunal, jardín, bicicletero y sala de cine." />
+  <meta name="theme-color" content="#0b1626" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Aurea Residencial · Apartamentos en Galerías, Bogotá" />
+  <meta property="og:title" content="Distrito Arboleda · Apartamentos en Galerías, Bogotá" />
   <meta property="og:description" content="20 apartamentos con balcón, desde $630.000.000, en la Calle 56 con Carrera 18." />
   <meta property="og:image" content="./assets/renders/hero-a.jpg" />
   <link rel="icon" href="./assets/branding/jmc-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,300..700&family=Instrument+Serif&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="./assets/brochure/brochure.css" />
+  <link rel="stylesheet" href="./assets/brochure/arboleda.css" />
 </head>
-<body>
-  <!-- Diseño: lenguaje de producto tipo Apple (DESIGN.md de awesome-design-md) con las reglas de taste-skill:
-       una sección por pantalla, imagen protagonista sin pies de foto, un solo color de acción (ladrillo),
-       entrada de la portada y dos momentos: la frase que se ilumina y los capítulos del día. -->
+<body class="is-loading">
   <a class="skip" href="#main">Saltar al contenido</a>
 
-  <header class="nav">
+  <!-- Entrada: el nombre y una línea que crece; luego el telón sube y aparece el edificio -->
+  <div class="preloader" aria-hidden="true">
+    <div class="pl-name"><span class="pl-small">Distrito</span><span class="pl-big">Arboleda</span></div>
+    <div class="pl-line"><i></i></div>
+  </div>
+
+  <header class="nav" id="nav">
     <div class="nav-in wrap">
-      <a class="brand" href="#inicio" aria-label="Aurea Residencial, inicio"><span class="brand-word">Aurea</span><span class="brand-sub">Residencial</span></a>
+      <a class="brand" href="#inicio" aria-label="Distrito Arboleda, inicio">
+        <svg class="brand-leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20c0-9 6-15 16-16-1 10-7 16-16 16Zm0 0 9-9"/></svg>
+        <span class="brand-word">Distrito Arboleda</span>
+      </a>
       <nav class="nav-links" aria-label="Secciones">
         <a href="#dia">El edificio</a>
         <a href="#apartamentos">Apartamentos</a>
@@ -40,144 +44,140 @@
   </header>
 
   <main id="main">
-    <!-- Portada: el edificio es el producto -->
-    <section class="sec hero" id="inicio" data-enter>
-      <img class="hero-bg" src="./assets/renders/hero-a.jpg" alt="Aurea Residencial en la esquina de la Calle 56 con Carrera 18, con los Cerros Orientales al fondo" fetchpriority="high" />
-      <div class="wrap"><div class="hero-text hero-copy">
-        <p class="hero-brand">Aurea Residencial</p>
-        <h1>Apartamentos con balcón en Galerías, Bogotá</h1>
-        <p class="hero-fact">20 apartamentos de 70 y 78,75 m², desde $630.000.000, en la Calle 56 con Carrera 18.</p>
+    <!-- Portada -->
+    <section class="hero" id="inicio">
+      <div class="hero-media"><img src="./assets/renders/hero-a.jpg" alt="Distrito Arboleda en la esquina de la Calle 56 con Carrera 18, con los Cerros Orientales al fondo" fetchpriority="high" /></div>
+      <div class="hero-shade"></div>
+      <div class="wrap hero-copy">
+        <p class="hero-kicker">Galerías, Teusaquillo</p>
+        <h1 class="hero-title" aria-label="Distrito Arboleda">
+          <span class="ht-line"><span class="ht-word">Distrito</span></span>
+          <span class="ht-line"><span class="ht-word ht-italic">Arboleda</span></span>
+        </h1>
+        <p class="hero-fact">20 apartamentos con balcón de 70 y 78,75 m², desde $630.000.000, entre los árboles de la Calle 56 con Carrera 18.</p>
         <div class="actions">
-          <a class="btn" href="#visita">Agendar una visita</a>
-          <a class="btn btn-line" href="./masterplan.html">Ver el edificio en 3D</a>
+          <a class="btn btn-light magnetic" href="#visita">Agendar una visita</a>
+          <a class="btn btn-ghost magnetic" href="./masterplan.html">Ver el edificio en 3D</a>
         </div>
-      </div></div>
+      </div>
+      <a class="scroll-hint" href="#proyecto" aria-label="Bajar al proyecto"><span></span></a>
     </section>
 
-    <!-- Momento 1: la frase se ilumina palabra por palabra -->
+    <!-- Cinta continua -->
+    <div class="marquee" aria-hidden="true">
+      <div class="mq-track">
+        <span>Calle 56 con Carrera 18</span><i></i><span>20 apartamentos</span><i></i><span>Terraza frente a los cerros</span><i></i><span>Ladrillo y balcones con jardinera</span><i></i><span>Barrio Galerías</span><i></i>
+        <span>Calle 56 con Carrera 18</span><i></i><span>20 apartamentos</span><i></i><span>Terraza frente a los cerros</span><i></i><span>Ladrillo y balcones con jardinera</span><i></i><span>Barrio Galerías</span><i></i>
+      </div>
+    </div>
+
+    <!-- La frase se ilumina palabra por palabra al bajar -->
     <section class="sec statement" id="proyecto">
       <div class="wrap">
-        <h2 class="wh" data-wh>Aurea cambia un parqueadero de la Calle 56 por veinte apartamentos, <strong>un patio verde con parque infantil</strong> y antejardines sembrados sobre las dos calles.</h2>
+        <h2 class="wh" data-wh>Distrito Arboleda cambia un parqueadero de la Calle 56 por veinte apartamentos, un jardín en el patio y antejardines sembrados sobre las dos calles de Galerías.</h2>
         <dl class="figures">
-          <div><dt>20</dt><dd>apartamentos en 5 pisos</dd></div>
-          <div><dt>4</dt><dd>apartamentos por piso</dd></div>
-          <div><dt>3</dt><dd>habitaciones y 2 baños</dd></div>
-          <div><dt>8</dt><dd>zonas sociales</dd></div>
+          <div><dt data-count="20">20</dt><dd>apartamentos</dd></div>
+          <div><dt data-count="6">6</dt><dd>pisos, con lobby y zonas sociales en el primero</dd></div>
+          <div><dt data-count="4">4</dt><dd>apartamentos por piso, todos con balcón</dd></div>
+          <div><dt data-count="8">8</dt><dd>zonas sociales</dd></div>
         </dl>
       </div>
     </section>
 
-    <!-- Momento 2: capítulos del día (photo-chapters) -->
-    <section class="chapters" id="dia" aria-labelledby="dia-h">
-      <div class="ch-stage">
-        <div class="wrap ch-head">
-          <h2 id="dia-h">Cómo usa el edificio el sol de Bogotá</h2>
-          <p>Un día en Aurea, de la mañana al atardecer.</p>
+    <!-- Un día en el edificio: galería horizontal fijada al scroll -->
+    <section class="day" id="dia" aria-labelledby="dia-h">
+      <div class="day-pin">
+        <div class="wrap day-head">
+          <h2 id="dia-h">Un día en Distrito Arboleda</h2>
+          <div class="day-clock" aria-hidden="true"><span class="dc-time">8:24</span><span class="dc-bar"><i></i></span></div>
         </div>
-        <div class="ch-frame">
-          <div class="ch-pics">
-            <img class="ch-pic" src="./assets/renders/hora-manana.jpg" alt="El edificio a las 8 de la mañana" />
-            <img class="ch-pic" src="./assets/renders/hora-mediodia.jpg" alt="El edificio al mediodía" />
-            <img class="ch-pic" src="./assets/renders/hora-tarde.jpg" alt="El edificio a las 4 de la tarde" />
-            <img class="ch-pic" src="./assets/renders/hora-atardecer.jpg" alt="El edificio al atardecer con las luces encendidas" />
-          </div>
-          <div class="ch-panel">
-            <article class="ch-text">
-              <p class="ch-num">8:24 a. m.</p>
-              <h3>Ventanas a dos fachadas</h3>
-              <p>Los apartamentos de esquina abren a dos calles: la luz y el aire cruzan la sala y la luz eléctrica queda para la noche.</p>
-            </article>
-            <article class="ch-text">
-              <p class="ch-num">12:24 p. m.</p>
-              <h3>Celosía de ladrillo</h3>
-              <p>Dos franjas de ladrillo calado dan sombra al mediodía y dejan pasar la brisa. Es ladrillo de la sabana, que dura décadas sin pintura.</p>
-            </article>
-            <article class="ch-text">
-              <p class="ch-num">4:24 p. m.</p>
-              <h3>Balcones con jardinera</h3>
-              <p>Jardineras y palmas en los balcones, antejardines sembrados y árboles nuevos en el patio: más sombra en la calle y menos calor en la fachada.</p>
-            </article>
-            <article class="ch-text">
-              <p class="ch-num">5:51 p. m.</p>
-              <h3>Bicicletero y TransMilenio</h3>
-              <p>Bicicletero en el primer piso, la troncal NQS a pocas cuadras y rutas del SITP por las calles 53 y 57. Adentro, luz LED cálida.</p>
-            </article>
-            <div class="ch-jump" role="group" aria-label="Ir a una hora del día">
-              <button type="button" data-ch="0" aria-label="Mañana">8:24</button>
-              <button type="button" data-ch="1" aria-label="Mediodía">12:24</button>
-              <button type="button" data-ch="2" aria-label="Tarde">4:24</button>
-              <button type="button" data-ch="3" aria-label="Atardecer">5:51</button>
-            </div>
-          </div>
+        <div class="day-track">
+          <article class="day-card">
+            <figure><img src="./assets/renders/hora-manana.jpg" alt="El edificio a las 8 de la mañana" loading="lazy" /></figure>
+            <div class="dcopy"><p class="dtime">8:24 a. m.</p><h3>Ventanas a dos fachadas</h3><p>Los apartamentos de esquina abren a dos calles: la luz y el aire cruzan la sala y la luz eléctrica queda para la noche.</p></div>
+          </article>
+          <article class="day-card">
+            <figure><img src="./assets/renders/hora-mediodia.jpg" alt="El edificio al mediodía" loading="lazy" /></figure>
+            <div class="dcopy"><p class="dtime">12:24 p. m.</p><h3>Celosía de ladrillo</h3><p>Dos franjas de ladrillo calado dan sombra al mediodía y dejan pasar la brisa. Es ladrillo de la sabana, que dura décadas sin pintura.</p></div>
+          </article>
+          <article class="day-card">
+            <figure><img src="./assets/renders/hora-tarde.jpg" alt="El edificio a las 4 de la tarde" loading="lazy" /></figure>
+            <div class="dcopy"><p class="dtime">4:24 p. m.</p><h3>Balcones con jardinera</h3><p>Jardineras en los balcones, antejardines sembrados y árboles nuevos en el patio: más sombra en la calle y menos calor en la fachada.</p></div>
+          </article>
+          <article class="day-card">
+            <figure><img src="./assets/renders/hora-atardecer.jpg" alt="El edificio al atardecer con las luces encendidas" loading="lazy" /></figure>
+            <div class="dcopy"><p class="dtime">5:51 p. m.</p><h3>De vuelta a casa</h3><p>Bicicletero en el primer piso, la troncal NQS a pocas cuadras y rutas del SITP por las calles 53 y 57. Adentro, luz LED cálida.</p></div>
+          </article>
         </div>
       </div>
     </section>
 
     <!-- Fachada -->
     <section class="sec facade" id="fachada">
-      <div class="wrap facade-grid split">
+      <div class="wrap facade-grid">
         <div class="facade-copy">
-          <h2>Una fachada de ladrillo, vidrio y plantas</h2>
-          <p>Pañete blanco con dos franjas de ladrillo calado que marcan la esquina. Los balcones salen sobre la calle con baranda de vidrio, para que desde afuera se vean las plantas y no los barrotes.</p>
-          <figure class="pic pic-side"><img src="./assets/renders/balcones.jpg" alt="Balcones con jardineras y palmas sobre la Calle 56" loading="lazy" /></figure>
+          <h2 data-reveal>Ladrillo, vidrio y plantas</h2>
+          <p data-reveal>Pañete blanco con dos franjas de ladrillo calado que marcan la esquina. Los balcones salen sobre la calle con baranda de vidrio, para que desde afuera se vean las plantas y no los barrotes.</p>
+          <figure class="pic pic-side" data-parallax="-8"><img src="./assets/renders/balcones.jpg" alt="Balcones con jardineras sobre la Calle 56" loading="lazy" /></figure>
         </div>
-        <figure class="pic pic-tall"><img src="./assets/renders/tarde-calle.jpg" alt="Fachada sobre la Carrera 18 con la celosía de ladrillo y los balcones" loading="lazy" /></figure>
+        <figure class="pic pic-tall" data-parallax="8"><img src="./assets/renders/tarde-calle.jpg" alt="Fachada sobre la Carrera 18 con la celosía de ladrillo y los balcones" loading="lazy" /></figure>
       </div>
     </section>
 
-    <!-- Apartamentos: dos pantallas -->
-    <section class="sec apts" id="apartamentos" style="--h: 2">
-      <div class="wrap g2">
-        <div class="row">
-          <div class="apts-top">
-            <h2>Apartamentos de tres habitaciones</h2>
-            <div class="tabs" role="tablist" aria-label="Tipologías">
-              <button role="tab" id="tab-a" aria-controls="tipo-a" aria-selected="true" class="tab is-on">Tipo A, 78,75 m²</button>
-              <button role="tab" id="tab-b" aria-controls="tipo-b" aria-selected="false" class="tab" tabindex="-1">Tipo B, 70 m²</button>
-            </div>
+    <!-- Apartamentos -->
+    <section class="sec apts" id="apartamentos">
+      <div class="wrap">
+        <div class="apts-top">
+          <h2 data-reveal>Dos tipos de apartamento</h2>
+          <div class="tabs" role="tablist" aria-label="Tipos de apartamento">
+            <span class="tab-ink" aria-hidden="true"></span>
+            <button role="tab" id="tab-a" aria-controls="tipo-a" aria-selected="true" class="tab is-on">Tipo A, 78,75 m²</button>
+            <button role="tab" id="tab-b" aria-controls="tipo-b" aria-selected="false" class="tab" tabindex="-1">Tipo B, 70 m²</button>
           </div>
-          <article class="apt split" id="tipo-a" role="tabpanel" aria-labelledby="tab-a">
-            <div class="apt-data">
-              <p class="apt-where">Sobre la Calle 56. Los esquineros tienen dos fachadas.</p>
-              <p class="price">$708.750.000</p>
-              <table class="areas">
-                <caption class="sr">Áreas del apartamento tipo A</caption>
-                <tbody>
-                  <tr><th scope="row">Sala y comedor</th><td>18,30 m²</td></tr>
-                  <tr><th scope="row">Cocina</th><td>6,20 m²</td></tr>
-                  <tr><th scope="row">Habitación principal y baño</th><td>16,10 m²</td></tr>
-                  <tr><th scope="row">Habitaciones 2 y 3</th><td>17,30 m²</td></tr>
-                  <tr><th scope="row">Baño social</th><td>3,10 m²</td></tr>
-                  <tr><th scope="row">Balcón</th><td>17,75 m²</td></tr>
-                </tbody>
-                <tfoot><tr><th scope="row">Área total</th><td>78,75 m²</td></tr></tfoot>
-              </table>
-            </div>
-            <figure class="plan"><img src="./assets/brochure/plano-a.jpg" alt="Planta del apartamento tipo A" loading="lazy" /></figure>
-          </article>
-          <article class="apt split" id="tipo-b" role="tabpanel" aria-labelledby="tab-b" hidden>
-            <div class="apt-data">
-              <p class="apt-where">Hacia el patio verde, del lado más silencioso.</p>
-              <p class="price">$630.000.000</p>
-              <table class="areas">
-                <caption class="sr">Áreas del apartamento tipo B</caption>
-                <tbody>
-                  <tr><th scope="row">Sala y comedor</th><td>16,50 m²</td></tr>
-                  <tr><th scope="row">Cocina</th><td>5,80 m²</td></tr>
-                  <tr><th scope="row">Habitación principal y baño</th><td>14,60 m²</td></tr>
-                  <tr><th scope="row">Habitaciones 2 y 3</th><td>16,80 m²</td></tr>
-                  <tr><th scope="row">Baño social</th><td>3,00 m²</td></tr>
-                  <tr><th scope="row">Balcón</th><td>13,30 m²</td></tr>
-                </tbody>
-                <tfoot><tr><th scope="row">Área total</th><td>70,00 m²</td></tr></tfoot>
-              </table>
-            </div>
-            <figure class="plan"><img src="./assets/brochure/plano-b.jpg" alt="Planta del apartamento tipo B" loading="lazy" /></figure>
-          </article>
         </div>
-        <div class="row finishes split">
+        <div class="apts-grid">
+          <div class="apt-panels">
+            <article class="apt" id="tipo-a" role="tabpanel" aria-labelledby="tab-a">
+              <p class="apt-where">Sobre la Calle 56, frente a la parroquia. Los esquineros tienen dos fachadas.</p>
+              <p class="price" data-price="708750000">$708.750.000</p>
+              <table class="areas">
+                <caption class="sr">Espacios del apartamento tipo A según el modelo del proyecto</caption>
+                <tbody>
+                  <tr><th scope="row">Sala, comedor y cocina</th><td>41,0 m²</td></tr>
+                  <tr><th scope="row">Alcoba principal con baño</th><td>16,1 m²</td></tr>
+                  <tr><th scope="row">Alcoba 2</th><td>10,5 m²</td></tr>
+                  <tr><th scope="row">Baño social</th><td>4,9 m²</td></tr>
+                  <tr><th scope="row">Ropas y depósito</th><td>6,7 m²</td></tr>
+                </tbody>
+                <tfoot><tr><th scope="row">Área total con muros y balcón</th><td>78,75 m²</td></tr></tfoot>
+              </table>
+            </article>
+            <article class="apt" id="tipo-b" role="tabpanel" aria-labelledby="tab-b" hidden>
+              <p class="apt-where">Hacia el jardín del patio, del lado más silencioso.</p>
+              <p class="price" data-price="630000000">$630.000.000</p>
+              <table class="areas">
+                <caption class="sr">Espacios del apartamento tipo B según el modelo del proyecto</caption>
+                <tbody>
+                  <tr><th scope="row">Sala, comedor y cocina</th><td>40,0 m²</td></tr>
+                  <tr><th scope="row">Alcoba principal con baño</th><td>10,8 m²</td></tr>
+                  <tr><th scope="row">Alcoba 2</th><td>7,9 m²</td></tr>
+                  <tr><th scope="row">Baño social</th><td>2,9 m²</td></tr>
+                  <tr><th scope="row">Ropas y depósito</th><td>3,9 m²</td></tr>
+                </tbody>
+                <tfoot><tr><th scope="row">Área total con muros y balcón</th><td>70,00 m²</td></tr></tfoot>
+              </table>
+            </article>
+            <a class="link-3d" href="./masterplan.html">Ver los apartamentos en el recorrido 3D</a>
+          </div>
+          <figure class="plan" data-zoom>
+            <img src="./assets/brochure/planta-tipo.jpg" alt="Planta tipo de los pisos 2 a 6 con los cuatro apartamentos alrededor del punto fijo" loading="lazy" />
+            <figcaption>Planta tipo, pisos 2 a 6</figcaption>
+          </figure>
+        </div>
+        <div class="finishes">
+          <figure class="pic" data-parallax="-6"><img src="./assets/brochure/interior.jpg" alt="Interior con piso de roble claro, cocina grafito y ventanal" loading="lazy" /></figure>
           <div>
-            <h3>Acabados de los apartamentos</h3>
+            <h3 data-reveal>Acabados</h3>
             <ul class="swatches">
               <li><i style="--sw:#c9a27a"></i><span><b>Piso</b> laminado en roble claro</span></li>
               <li><i style="--sw:#efebe3"></i><span><b>Muros y techo</b> blanco hueso, cielo en drywall</span></li>
@@ -187,73 +187,70 @@
               <li><i style="--sw:#f2dfb4"></i><span><b>Iluminación</b> LED cálida empotrada</span></li>
             </ul>
           </div>
-          <figure class="pic"><img src="./assets/brochure/interior.jpg" alt="Interior con piso de roble claro, cocina grafito y ventanal" loading="lazy" /></figure>
         </div>
       </div>
     </section>
 
-    <!-- Zonas sociales -->
+    <!-- Zonas sociales: al señalar un nombre cambia la foto grande -->
     <section class="sec zones dark" id="zonas">
-      <div class="wrap zones-grid split">
+      <div class="wrap zones-grid">
         <div class="zones-copy">
-          <h2>Ocho zonas sociales</h2>
+          <h2 data-reveal>Ocho zonas sociales</h2>
           <ul class="zone-list">
             <li><button type="button" data-z="0"><b>Terraza y café lounge</b><span>En la cubierta, frente a los cerros</span></button></li>
             <li><button type="button" data-z="1"><b>Zona BBQ</b><span>Con chimenea y mesa larga</span></button></li>
             <li><button type="button" data-z="2"><b>Lobby de acceso</b><span>Doble altura, madera y plantas</span></button></li>
             <li><button type="button" data-z="3"><b>Bicicletero</b><span>Cubierto, en el primer piso</span></button></li>
-            <li><button type="button" data-z="4"><b>Parque infantil</b><span>En el patio, con piso de caucho</span></button></li>
-            <li><button type="button" data-z="5"><b>Sala de cine</b><span>Para ver películas en el edificio</span></button></li>
+            <li><button type="button" data-z="4"><b>Sala de cine</b><span>Para ver películas en el edificio</span></button></li>
+            <li class="plain"><b>Jardín del patio</b><span>Césped, árboles y bancas, del lado silencioso</span></li>
             <li class="plain"><b>Salón social</b><span>Para celebraciones</span></li>
             <li class="plain"><b>Gimnasio al aire libre</b><span>En la terraza</span></li>
           </ul>
         </div>
-        <div class="mosaic">
-          <figure class="pic" data-z="0"><img src="./assets/brochure/terraza.jpg" alt="Terraza con café lounge y vista a los cerros" loading="lazy" /></figure>
-          <figure class="pic" data-z="1"><img src="./assets/brochure/bbq.jpg" alt="Zona BBQ con chimenea" loading="lazy" /></figure>
-          <figure class="pic" data-z="2"><img src="./assets/brochure/lobby.jpg" alt="Lobby de doble altura" loading="lazy" /></figure>
-          <figure class="pic" data-z="3"><img src="./assets/brochure/bicicletero.jpg" alt="Bicicletero cubierto" loading="lazy" /></figure>
-          <figure class="pic" data-z="4"><img src="./assets/brochure/parque.jpg" alt="Parque infantil en el patio" loading="lazy" /></figure>
-          <figure class="pic" data-z="5"><img src="./assets/brochure/cine.jpg" alt="Sala de cine" loading="lazy" /></figure>
+        <div class="zone-stage">
+          <figure class="zpic on" data-z="0"><img src="./assets/brochure/terraza.jpg" alt="Terraza con café lounge y vista a los cerros" loading="lazy" /></figure>
+          <figure class="zpic" data-z="1"><img src="./assets/brochure/bbq.jpg" alt="Zona BBQ con chimenea" loading="lazy" /></figure>
+          <figure class="zpic" data-z="2"><img src="./assets/brochure/lobby.jpg" alt="Lobby de doble altura con el nombre Distrito Arboleda" loading="lazy" /></figure>
+          <figure class="zpic" data-z="3"><img src="./assets/brochure/bicicletero.jpg" alt="Bicicletero cubierto" loading="lazy" /></figure>
+          <figure class="zpic" data-z="4"><img src="./assets/brochure/cine.jpg" alt="Sala de cine" loading="lazy" /></figure>
         </div>
       </div>
     </section>
 
     <!-- Ubicación -->
     <section class="sec place" id="ubicacion">
-      <div class="wrap place-grid split">
+      <div class="wrap place-grid">
         <div>
-          <h2>Ubicación en Galerías, Teusaquillo</h2>
-          <p>Calle 56 con Carrera 18. Un barrio de casas de ladrillo con calles interiores tranquilas y comercio de barrio sobre las calles 53 y 57.</p>
+          <h2 data-reveal>En Galerías, Teusaquillo</h2>
+          <p data-reveal>Calle 56 con Carrera 18. Un barrio de casas de ladrillo y calles arborizadas, con comercio de barrio sobre las calles 53 y 57.</p>
           <ul class="place-list">
             <li><b>TransMilenio</b><span>Troncal NQS y estación Movistar Arena a pocas cuadras</span></li>
             <li><b>SITP</b><span>Rutas por las calles 53, 57 y 63 y las carreras 13 y 24</span></li>
             <li><b>A pie</b><span>Panaderías, cafés y almacenes sobre la Calle 53</span></li>
           </ul>
         </div>
-        <div class="map" id="map" role="region" aria-label="Mapa de Galerías con la ubicación de Aurea"></div>
+        <div class="map" id="map" role="region" aria-label="Mapa de Galerías con la ubicación de Distrito Arboleda"></div>
       </div>
     </section>
 
-    <!-- Recorrido 3D -->
-    <section class="sec tour dark" id="recorrido">
+    <!-- Recorrido 3D: la foto se abre desde una ventana al bajar -->
+    <section class="tour" id="recorrido">
+      <div class="tour-window"><img src="./assets/renders/esquina.jpg" alt="Distrito Arboleda desde la esquina de la Calle 56 con Carrera 18" loading="lazy" /></div>
       <div class="wrap tour-copy">
-        <h2>El edificio en 3D</h2>
-        <p>Gira el edificio, cambia la hora del día y entra piso por piso a cada apartamento.</p>
-        <div class="actions"><a class="btn" href="./masterplan.html">Ver el edificio en 3D</a></div>
+        <h2>Recorre el edificio en 3D</h2>
+        <p>Gira el edificio sobre el barrio real, cambia la hora del día y entra piso por piso a cada apartamento.</p>
+        <a class="btn btn-light magnetic" href="./masterplan.html">Abrir el recorrido 3D</a>
       </div>
-      <img class="tour-bg" src="./assets/renders/esquina.jpg" alt="Aurea vista desde la esquina de la Calle 56 con Carrera 18" loading="lazy" />
     </section>
   </main>
 
-  <!-- Cierre y pie: una sola pantalla -->
   <footer class="sec closing" id="visita">
     <div class="wrap">
-      <div class="close-row split">
+      <div class="close-row">
         <div class="close-copy">
-          <h2>Agenda una visita a la sala de ventas</h2>
+          <h2 data-reveal>Agenda una visita a la sala de ventas</h2>
           <p>Déjanos tu nombre y tu celular. Te llamamos para contarte la disponibilidad, las formas de pago y la fecha de la próxima visita.</p>
-          <figure class="pic"><img src="./assets/renders/contexto.jpg" alt="Vista aérea de Galerías con Aurea entre las casas de ladrillo del barrio" loading="lazy" /></figure>
+          <figure class="pic"><img src="./assets/renders/contexto.jpg" alt="Vista aérea de Galerías con Distrito Arboleda entre las casas de ladrillo del barrio" loading="lazy" /></figure>
         </div>
         <form class="form" id="form" novalidate>
           <div class="field"><label for="f-nombre">Nombre</label><input id="f-nombre" name="nombre" autocomplete="name" required /><p class="err" id="e-nombre"></p></div>
@@ -269,19 +266,21 @@
         </form>
       </div>
       <div class="foot-row">
-        <div class="foot-brand"><span class="brand-word">Aurea</span><span class="brand-sub">Residencial</span></div>
+        <div class="foot-brand">Distrito Arboleda</div>
         <nav class="foot-links" aria-label="Pie de página">
           <a href="#apartamentos">Apartamentos</a>
           <a href="#zonas">Zonas sociales</a>
           <a href="#ubicacion">Ubicación</a>
           <a href="./masterplan.html">Recorrido 3D</a>
         </nav>
-        <p class="legal">Un proyecto de JMC Arquitectura: Ana Casas, Martín Jaramillo y Jorge. Imágenes generadas a partir del modelo del proyecto; áreas, precios y acabados pueden cambiar y no constituyen una oferta comercial. Mapa © colaboradores de OpenStreetMap.</p>
+        <p class="legal">Un proyecto de JMC Arquitectura: Ana Casas, Martín Jaramillo y Jorge. Ejercicio Profesional 2. Imágenes generadas a partir del modelo del proyecto; los acabados y el amoblamiento son de referencia.</p>
       </div>
     </div>
   </footer>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="./assets/brochure/brochure.js"></script>
+  <script src="./assets/brochure/arboleda.js"></script>
 </body>
 </html>

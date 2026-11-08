@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 /**
  * Traffic — tráfico del barrio sobre la red vial real (OpenStreetMap, data/geometry/vias.json):
@@ -32,7 +33,7 @@ export class Traffic {
     this._buildGraph(data);
     this._buildSignals(data);
     this._buildZebras(data);
-    this._spawnCars(mobile ? 14 : 42);
+    this._spawnCars(mobile ? 12 : 26);
   }
 
   // ---------------------------------------------------------------- red vial
@@ -161,6 +162,29 @@ export class Traffic {
         }
       }
     }
+    this._mergeStatic([poleMat, housing, yellowBack]);
+  }
+
+  /**
+   * Postes, brazos, carcasas y viseras no se mueven ni cambian de color: se funden en una malla por
+   * material (de cientos de objetos a tres). Las luces quedan sueltas porque cambian por fase.
+   */
+  _mergeStatic(mats) {
+    this.group.updateMatrixWorld(true);
+    for (const mat of mats) {
+      const parts = [];
+      for (const pole of this.poles || []) pole.traverse((m) => { if (m.isMesh && m.material === mat) parts.push(m); });
+      if (!parts.length) continue;
+      const geos = parts.map((m) => { const g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone(); return g.applyMatrix4(m.matrixWorld); });
+      const merged = mergeGeometries(geos, false);
+      geos.forEach((g) => g.dispose());
+      if (!merged) continue;
+      parts.forEach((m) => m.parent.remove(m));
+      const mesh = new THREE.Mesh(merged, mat);
+      mesh.castShadow = true;
+      mesh.name = 'Semáforos';
+      this.group.add(mesh);
+    }
   }
 
   /** Primer punto sobre un andén al alejarse del eje de la vía hacia `right` (si no hay, el ancho estimado). */
@@ -256,9 +280,12 @@ export class Traffic {
 
   // ---------------------------------------------------------------- carros
   setNight(v) {
+    this._nightV = v;
     if (!this.headMat) return;
     this.headMat.emissiveIntensity = 0.2 + v * 6;
     this.tailMat.emissiveIntensity = 0.3 + v * 3;
+    // de día las farolas de los carros no se notan: se apagan y se ahorran cuatro objetos por carro
+    for (const l of this.carLights || []) l.visible = v > 0.05;
   }
 
   _spawnCars(n) {
@@ -296,6 +323,8 @@ export class Traffic {
         for (const sx of [-hx, hx]) {
           const hl = new THREE.Mesh(this.lightG, this.headMat); hl.position.set(sx, y, front); holder.add(hl);
           const tl = new THREE.Mesh(this.lightG, this.tailMat); tl.position.set(sx, y + 0.08, back); tl.rotation.y = Math.PI; holder.add(tl);
+          hl.visible = tl.visible = (this._nightV || 0) > 0.05;
+          (this.carLights ||= []).push(hl, tl);
         }
         const car = { obj: holder, edge: null, s: 0, v: 0, lane: 0, yaw: 0, rnd: r() };
         this._place(car, pool[Math.floor(r() * pool.length)], r() * 0.8);

@@ -12,7 +12,7 @@ function syncSlider(h) {
 /**
  * Intro de llegada al masterplan: la cámara baja desde lo alto de Galerías hasta la esquina de la Calle 56
  * con Carrera 18 mientras cae la tarde y se encienden los apartamentos; sobre la escena aparece la marca
- * Aurea letra por letra. Termina con dos caminos: el recorrido guiado o explorar libremente.
+ * Distrito Arboleda letra por letra. Termina con dos caminos: el recorrido guiado o explorar libremente.
  * Con "reducir movimiento" la cámara llega directo y el texto solo se funde.
  */
 export class Intro {
@@ -21,12 +21,12 @@ export class Intro {
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const el = document.createElement('section');
     el.className = 'aurea-intro';
-    el.setAttribute('aria-label', 'Aurea Residencial');
+    el.setAttribute('aria-label', 'Distrito Arboleda');
     el.innerHTML = `
       <div class="ai-shade"></div>
       <div class="ai-copy">
-        <h1 class="ai-word" aria-label="Aurea">${[...'Aurea'].map((c) => `<span class="ai-ch" aria-hidden="true">${c}</span>`).join('')}</h1>
-        <p class="ai-sub">Residencial</p>
+        <p class="ai-sub">Distrito</p>
+        <h1 class="ai-word" aria-label="Distrito Arboleda">${[...'Arboleda'].map((c) => `<span class="ai-ch" aria-hidden="true">${c}</span>`).join('')}</h1>
         <p class="ai-line">Veinte apartamentos con balcón en Galerías, frente a la Parroquia Divino Salvador.</p>
         <div class="ai-actions">
           <button class="ai-btn primary" data-act="tour">Hacer el recorrido</button>

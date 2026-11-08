@@ -115,7 +115,7 @@ export class SidebarFilters {
           ${layer('estudio', 'Área de estudio · Calles 53–60 / Cras 14–24', '#2b4a86')}
           ${layer('servicios', 'Servicios y equipamientos', TIPOS.educacion.color)}
           ${layer('competencia', 'Proyectos de la competencia', TIPOS.competencia.color)}
-          ${layer('predios', 'Predios evaluados (01 y 03)', '#c8a46e')}
+          ${layer('predios', 'Predios evaluados (01 y 03)', '#8fb4dc')}
           ${layer('vias', 'Nombres de vías')}
         </div>
         <div class="filter-section">

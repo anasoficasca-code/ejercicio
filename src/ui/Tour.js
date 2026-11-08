@@ -1,7 +1,7 @@
 import { store } from '../state/store.js';
 
 /**
- * Recorrido guiado por Aurea: la cámara vuela de una parada a otra y cada parada trae su tarjeta con
+ * Recorrido guiado por Distrito Arboleda: la cámara vuela de una parada a otra y cada parada trae su tarjeta con
  * foto, título y texto. Avanza solo (DWELL segundos por parada) o con las flechas del teclado y los botones.
  *
  * Las cámaras van en coordenadas de la planta del edificio (x hacia el oriente desde la esquina de la
@@ -33,11 +33,6 @@ export const STOPS = [
     id: 'lobby', title: 'Lobby y zonas sociales', img: './assets/brochure/lobby.jpg',
     text: 'En el primer piso: lobby de doble altura, salón social y café, sala de cine, gimnasio y bicicletero.',
     eye: [-15, 5.5, -14], target: [4, 1.6, 3], pin: [3, 3.2, 0], pinLabel: 'Lobby'
-  },
-  {
-    id: 'parque', title: 'Patio con parque infantil', img: './assets/brochure/parque.jpg',
-    text: 'Hacia el sur, del lado silencioso: césped, columpios y rodadero sobre piso de caucho, con bancas alrededor.',
-    eye: [14, 26, 36], target: [7, 0, 18.5], pin: [5, 2.2, 18.6], pinLabel: 'Parque infantil'
   },
   {
     id: 'barrio', title: 'Galerías, Teusaquillo', img: './assets/renders/contexto.jpg',

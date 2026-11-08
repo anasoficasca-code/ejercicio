@@ -65,7 +65,8 @@ export class PostFX {
 
     const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: this.low ? 2 : 4 });
     this.composer = new EffectComposer(renderer, rt);
-    this.maxPixelRatio = Math.max(1, Math.min(window.devicePixelRatio, this.low ? 1.25 : (mobile ? 1.5 : 2)));
+    // 1,5 en escritorio: en pantallas 2K/4K casi no se nota la diferencia con 2 y cuesta casi el doble
+    this.maxPixelRatio = Math.max(1, Math.min(window.devicePixelRatio, this.low ? 1.25 : 1.5));
     this.composer.setPixelRatio(this.maxPixelRatio);
     this.composer.setSize(w, h);
     this.composer.addPass(new RenderPass(scene, camera));
@@ -73,7 +74,7 @@ export class PostFX {
     if (!mobile) {
       this.ao = new GTAOPass(scene, camera, w, h);
       this.ao.output = GTAOPass.OUTPUT.Default;
-      if (this.low) { const ss = this.ao.setSize.bind(this.ao); this.ao.setSize = (aw, ah) => ss(Math.max(1, Math.ceil(aw * 0.5)), Math.max(1, Math.ceil(ah * 0.5))); this.ao.setSize(w, h); }   // GPU integrada: AO a media resolución
+      { const ss = this.ao.setSize.bind(this.ao); this.ao.setSize = (aw, ah) => ss(Math.max(1, Math.ceil(aw * 0.5)), Math.max(1, Math.ceil(ah * 0.5))); this.ao.setSize(w, h); }   // AO a media resolución (se ve igual, cuesta un cuarto)
       this.ao.blendIntensity = 0.85;
       this.ao.updateGtaoMaterial({ radius: 1.6, distanceExponent: 1.4, thickness: 2.0, scale: 1.0, samples: this.low ? 8 : 12, distanceFallOff: 1.0 });
       this.ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: this.low ? 6 : 12 });
