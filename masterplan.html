@@ -32,9 +32,17 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  </head>
+  <style>
+    [hidden]{display:none!important}#render-view{position:fixed;inset:0;background:#242622;font-family:Roboto,Arial,sans-serif;color:white}#render-image{width:100%;height:100%;object-fit:contain}#render-view:after{content:"";position:absolute;inset:65% 0 0;background:linear-gradient(transparent,#121611dd);pointer-events:none}.render-panel{position:absolute;z-index:1;bottom:4%;left:4%;right:4%;display:flex;align-items:end;justify-content:space-between;gap:1rem;flex-wrap:wrap}.render-panel small{letter-spacing:.2em}.render-panel h1{font-size:clamp(24px,3vw,50px);margin:.25em 0 0;font-weight:400;color:white}.render-panel nav{display:flex;gap:5px;flex-wrap:wrap}.render-panel button,#back-render{border:1px solid #ffffff80;padding:10px 14px;background:#252925ee;color:white;border-radius:20px;cursor:pointer}.render-panel button[aria-pressed=true],#enter-model{background:#fff;color:#202520}#back-render{position:fixed;bottom:12px;right:12px;z-index:999999}#model-status:empty{display:none}
+    </style></head>
   <body>
-    <div id="app">
+    <section id="render-view" aria-label="Renders del proyecto">
+      <img id="render-image" src="./assets/renders/barrio.webp" alt="Vista aérea del proyecto en su contexto urbano">
+      <div class="render-panel"><div><small>JMC ARQUITECTURA</small><h1>Apartaestudios Galerías</h1></div>
+      <nav aria-label="Vistas del proyecto"><button data-render="barrio" aria-pressed="true">Vista aérea</button><button data-render="fachada" aria-pressed="false">Fachada</button><button data-render="terraza" aria-pressed="false">Terraza</button><button id="enter-model">Explorar en 3D →</button></nav><span id="model-status" role="status"></span></div>
+    </section>
+    <button id="back-render" hidden>Volver al render</button>
+    <div id="app" hidden>
       <!-- Lienzo WebGL 3D -->
       <div id="canvas-container"></div>
 
@@ -75,6 +83,20 @@
       <div id="bottom-dock-container"></div>
     </div>
 
-    <script type="module" src="./src/main.js"></script>
+    <script type="module">
+      const view = document.querySelector('#render-view'), app = document.querySelector('#app'), back = document.querySelector('#back-render');
+      const image = document.querySelector('#render-image');
+      for (const button of view.querySelectorAll('[data-render]')) button.onclick = () => {
+        image.src = './assets/renders/' + button.dataset.render + '.webp';
+        image.alt = button.textContent + ' del proyecto';
+        for (const item of view.querySelectorAll('[data-render]')) item.setAttribute('aria-pressed', String(item === button));
+      };
+      back.onclick = () => { view.hidden = false; back.hidden = true; app.hidden = true; document.querySelector('#enter-model').focus(); };
+      document.querySelector('#enter-model').onclick = async () => {
+        app.hidden = false; view.hidden = true; back.hidden = false;
+        try { await import('./src/main.js'); window.dispatchEvent(new Event('resize')); }
+        catch { document.querySelector('.ls-wrap')?.remove(); back.click(); document.querySelector('#model-status').textContent = 'El recorrido 3D requiere WebGL. Puedes seguir viendo los renders.'; }
+      };
+    </script>
   </body>
 </html>
