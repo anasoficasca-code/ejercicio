@@ -78,7 +78,9 @@ p { margin: 0; }
 .hero { position: relative; height: 100svh; min-height: 640px; overflow: hidden; color: #fff; display: flex; align-items: flex-end; }
 .hero-media { position: absolute; inset: 0; }
 .hero-media img { width: 100%; height: 115%; object-fit: cover; will-change: transform; }
-.hero-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11, 22, 38, .45) 0%, rgba(11, 22, 38, 0) 30%, rgba(11, 22, 38, .1) 50%, rgba(11, 22, 38, .78) 100%); }
+.hero-shade { position: absolute; inset: 0; background:
+  linear-gradient(90deg, rgba(11, 22, 38, .55) 0%, rgba(11, 22, 38, .25) 40%, rgba(11, 22, 38, 0) 60%),
+  linear-gradient(180deg, rgba(11, 22, 38, .45) 0%, rgba(11, 22, 38, 0) 30%, rgba(11, 22, 38, .1) 50%, rgba(11, 22, 38, .78) 100%); }
 .hero-copy { position: relative; padding-bottom: clamp(56px, 10vh, 110px); }
 .hero-kicker { font: 600 14px var(--text); color: var(--sky); margin-bottom: 14px; }
 .hero-title { font-size: clamp(66px, 12.5vw, 196px); line-height: .88; letter-spacing: -0.03em; margin-bottom: 28px; }
@@ -250,3 +252,66 @@ fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap
   .tour-window { clip-path: none; }
   .zpic { transition: none; }
 }
+
+/* ------------------------------------------------------------------ portada: letras sueltas */
+.ht-word .ch { display: inline-block; will-change: transform; }
+
+/* ------------------------------------------------------------------ sube por el edificio */
+.lift { position: relative; background: var(--night); color: var(--on-night); }
+.lift-pin { position: relative; height: 100svh; overflow: hidden; }
+.lift-stage, .lift-shot { position: absolute; inset: 0; margin: 0; }
+.lift-shot { opacity: 0; }
+.lift-shot.on { opacity: 1; }
+.lift-shot img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.06); will-change: transform, opacity; }
+/* láminas (planta y corte): sobre fondo oscuro, a la derecha, para que el texto quede a la izquierda */
+.lift-shot.contain { background: radial-gradient(120% 90% at 70% 50%, #1a2a40, var(--night)); }
+.lift-shot.contain img { object-fit: contain; padding: 13svh calc(var(--gutter) + 15vw) 9svh 40vw; transform: none; }
+.lift-shade { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(11, 22, 38, .82) 0%, rgba(11, 22, 38, .45) 38%, rgba(11, 22, 38, 0) 62%),
+              linear-gradient(0deg, rgba(11, 22, 38, .55) 0%, rgba(11, 22, 38, 0) 35%); }
+.lift-copy { position: absolute; left: 0; right: 0; bottom: 14svh; display: grid; }
+.lift-step { grid-area: 1 / 1; max-width: 34rem; opacity: 0; visibility: hidden; }
+.lift-step.on { opacity: 1; visibility: visible; }
+.ls-where { margin: 0 0 12px; color: var(--sky); font: 600 14px/1.3 var(--text); }
+.lift-step h3 { margin: 0 0 16px; font: 400 clamp(32px, 4.2vw, 60px)/1.04 var(--display); letter-spacing: -.01em; }
+.lift-step p:last-child { margin: 0; max-width: 40ch; font: 400 clamp(16px, 1.25vw, 19px)/1.6 var(--text); color: rgba(242, 246, 251, .9); }
+.lift-level { position: absolute; right: var(--gutter); bottom: 9svh; display: flex; flex-direction: column; align-items: flex-end; line-height: 1; }
+.ll-label { font: 600 14px var(--text); color: var(--sky); margin-bottom: 6px; }
+.ll-num { font: 300 clamp(88px, 13vw, 200px)/.82 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+.lift-rail { position: absolute; right: var(--gutter); top: 14svh; margin: 0; padding: 14px 14px 14px 18px; list-style: none; display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
+  border-radius: 14px; background: rgba(11, 22, 38, .42); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.lift-rail li { display: flex; align-items: center; gap: 10px; font: 600 12px var(--text); color: rgba(242, 246, 251, .45); transition: color .4s; }
+.lift-rail li::after { content: ''; width: 14px; height: 2px; border-radius: 2px; background: currentColor; transition: width .5s var(--ease); }
+.lift-rail li.on { color: #fff; }
+.lift-rail li.on::after { width: 34px; }
+
+/* ------------------------------------------------------------------ recorrido 3D navegable dentro del brochure */
+.tour-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; opacity: 0; pointer-events: none; background: var(--night); transition: opacity .8s var(--ease); }
+.tour.is-live .tour-frame { opacity: 1; pointer-events: auto; }
+.tour.is-live .tour-window { position: fixed; inset: 0; z-index: 60; height: 100dvh; clip-path: none !important; }
+body.tour-open { overflow: hidden; }
+body.tour-open .nav { opacity: 0; pointer-events: none; }
+.tour.is-live .tour-window::after { opacity: 0; }
+.tour.is-live .tour-copy { opacity: 0; pointer-events: none; }
+.tour-copy { transition: opacity .5s; }
+.tour-exit { position: fixed; top: calc(env(safe-area-inset-top) + 16px); left: 50%; transform: translateX(-50%); z-index: 61; opacity: 0; pointer-events: none; transition: opacity .4s; }
+.tour.is-live .tour-exit { opacity: 1; pointer-events: auto; }
+
+@media (max-width: 760px) {
+  .lift-shade { background: linear-gradient(0deg, rgba(11, 22, 38, .9) 0%, rgba(11, 22, 38, .55) 45%, rgba(11, 22, 38, .1) 75%); }
+  .lift-copy { bottom: 18svh; }
+  .lift-step h3 { font-size: 30px; }
+  .lift-shot.contain img { padding: 10svh 20px 42svh; }
+  .lift-level { bottom: 4svh; }
+  .ll-num { font-size: 72px; }
+  .lift-rail { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lift-shot img { transform: none; }
+}
+
+/* sin animación: la sección deja de ser fija y se leen todos los pisos en orden sobre la primera foto */
+.lift.static .lift-pin { height: auto; min-height: 100svh; }
+.lift.static .lift-copy { position: relative; bottom: auto; padding: 22svh 0 18svh; gap: 56px; }
+.lift.static .lift-step { grid-area: auto; opacity: 1; visibility: visible; }
+.lift.static .lift-level, .lift.static .lift-rail { display: none; }

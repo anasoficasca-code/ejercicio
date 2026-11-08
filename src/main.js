@@ -63,6 +63,11 @@ class App {
       });
       syncPins();
       this.intro.play();
+      // abierto desde el brochure (?embed=1): sin intro, directo a explorar el edificio
+      if (new URLSearchParams(location.search).has('embed')) {
+        this.intro.finish(() => syncPins());
+        document.querySelector('a.contact-pill-btn[href="./index.html"]')?.remove();   // el brochure ya tiene "Volver"
+      }
     }).catch((e) => {
       console.error(e);
       this.loading.set(1, 'No se pudieron cargar los datos. Abre el sitio desde un servidor web (GitHub Pages o npx serve).');

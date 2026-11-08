@@ -33,11 +33,11 @@
         <span class="brand-word">Distrito Arboleda</span>
       </a>
       <nav class="nav-links" aria-label="Secciones">
-        <a href="#dia">El edificio</a>
+        <a href="#edificio">El edificio</a>
         <a href="#apartamentos">Apartamentos</a>
         <a href="#zonas">Zonas sociales</a>
         <a href="#ubicacion">Ubicación</a>
-        <a href="./masterplan.html">Recorrido 3D</a>
+        <a href="#recorrido">Recorrido 3D</a>
       </nav>
       <a class="btn btn-sm" href="#visita">Agendar una visita</a>
     </div>
@@ -46,13 +46,13 @@
   <main id="main">
     <!-- Portada -->
     <section class="hero" id="inicio">
-      <div class="hero-media"><img src="./assets/renders/hero-a.jpg" alt="Distrito Arboleda en la esquina de la Calle 56 con Carrera 18, con los Cerros Orientales al fondo" fetchpriority="high" /></div>
+      <div class="hero-media"><img src="./assets/renders/portada.webp" alt="Distrito Arboleda: fachada de pañete blanco con franjas de ladrillo, balcones con jardineras y la terraza con pérgola" fetchpriority="high" /></div>
       <div class="hero-shade"></div>
       <div class="wrap hero-copy">
         <p class="hero-kicker">Galerías, Teusaquillo</p>
         <h1 class="hero-title" aria-label="Distrito Arboleda">
-          <span class="ht-line"><span class="ht-word">Distrito</span></span>
-          <span class="ht-line"><span class="ht-word ht-italic">Arboleda</span></span>
+          <span class="ht-line" aria-hidden="true"><span class="ht-word" data-split>Distrito</span></span>
+          <span class="ht-line" aria-hidden="true"><span class="ht-word ht-italic" data-split>Arboleda</span></span>
         </h1>
         <p class="hero-fact">20 apartamentos con balcón de 70 y 78,75 m², desde $630.000.000, entre los árboles de la Calle 56 con Carrera 18.</p>
         <div class="actions">
@@ -81,6 +81,38 @@
           <div><dt data-count="4">4</dt><dd>apartamentos por piso, todos con balcón</dd></div>
           <div><dt data-count="8">8</dt><dd>zonas sociales</dd></div>
         </dl>
+      </div>
+    </section>
+
+    <!-- Sube por el edificio: la sección queda fija y al bajar se recorre del lobby a la terraza, piso por piso -->
+    <section class="lift" id="edificio" aria-labelledby="lift-h">
+      <h2 class="sr" id="lift-h">El edificio, del lobby a la terraza</h2>
+      <div class="lift-pin">
+        <div class="lift-stage" aria-hidden="true">
+          <figure class="lift-shot on"><img src="./assets/brochure/lobby.jpg" alt="" /></figure>
+          <figure class="lift-shot"><img src="./assets/renders/restaurante.webp" alt="" loading="lazy" /></figure>
+          <figure class="lift-shot"><img src="./assets/renders/sala-nogal.webp" alt="" loading="lazy" /></figure>
+          <figure class="lift-shot"><img src="./assets/renders/habitacion.webp" alt="" loading="lazy" /></figure>
+          <figure class="lift-shot contain"><img src="./assets/renders/planta-nogal.webp" alt="" loading="lazy" /></figure>
+          <figure class="lift-shot contain light"><img src="./assets/renders/corte-nogal.webp" alt="" loading="lazy" /></figure>
+          <figure class="lift-shot"><img src="./assets/renders/balcones.jpg" alt="" loading="lazy" /></figure>
+          <figure class="lift-shot"><img src="./assets/renders/terraza-dorada.webp" alt="" loading="lazy" /></figure>
+        </div>
+        <div class="lift-shade" aria-hidden="true"></div>
+        <div class="wrap lift-copy">
+          <article class="lift-step on" data-level="01"><p class="ls-where">Primer piso</p><h3>Un lobby de doble altura</h3><p>Entras por la esquina de la Calle 56 con Carrera 18 a un lobby con madera, plantas y luz de las dos calles.</p></article>
+          <article class="lift-step" data-level="01"><p class="ls-where">Primer piso, sobre la Calle 56</p><h3>Restaurante con terraza</h3><p>Mesas bajo los árboles del antejardín, parasoles y bombillos que se encienden al atardecer. El barrio entra al edificio.</p></article>
+          <article class="lift-step" data-level="02"><p class="ls-where">Pisos 2 a 6</p><h3>Sala, comedor y cocina en un solo espacio</h3><p>41 m² con piso de nogal, cocina de nogal con mesón de mármol y un ventanal sobre la calle.</p></article>
+          <article class="lift-step" data-level="03"><p class="ls-where">Pisos 2 a 6</p><h3>La alcoba principal mira a los árboles</h3><p>Ventanal de piso a techo, baño privado y clóset. La segunda alcoba queda junto al baño social.</p></article>
+          <article class="lift-step" data-level="04"><p class="ls-where">Apartamento tipo A, 78,75 m²</p><h3>Dos alcobas, dos baños, balcón</h3><p>Pisos de nogal en las zonas de estar y porcelanato claro en baños y pasillo. Ropas y depósito dentro del apartamento.</p></article>
+          <article class="lift-step" data-level="05"><p class="ls-where">Planta tipo</p><h3>Cuatro apartamentos por piso</h3><p>Alrededor del punto fijo con ascensor y escalera: dos sobre la Calle 56 y dos hacia el jardín del patio.</p></article>
+          <article class="lift-step" data-level="06"><p class="ls-where">Fachada</p><h3>Balcones con jardinera</h3><p>Baranda de vidrio para que desde la calle se vean las plantas, y dos franjas de ladrillo calado que dan sombra.</p></article>
+          <article class="lift-step" data-level="T"><p class="ls-where">Cubierta</p><h3>Una terraza frente a los cerros</h3><p>Pérgola de madera, zona BBQ, café lounge y gimnasio al aire libre para todos los vecinos.</p></article>
+        </div>
+        <div class="lift-level" aria-hidden="true"><span class="ll-label">Piso</span><span class="ll-num">01</span></div>
+        <ol class="lift-rail" aria-hidden="true">
+          <li data-l="T">Terraza</li><li data-l="06">6</li><li data-l="05">5</li><li data-l="04">4</li><li data-l="03">3</li><li data-l="02">2</li><li data-l="01" class="on">1</li>
+        </ol>
       </div>
     </section>
 
@@ -175,14 +207,14 @@
           </figure>
         </div>
         <div class="finishes">
-          <figure class="pic" data-parallax="-6"><img src="./assets/brochure/interior.jpg" alt="Interior con piso de roble claro, cocina grafito y ventanal" loading="lazy" /></figure>
+          <figure class="pic" data-parallax="-6"><img src="./assets/renders/sala-nogal.webp" alt="Sala y cocina con piso de nogal, sofás crema, mesa de comedor y cocina de nogal con mesón de mármol" loading="lazy" /></figure>
           <div>
             <h3 data-reveal>Acabados</h3>
             <ul class="swatches">
-              <li><i style="--sw:#c9a27a"></i><span><b>Piso</b> laminado en roble claro</span></li>
-              <li><i style="--sw:#efebe3"></i><span><b>Muros y techo</b> blanco hueso, cielo en drywall</span></li>
-              <li><i style="--sw:#3a3d42"></i><span><b>Cocina</b> muebles grafito, mesón en cuarzo blanco</span></li>
-              <li><i style="--sw:#b9bcbf"></i><span><b>Baños</b> porcelanato gris de gran formato</span></li>
+              <li><i style="--sw:#5e3b24"></i><span><b>Piso</b> nogal en sala, comedor y alcobas</span></li>
+              <li><i style="--sw:#e9ddca"></i><span><b>Muros y techo</b> beige cálido, cielo en drywall</span></li>
+              <li><i style="--sw:#4a2b18"></i><span><b>Cocina</b> muebles de nogal, mesón de mármol claro</span></li>
+              <li><i style="--sw:#e2d8c8"></i><span><b>Baños y pasillo</b> porcelanato claro tipo travertino</span></li>
               <li><i style="--sw:#1d1f22"></i><span><b>Ventanería y grifería</b> aluminio y metal negro mate</span></li>
               <li><i style="--sw:#f2dfb4"></i><span><b>Iluminación</b> LED cálida empotrada</span></li>
             </ul>
@@ -203,7 +235,7 @@
             <li><button type="button" data-z="3"><b>Bicicletero</b><span>Cubierto, en el primer piso</span></button></li>
             <li><button type="button" data-z="4"><b>Sala de cine</b><span>Para ver películas en el edificio</span></button></li>
             <li class="plain"><b>Jardín del patio</b><span>Césped, árboles y bancas, del lado silencioso</span></li>
-            <li class="plain"><b>Salón social</b><span>Para celebraciones</span></li>
+            <li class="plain"><b>Restaurante con terraza</b><span>En el primer piso, sobre la Calle 56</span></li>
             <li class="plain"><b>Gimnasio al aire libre</b><span>En la terraza</span></li>
           </ul>
         </div>
@@ -233,14 +265,21 @@
       </div>
     </section>
 
-    <!-- Recorrido 3D: la foto se abre desde una ventana al bajar -->
+    <!-- Recorrido 3D: la foto se abre desde una ventana al bajar y adentro queda el edificio navegable -->
     <section class="tour" id="recorrido">
-      <div class="tour-window"><img src="./assets/renders/esquina.jpg" alt="Distrito Arboleda desde la esquina de la Calle 56 con Carrera 18" loading="lazy" /></div>
-      <div class="wrap tour-copy">
-        <h2>Recorre el edificio en 3D</h2>
-        <p>Gira el edificio sobre el barrio real, cambia la hora del día y entra piso por piso a cada apartamento.</p>
-        <a class="btn btn-light magnetic" href="./masterplan.html">Abrir el recorrido 3D</a>
+      <div class="tour-window">
+        <img src="./assets/renders/aerea.webp" alt="Distrito Arboleda visto desde arriba, entre las casas de ladrillo de Galerías" loading="lazy" />
+        <iframe class="tour-frame" title="Recorrido 3D de Distrito Arboleda" data-src="./masterplan.html" allow="fullscreen" loading="lazy" tabindex="-1"></iframe>
       </div>
+      <div class="wrap tour-copy">
+        <h2>Recorre el edificio completo</h2>
+        <p>Gira el edificio sobre el barrio real, cambia la hora del día y entra piso por piso a cada apartamento, a su cocina y a su habitación.</p>
+        <div class="actions">
+          <button class="btn btn-light magnetic" type="button" id="tour-enter">Entrar al edificio en 3D</button>
+          <a class="btn btn-ghost magnetic" href="./masterplan.html">Abrir en pantalla completa</a>
+        </div>
+      </div>
+      <button class="tour-exit btn btn-sm" type="button" id="tour-exit">Volver al brochure</button>
     </section>
   </main>
 

@@ -16,8 +16,13 @@ const motion = !!(g && ST) && !reduce;
 if (motion) g.registerPlugin(ST);
 
 // ------------------------------------------------------------------ entrada
+// el nombre de la portada se parte en letras para que entren una por una
+document.querySelectorAll('[data-split]').forEach((el) => {
+  el.innerHTML = [...el.textContent].map((c) => `<span class="ch">${c}</span>`).join('');
+});
 const preloader = document.querySelector('.preloader');
 function intro() {
+  if (!document.body.classList.contains('is-loading')) return;
   document.body.classList.remove('is-loading');
   if (!motion) { preloader.remove(); return; }
   g.timeline()
@@ -26,9 +31,12 @@ function intro() {
     .to('.pl-line i', { scaleX: 1, duration: 0.9, ease: 'power2.inOut' }, 0.2)
     .to('.pl-name, .pl-line', { yPercent: -40, opacity: 0, duration: 0.5, ease: 'power2.in' }, 1.25)
     .to(preloader, { clipPath: 'inset(0 0 100% 0)', duration: 0.9, ease: 'expo.inOut', onComplete: () => preloader.remove() }, 1.45)
-    .fromTo('.hero-media img', { scale: 1.25 }, { scale: 1, duration: 2.2, ease: 'expo.out' }, 1.5)
-    .from('.ht-word', { yPercent: 110, duration: 1.2, stagger: 0.12, ease: 'expo.out' }, 1.75)
-    .from('.hero-kicker, .hero-fact, .hero .actions, .nav', { opacity: 0, y: 18, duration: 0.9, stagger: 0.08, ease: 'power3.out' }, 2.0);
+    .fromTo('.hero-media img', { scale: 1.25 }, { scale: 1, duration: 2.4, ease: 'expo.out' }, 1.5)
+    // letra animada: cada letra sube girando levemente, con la segunda línea en cursiva un poco después
+    .from('.ht-word .ch', { yPercent: 120, rotate: 8, opacity: 0, duration: 1.2, stagger: 0.05, ease: 'expo.out' }, 1.75)
+    .from('.hero-kicker, .hero-fact, .hero .actions, .nav', { opacity: 0, y: 18, duration: 0.9, stagger: 0.08, ease: 'power3.out' }, 2.3)
+    // después, el render respira muy despacio (acercamiento suave y continuo)
+    .to('.hero-media img', { scale: 1.07, duration: 16, ease: 'sine.inOut', yoyo: true, repeat: -1 }, 3.9);
 }
 if (document.readyState === 'complete') intro(); else addEventListener('load', intro);
 // si la portada tarda, la entrada no espera más de 3 s
@@ -128,6 +136,74 @@ if (motion) {
   }
 } else {
   words.forEach((w) => w.classList.add('on'));
+}
+
+// ------------------------------------------------------------------ sube por el edificio
+// La sección queda fija y el scroll recorre del lobby a la terraza: cambia la foto, el texto y el piso
+// del contador (como un ascensor). Sin GSAP o con "reducir movimiento" se ven todos los textos en orden.
+const lift = document.querySelector('.lift');
+if (lift) {
+  const shots = [...lift.querySelectorAll('.lift-shot')], steps = [...lift.querySelectorAll('.lift-step')];
+  const rail = [...lift.querySelectorAll('.lift-rail li')], num = lift.querySelector('.ll-num'), label = lift.querySelector('.ll-label');
+  const levelOf = (i) => steps[i].dataset.level;
+  const numOf = (l) => (l === 'T' ? 7 : +l);
+  let cur = 0, shown = 1;
+  const setLevel = (l) => {
+    label.textContent = l === 'T' ? 'Cubierta' : 'Piso';
+    rail.forEach((li) => li.classList.toggle('on', li.dataset.l === l));
+    const to = numOf(l), o = { v: shown };
+    // el contador sube piso a piso y en la cubierta termina en una T
+    const write = (v) => { num.textContent = Math.round(v) >= 7 ? 'T' : String(Math.round(v)).padStart(2, '0'); };
+    if (motion) g.to(o, { v: to, duration: 0.8, ease: 'power2.out', onUpdate: () => write(o.v) }); else write(to);
+    shown = to;
+  };
+  const show = (i) => {
+    if (i === cur) return;
+    const prev = cur;
+    cur = i;
+    shots.forEach((s, k) => s.classList.toggle('on', k === i));
+    steps.forEach((s, k) => s.classList.toggle('on', k === i));
+    if (motion) {
+      g.to(shots[prev], { opacity: 0, duration: 0.9, ease: 'power2.inOut', overwrite: true });
+      g.fromTo(shots[i], { opacity: 0 }, { opacity: 1, duration: 0.9, ease: 'power2.inOut', overwrite: true });
+      if (!shots[i].classList.contains('contain')) g.fromTo(shots[i].querySelector('img'), { scale: 1.16 }, { scale: 1.04, duration: 2.6, ease: 'expo.out' });
+      g.fromTo(steps[i].children, { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.07, ease: 'expo.out', overwrite: true });
+    }
+    setLevel(levelOf(i));
+  };
+  if (motion) {
+    ST.create({
+      trigger: lift, pin: '.lift-pin', start: 'top top', end: () => `+=${innerHeight * (steps.length - 1) * 0.85}`,
+      refreshPriority: 1,   // va antes que "Un día en el edificio" en la página: se calcula primero
+      invalidateOnRefresh: true,
+      onUpdate: (st) => show(Math.min(steps.length - 1, Math.floor(st.progress * steps.length)))
+    });
+  } else {
+    lift.classList.add('static');
+  }
+}
+
+// ------------------------------------------------------------------ recorrido 3D: el edificio navegable dentro del brochure
+// El 3D pesa varios MB: se carga solo cuando la persona entra. Mientras está activo la rueda del ratón
+// mueve la cámara (no la página); "Volver al brochure" lo deja quieto detrás de la foto.
+const tourSec = document.getElementById('recorrido');
+if (tourSec) {
+  const frame = tourSec.querySelector('.tour-frame');
+  const exit = () => {
+    tourSec.classList.remove('is-live');
+    document.body.classList.remove('tour-open');
+    frame.tabIndex = -1;
+    document.getElementById('tour-enter').focus();
+  };
+  document.getElementById('tour-enter').addEventListener('click', () => {
+    if (!frame.getAttribute('src')) frame.src = `${frame.dataset.src}?embed=1`;   // sin la intro: ya se vio en el brochure
+    tourSec.classList.add('is-live');
+    document.body.classList.add('tour-open');
+    frame.tabIndex = 0;
+    setTimeout(() => frame.focus(), 400);
+  });
+  document.getElementById('tour-exit').addEventListener('click', exit);
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && tourSec.classList.contains('is-live')) exit(); });
 }
 
 // ------------------------------------------------------------------ tipologías: la pastilla azul se desliza a la pestaña elegida
