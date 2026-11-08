@@ -76,13 +76,30 @@ class App {
     document.getElementById('btn-tour').onclick = () => this.tour?.start(0);
 
     const hour = document.getElementById('sky-hour'), label = document.getElementById('sky-hour-label');
+    const night = document.getElementById('btn-night');
+    const show = (h) => {
+      const hh = Math.floor(h), mm = Math.round((h - hh) * 60) % 60;
+      label.textContent = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+      const dark = h >= 17.9;
+      night.setAttribute('aria-pressed', String(dark));
+      document.body.classList.toggle('is-night', dark);
+    };
     let raf = null;
     hour.addEventListener('input', () => {
-      const h = parseFloat(hour.value), hh = Math.floor(h), mm = Math.round((h - hh) * 60) % 60;
-      label.textContent = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+      show(parseFloat(hour.value));
       if (raf) return;
       raf = requestAnimationFrame(() => { raf = null; this.scene.setHour(parseFloat(hour.value)); });
     });
+    // noche ↔ tarde: la luz cambia en 2,4 s y se van encendiendo apartamentos, bañadores y calle
+    night.onclick = () => {
+      const g = window.gsap, from = parseFloat(hour.value), to = from >= 17.9 ? 16.9 : 18.15;
+      const apply = (h) => { hour.value = h; show(h); this.scene.setHour(h); };
+      if (!g || matchMedia('(prefers-reduced-motion: reduce)').matches) { apply(to); return; }
+      const o = { h: from };
+      g.killTweensOf(this._sky ||= {});
+      this._sky = o;
+      g.to(o, { h: to, duration: 2.4, ease: 'sine.inOut', onUpdate: () => apply(o.h) });
+    };
   }
 
   handleTabClick(tab) {

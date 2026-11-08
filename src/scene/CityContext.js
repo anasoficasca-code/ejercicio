@@ -549,6 +549,13 @@ export class CityContext {
               glass += vec3(0.05, 0.06, 0.075) * smoothstep(0.35, 1.0, wy0);
               float mull = (1.0 - step(0.022, abs(wx0 - 0.5) * 0.5 * cw)) + (1.0 - step(0.02, abs(wy0 - 0.72) * 0.46 * fh));
               if (shop > 0.5) mull = 1.0 - step(0.03, abs(fract(fx * 3.0) - 0.5) * cw / 3.0);
+              // reflejo del cielo en el vidrio (Fresnel): de frente se ve el interior, de lado el cielo y las
+              // nubes; cada ventana con su inclinación para que la fachada no se vea como una plantilla
+              vec3 nV = normalize(cross(dFdx(vViewPosition), dFdy(vViewPosition)));
+              float ndv = abs(dot(nV, normalize(vViewPosition)));
+              float fres = 0.14 + 0.62 * pow(1.0 - ndv, 3.0) + 0.08 * (hsh(cell + 4.4) - 0.5);
+              vec3 skyR = mix(vec3(0.36, 0.41, 0.47), vec3(0.66, 0.71, 0.76), clamp(wy0, 0.0, 1.0)) * (0.82 + 0.36 * hsh(cell + 2.2));
+              glass = mix(glass, skyR, clamp(fres, 0.0, 0.85) * (1.0 - 0.85 * uNight) * (1.0 - step(0.5, curtain + blind) * 0.4));
               glass = mix(glass, isBrick ? vec3(0.8, 0.79, 0.76) : vec3(0.14, 0.15, 0.16), clamp(mull, 0.0, 1.0) * win);
             }
             float band = step(fract(vFac.y / fh), 0.06) * 0.25;

@@ -187,22 +187,41 @@ export class Traffic {
     }
   }
 
-  /** Primer punto sobre un andén al alejarse del eje de la vía hacia `right` (si no hay, el ancho estimado). */
-  _curb(p, right, fallback) {
-    const inside = (x, z, poly) => {
+  /** ¿El punto (x, z) cae sobre alguno de los andenes `polys`? */
+  _onSidewalk(x, z, polys) {
+    return polys.some((poly) => {
       let c = false;
       for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
         const [xi, zi] = poly[i], [xj, zj] = poly[j];
         if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) c = !c;
       }
       return c;
-    };
+    });
+  }
+
+  /** Primer punto sobre un andén al alejarse del eje de la vía hacia `right` (si no hay, el ancho estimado). */
+  _curb(p, right, fallback) {
     const near = this.sidewalks.filter((poly) => poly.some(([x, z]) => Math.hypot(x - p.x, z - p.y) < 80));
     for (let o = 2; o <= 16; o += 0.5) {
       const x = p.x + right.x * o, z = p.y + right.y * o;
-      if (near.some((poly) => inside(x, z, poly))) return new THREE.Vector2(x + right.x * 0.7, z + right.y * 0.7);
+      if (this._onSidewalk(x, z, near)) return new THREE.Vector2(x + right.x * 0.7, z + right.y * 0.7);
     }
     return p.clone().addScaledVector(right, fallback);
+  }
+
+  /**
+   * Distancia desde el centro de la intersección `P` (por el brazo `a`) hasta donde arranca la esquina del
+   * andén: se avanza por el brazo mirando a ambos lados de la calzada y se para en el primer andén.
+   */
+  _cornerOffset(P, a, armWidth, fallback) {
+    const near = this.sidewalks.filter((poly) => poly.some(([x, z]) => Math.hypot(x - P[0], z - P[1]) < 60));
+    if (!near.length) return fallback;
+    const right = new THREE.Vector2(-a.y, a.x), lat = armWidth / 2 + 1.2;
+    for (let o = 2; o <= 22; o += 0.25) {
+      const x = P[0] + a.x * o, z = P[1] + a.y * o;
+      if (this._onSidewalk(x + right.x * lat, z + right.y * lat, near) || this._onSidewalk(x - right.x * lat, z - right.y * lat, near)) return o;
+    }
+    return fallback;
   }
 
   /** Estado de la fase (0 o 1) de una intersección: 'g', 'a' o 'r'. */
@@ -243,8 +262,9 @@ export class Traffic {
       seen.push([x, z]);
       return true;
     };
-    // En una intersección la cebra no va en el centro: va en cada brazo, retirada lo que mide la vía
-    // transversal más la esquina del andén, como en la Calle 56 con Carrera 18 frente al lote.
+    // En una intersección la cebra no va en el centro: va en cada brazo, justo donde empieza la esquina del
+    // andén (polígonos de Catastro), como en la Calle 56 con Carrera 18 frente al lote. Las franjas miden
+    // 3 m en el sentido del tráfico, así que el centro queda 1,8 m más allá de la esquina.
     const atIntersection = (k) => {
       const P = N[k], ways = waysAt(k);
       for (const [v, i] of this.wayOf.get(k)) {
@@ -255,19 +275,23 @@ export class Traffic {
           const a = new THREE.Vector2(q[0] - P[0], q[1] - P[1]);
           const len = a.length();
           a.normalize();
-          const off = Math.min(cross / 2 + 3.2, len * 0.6);
+          const corner = this._cornerOffset(P, a, width(v), cross / 2 + 1.5);
+          const off = Math.min(corner + 1.8, len - 2);
+          if (off < 3) continue;
           const x = P[0] + a.x * off, z = P[1] + a.y * off;
           if (once(x, z)) addZebra(x, z, a, width(v));
         }
       }
     };
-    // cruces que OSM marca (en la intersección o a mitad de cuadra) y brazos de los cruces con semáforo
-    const marked = data.cruces.filter(inR);
-    const signals = data.semaforos.filter(inR).filter((k) => waysAt(k).length > 1);
-    for (const k of [...marked, ...signals]) {
-      if (waysAt(k).length > 1) atIntersection(k);
-      else if (once(N[k][0], N[k][1])) addZebra(N[k][0], N[k][1], this._dirAt(k), this._roadWidth(k));
-    }
+    // Solo en los cruces: intersecciones que OSM marca con paso peatonal y las que tienen semáforo. Los
+    // pasos de mitad de cuadra se omiten porque en la trama de Galerías caían fuera de las esquinas.
+    const isX = (k) => waysAt(k).length > 1;
+    const near = (k) => (data.cruces.filter(inR).filter((c) => !isX(c)).some((c) => Math.hypot(N[c][0] - N[k][0], N[c][1] - N[k][1]) < 25));
+    const crossings = this.wayOf.size ? [...this.wayOf.keys()].filter((k) => inR(k) && isX(k) && (data.cruces.includes(k) || data.semaforos.includes(k) || near(k))) : [];
+    // la esquina del proyecto (la intersección más cercana al lote, en el origen) siempre lleva cebras
+    const corner = [...this.wayOf.keys()].filter((k) => inR(k) && isX(k)).sort((a, b) => Math.hypot(...N[a]) - Math.hypot(...N[b]))[0];
+    if (corner && Math.hypot(...N[corner]) < 45 && !crossings.includes(corner)) crossings.unshift(corner);
+    for (const k of crossings) atIntersection(k);
     if (!m4.length) return;
     const mat = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.75, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     const im = new THREE.InstancedMesh(stripe, mat, m4.length);

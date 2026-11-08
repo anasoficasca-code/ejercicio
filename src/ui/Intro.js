@@ -59,6 +59,9 @@ export class Intro {
     s.controls.target.set(c.x, 0, c.z);
     s.controls.enabled = false;
     const hour = { h: 15.6 };
+    // mientras la cámara baja, el edificio se arma piso por piso sobre el lote
+    const started = performance.now();
+    s.building.ready?.then(() => s.building.assemble({ delay: Math.max(0, 1.4 - (performance.now() - started) / 1000) }));
     this.tl = g.timeline({ onComplete: () => { s.controls.enabled = true; } })
       .to(s.camera.position, { x: home.pos.x, y: home.pos.y, z: home.pos.z, duration: 6.2, ease: 'power3.inOut' }, 0)
       .to(s.controls.target, { x: home.target.x, y: home.target.y, z: home.target.z, duration: 6.2, ease: 'power3.inOut' }, 0)

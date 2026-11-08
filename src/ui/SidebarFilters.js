@@ -45,20 +45,57 @@ export class SidebarFilters {
     this._key = key;
     const el = this.container.querySelector('#sidebar-content');
     const scroll = el.querySelector('.sidebar-body')?.scrollTop || 0;
+    const listKey = JSON.stringify([mode, s.activeFloor, s.activeTypology]);
     el.innerHTML = mode === 'urbanismo' ? this.urbanismo(s) : this.inmuebles(s);
     el.querySelector('.sidebar-body').scrollTop = scroll;
     this.bind(el);
+    this.animate(el, listKey !== this._listKey);
+    this._listKey = listKey;
+  }
+
+  /**
+   * Movimiento que responde a lo que hizo la persona: las cifras cuentan la primera vez que se ve el panel
+   * y la lista de unidades entra escalonada cuando cambia el filtro (no al seleccionar una unidad).
+   */
+  animate(el, listChanged) {
+    const g = window.gsap;
+    if (!g || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!this._counted) {
+      const stats = el.querySelectorAll('[data-count]');
+      if (stats.length) {
+        this._counted = true;
+        stats.forEach((n, k) => {
+          const to = +n.dataset.count, dec = +(n.dataset.dec || 0), pre = n.dataset.prefix || '', suf = n.dataset.suffix || '';
+          const o = { v: 0 };
+          g.to(o, { v: to, duration: 1.6, delay: 0.15 + k * 0.12, ease: 'power3.out', onUpdate: () => { n.textContent = pre + fmtNum(o.v, dec) + suf; } });
+        });
+      }
+    }
+    if (listChanged) {
+      g.fromTo(el.querySelectorAll('.jmc-room-card'), { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.45, stagger: 0.025, ease: 'power3.out', clearProps: 'opacity,transform' });
+      const active = el.querySelector('.arb-level.active');
+      if (active) g.fromTo(active, { '--glow': 0 }, { '--glow': 1, duration: 0.6, ease: 'power2.out' });
+    }
   }
 
   // ---------------------------------------------------------------- apartaestudios
   inmuebles(s) {
-    const floors = [...new Set(s.units.map((u) => u.floor))];
+    const floors = [...new Set(s.units.map((u) => u.floor))].sort((a, b) => b - a);
     const typos = [...new Set(s.units.map((u) => u.typology))];
     const list = store.getFilteredUnits();
     const apts = s.units.filter((u) => u.typology === 'Apartamento');
     const nApts = apts.length;
+    const pa = s.project.proyectoActual;
+    const minPrice = Math.min(...pa.tipologias.map((t) => t.precio));
+    const perFloor = (f) => s.units.filter((u) => u.floor === f && u.typology === 'Apartamento').length;
     return `
       <div class="sidebar-header-controls">
+        <div class="arb-stats" aria-label="Datos del proyecto">
+          <div><strong data-count="${nApts}">${nApts}</strong><span>apartamentos</span></div>
+          <div><strong data-count="${pa.pisos}">${pa.pisos}</strong><span>pisos</span></div>
+          <div><strong data-count="${Math.max(...pa.tipologias.map((t) => t.area))}" data-dec="2">${fmtNum(Math.max(...pa.tipologias.map((t) => t.area)), 2)}</strong><span>m² el más grande</span></div>
+          <div><strong data-count="${Math.round(minPrice / 1e6)}" data-prefix="$" data-suffix=" M">$${Math.round(minPrice / 1e6)} M</strong><span>desde</span></div>
+        </div>
         <div class="toggle-row">
           <div class="umbra-switch ${s.showUnitsOverlay ? 'on' : ''}" data-action="toggle-units"><div class="umbra-switch-knob"></div></div>
           <span class="toggle-label">Mostrar apartamentos 3D</span>
@@ -66,10 +103,17 @@ export class SidebarFilters {
       </div>
       <div class="sidebar-body">
         <div class="filter-section">
-          <div class="filter-section-label">Filtrar por piso</div>
-          <div class="jmc-pill-stack">
-            <button class="jmc-pill-btn ${!s.activeFloor ? 'active' : ''}" data-floor="">Todos</button>
-            ${floors.map((f) => `<button class="jmc-pill-btn ${s.activeFloor === f ? 'active' : ''}" data-floor="${f}">Piso ${f}</button>`).join('')}
+          <div class="filter-section-label">Elige un piso</div>
+          <div class="arb-section" role="group" aria-label="Pisos del edificio">
+            <button class="arb-level roof ${!s.activeFloor ? 'all' : ''}" data-floor="" aria-pressed="${!s.activeFloor}">
+              <span class="arb-level-name">Edificio completo</span><span class="arb-level-meta">terraza comunal</span>
+            </button>
+            ${floors.map((f) => `
+              <button class="arb-level ${s.activeFloor === f ? 'active' : ''} ${!s.activeFloor ? 'all' : ''}" data-floor="${f}" aria-pressed="${s.activeFloor === f}" style="--i:${f}">
+                <span class="arb-level-name">Piso ${f}</span>
+                <span class="arb-level-meta">${f === 1 ? 'lobby y zonas sociales' : `${perFloor(f)} apartamentos`}</span>
+              </button>`).join('')}
+            <span class="arb-ground" aria-hidden="true"></span>
           </div>
         </div>
         <div class="filter-section">

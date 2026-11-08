@@ -88,7 +88,8 @@ ejercicio/
 └── scripts/
     ├── build-context.py              # Descarga y procesa los shapes de Catastro Bogotá
     ├── export-revit-geometry.py      # (dentro de Revit) exporta la geometría del edificio
-    └── build-revit-model.py          # Empaqueta esa geometría en assets/models/edificio-revit.*
+    ├── build-revit-model.py          # Empaqueta esa geometría en assets/models/edificio-revit.*
+    └── build-windows.py              # Ventanales con marco (assets/models/ventanas.json) a partir de las ventanas de Revit
 ```
 
 ---

@@ -1352,3 +1352,59 @@ body.is-touring .left-sidebar-wrapper,body.is-touring .bottom-dock-container,bod
   .room-detail-card.visible .detail-prop-line{animation:none}
 }
 body.is-touring .labels-layer .project-tag,body.is-touring .labels-layer .poi-pin{opacity:0;pointer-events:none;transition:opacity .4s}
+
+/* ---------------------------------------------------------------- cifras del proyecto */
+.arb-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin:0 0 14px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.08)}
+.arb-stats>div{background:rgba(14,24,38,.55);padding:10px 6px 9px;text-align:center}
+.arb-stats strong{display:block;white-space:nowrap;font-family:var(--serif-a);font-weight:400;font-size:19px;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.arb-stats span{display:block;margin-top:3px;font-family:var(--sans-a);font-size:10.5px;line-height:1.2;color:var(--text-dim)}
+
+/* ---------------------------------------------------------------- corte del edificio: selector de pisos */
+.arb-section{position:relative;display:flex;flex-direction:column;gap:3px;padding:6px 0 10px 14px}
+.arb-section::before{content:"";position:absolute;left:4px;top:6px;bottom:10px;width:2px;border-radius:2px;background:linear-gradient(#a9c7e8,rgba(169,199,232,.15))}
+.arb-level{--glow:0;position:relative;display:flex;align-items:baseline;justify-content:space-between;gap:10px;width:100%;
+  padding:9px 12px;border:1px solid rgba(255,255,255,.1);border-radius:6px;background:rgba(255,255,255,.05);
+  color:var(--text-soft);font-family:var(--sans-a);cursor:pointer;text-align:left;
+  transition:transform .35s var(--ease-out-a),background .35s,border-color .35s,color .35s}
+.arb-level::before{content:"";position:absolute;left:-14px;top:50%;width:9px;height:2px;background:rgba(169,199,232,.5);transition:width .35s var(--ease-out-a),background .35s}
+.arb-level-name{font-family:var(--serif-a);font-size:15px;color:#fff}
+.arb-level-meta{font-size:11.5px;color:var(--text-dim)}
+.arb-level.roof{border-style:dashed;background:transparent}
+.arb-level.all:not(.roof){background:rgba(31,79,143,.22);border-color:rgba(169,199,232,.25)}
+.arb-level:hover{transform:translateX(5px);border-color:rgba(169,199,232,.6);color:#fff}
+.arb-level:hover::before{width:13px;background:#a9c7e8}
+.arb-level:focus-visible{outline:2px solid #a9c7e8;outline-offset:2px}
+.arb-level.active{background:linear-gradient(90deg,#1f4f8f,#2a63ad);border-color:#a9c7e8;transform:translateX(8px);
+  box-shadow:0 0 calc(var(--glow) * 22px) rgba(42,99,173,.7)}
+.arb-level.active::before{width:17px;background:#fff}
+.arb-level.active .arb-level-meta{color:#d6e6f7}
+.arb-ground{display:block;height:6px;margin:4px 0 0 -14px;border-radius:3px;
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 4px,transparent 4px 9px)}
+
+/* ---------------------------------------------------------------- día / noche */
+.sky-night-btn{display:inline-grid;place-items:center;width:30px;height:30px;margin-left:4px;border:1px solid var(--glass-border);
+  border-radius:50%;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;transition:background .4s,transform .5s var(--ease-out-a),color .4s}
+.sky-night-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8}
+.sky-night-btn:hover{transform:rotate(-18deg) scale(1.08)}
+.sky-night-btn:focus-visible{outline:2px solid #a9c7e8;outline-offset:2px}
+.sky-night-btn[aria-pressed="true"]{background:#f2b45a;color:#1d1f1e;border-color:#f2b45a;box-shadow:0 0 18px rgba(242,180,90,.55)}
+body.is-night .sky-time-control{box-shadow:0 0 0 1px rgba(242,180,90,.35),0 10px 30px rgba(0,0,0,.35)}
+
+/* ---------------------------------------------------------------- dock: respuesta al pasar y al elegir */
+.bottom-dock .dock-tab-btn{transition:transform .35s var(--ease-out-a),background .3s}
+.bottom-dock .dock-tab-btn:hover{transform:translateY(-4px)}
+.bottom-dock .dock-tab-btn:active{transform:translateY(-1px) scale(.97)}
+
+@media (prefers-reduced-motion:reduce){
+  .arb-level,.arb-level::before,.sky-night-btn,.bottom-dock .dock-tab-btn{transition:none}
+  .arb-level:hover,.arb-level.active,.bottom-dock .dock-tab-btn:hover{transform:none}
+}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+@media (max-width:760px){
+  /* la barra superior ocupa tres filas en celular: el panel arranca debajo y termina antes del control de hora */
+  .left-sidebar-wrapper{top:132px;height:calc(100dvh - 132px - 190px);min-height:300px}
+  .arb-stats strong{font-size:17px}
+  .arb-level{padding:8px 10px}
+}

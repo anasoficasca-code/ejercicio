@@ -190,6 +190,20 @@ function build() {
   };
 }
 
+/**
+ * Materiales de los ventanales de fachada (ver ProjectBuilding._buildWindows): vidrio más tupido que el de
+ * Revit —detrás del ventanal agrandado está el muro—, aluminio negro mate del marco y piedra de la alfajía.
+ */
+let windowCache = null;
+export function windowMaterials() {
+  windowCache ??= {
+    glass: fresnelGlass({ color: 0x34413f, base: 0.9, edge: 0.97, env: 0.9, lit: 0.62 }),
+    frame: new THREE.MeshStandardMaterial({ color: 0x1f2124, metalness: 0.65, roughness: 0.38, envMapIntensity: 1.1 }),
+    sill: new THREE.MeshStandardMaterial({ color: 0xe9e5dd, roughness: 0.7, envMapIntensity: 0.6 })
+  };
+  return windowCache;
+}
+
 /** Material realista para un color de Revit de la capa de arquitectura (null = usar el de siempre). */
 export function architectureMaterial(hex, glass) {
   cache ??= build();

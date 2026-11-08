@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RealTrees } from './RealTrees.js';
-import { architectureMaterial, boxUV } from './BuildingMaterials.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { architectureMaterial, boxUV, windowMaterials } from './BuildingMaterials.js';
 import { interiorMaterial, withOakFloor } from './InteriorMaterials.js';
 import { applyPBR, SURFACES } from './PBRSurfaces.js';
 import { BalconyPlants } from './BalconyPlants.js';
@@ -147,6 +148,57 @@ export class ProjectBuilding {
     this.group.traverse((m) => { if (m.isMesh && !m.material.transparent) { m.castShadow = true; m.receiveShadow = true; } });
     this.setCut(null);
     this.ready = this._loadRevit().catch((e) => console.error('Modelo de Revit', e));
+    this._buildWindows().catch((e) => console.error('Ventanales', e));
+  }
+
+  /**
+   * Ventanales de fachada (assets/models/ventanas.json, de scripts/build-windows.py): sobre cada ventana del
+   * modelo de Revit va un ventanal de 2,4 m de alto y hasta 2,3 m de ancho, con marco de aluminio negro,
+   * divisiones verticales, travesaño, alfajía de piedra y vidrio con reflejo (de noche se enciende).
+   * Se funden en una malla por material y por piso para que el corte por piso los oculte con el resto.
+   */
+  async _buildWindows() {
+    const { ventanas } = await fetch('./assets/models/ventanas.json').then((r) => r.json());
+    const mats = windowMaterials();
+    const parts = new Map();                     // `${piso}|frame|glass|sill` -> geometrías
+    const push = (floor, kind, g) => { const k = `${floor}|${kind}`; if (!parts.has(k)) parts.set(k, []); parts.get(k).push(g); };
+    const T = 0.06, D = 0.09;                    // sección del perfil y profundidad del marco (m)
+    for (const w of ventanas) {
+      const c = w.c / 1000, half = w.w / 2000, y0 = w.y0 / 1000, y1 = w.y1 / 1000, face = w.face / 1000;
+      const out = w.f === 'N' || w.f === 'W' ? -1 : 1;           // hacia afuera del edificio
+      const alongX = w.f === 'N' || w.f === 'S';
+      // caja en coordenadas (a lo largo, altura, hacia afuera desde el plano de fachada)
+      const box = (a0, a1, h0, h1, o0, o1) => {
+        const g = new THREE.BoxGeometry(alongX ? a1 - a0 : o1 - o0, h1 - h0, alongX ? o1 - o0 : a1 - a0);
+        const ca = (a0 + a1) / 2, co = face + out * (o0 + o1) / 2;
+        g.translate(alongX ? ca : co, (h0 + h1) / 2, alongX ? co : ca);
+        return g;
+      };
+      const a0 = c - half, a1 = c + half, h = y1 - y0;
+      push(w.piso, 'glass', box(a0 + T, a1 - T, y0 + T, y1 - T, 0.025, 0.035));
+      // marco perimetral
+      push(w.piso, 'frame', box(a0, a1, y1 - T, y1, 0, D));
+      push(w.piso, 'frame', box(a0, a1, y0, y0 + T, 0, D));
+      push(w.piso, 'frame', box(a0, a0 + T, y0, y1, 0, D));
+      push(w.piso, 'frame', box(a1 - T, a1, y0, y1, 0, D));
+      // divisiones verticales cada ~0,8 m y travesaño a la altura de la puerta-ventana
+      const n = Math.max(2, Math.round((a1 - a0) / 0.8));
+      for (let k = 1; k < n; k++) { const x = a0 + (a1 - a0) * k / n; push(w.piso, 'frame', box(x - T / 2, x + T / 2, y0, y1, 0.01, D * 0.8)); }
+      const yt = y0 + h * 0.82;
+      push(w.piso, 'frame', box(a0, a1, yt - T / 2, yt + T / 2, 0.01, D * 0.8));
+      // alfajía de piedra que sobresale bajo el ventanal
+      push(w.piso, 'sill', box(a0 - 0.05, a1 + 0.05, y0 - 0.05, y0, 0, 0.16));
+    }
+    for (const [k, geos] of parts) {
+      const [floor, kind] = k.split('|');
+      const mesh = new THREE.Mesh(mergeGeometries(geos, false), mats[kind]);
+      geos.forEach((g) => g.dispose());
+      mesh.name = `Ventanales · ${kind}`;
+      mesh.castShadow = kind !== 'glass';
+      mesh.receiveShadow = kind !== 'glass';
+      if (kind === 'glass') mesh.renderOrder = 3;
+      this.floorGroups[+floor]?.add(mesh);
+    }
   }
 
   /**
@@ -374,9 +426,28 @@ export class ProjectBuilding {
    * la losa de su propio nivel, así que al ocultar el de arriba el piso elegido queda destapado.
    */
   setCut(floor) {
+    const prev = this.cut;
     this.cut = floor;
-    this.floorGroups.forEach((g, i) => { g.visible = floor == null || i < floor; });
-    this.roof.visible = floor == null;
+    const g = window.gsap, reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const layers = [...this.floorGroups, this.roof];
+    const shows = (i) => (i < this.floors ? floor == null || i < floor : floor == null);
+    if (!g || reduced || prev === undefined || this._assembling) {
+      layers.forEach((l, i) => { l.visible = shows(i); l.position.y = 0; });
+    } else {
+      // los pisos que se van se levantan en abanico y desaparecen; los que vuelven bajan a su sitio
+      const leaving = layers.filter((l, i) => l.visible && !shows(i));
+      const coming = layers.filter((l, i) => !l.visible && shows(i));
+      g.killTweensOf(layers.map((l) => l.position));
+      leaving.forEach((l, k) => g.to(l.position, {
+        y: 7 + k * 2.2, duration: 0.55, delay: (leaving.length - 1 - k) * 0.05, ease: 'power2.in',
+        onComplete: () => { l.visible = false; l.position.y = 0; }
+      }));
+      coming.forEach((l, k) => {
+        l.visible = true;
+        g.fromTo(l.position, { y: 6 + k * 1.6 }, { y: 0, duration: 0.7, delay: 0.08 * k, ease: 'power3.out' });
+      });
+      layers.forEach((l, i) => { if (shows(i) && !coming.includes(l)) { l.visible = true; l.position.y = 0; } });
+    }
     for (const m of this.aptFurniture) m.visible = floor != null && m.userData.floorIndex === floor - 1;
     // luz cálida de interior sobre el piso abierto (siempre en la escena para no recompilar materiales)
     if (!this.interiorLight) {
@@ -385,6 +456,24 @@ export class ProjectBuilding {
     }
     this.interiorLight.intensity = floor != null ? 140 : 0;
     if (floor != null) this.interiorLight.position.set(PW / 2, (floor - 1) * FLOOR_H + 2.6, PD / 2);
+  }
+
+  /**
+   * El edificio se arma piso por piso (para la llegada de la intro): cada piso cae desde arriba sobre el
+   * anterior y al final la cubierta con la pérgola. Devuelve la línea de tiempo de GSAP.
+   */
+  assemble({ delay = 0, step = 0.32 } = {}) {
+    const g = window.gsap;
+    if (!g || matchMedia('(prefers-reduced-motion: reduce)').matches) return null;
+    const layers = [...this.floorGroups, this.roof];
+    this._assembling = true;
+    layers.forEach((l) => { l.visible = false; l.position.y = 0; });
+    const tl = g.timeline({ delay, onComplete: () => { this._assembling = false; this.setCut(this.cut ?? null); } });
+    layers.forEach((l, i) => {
+      tl.call(() => { l.visible = true; }, null, i * step)
+        .fromTo(l.position, { y: 16 }, { y: 0, duration: 0.9, ease: 'power4.out' }, i * step);
+    });
+    return tl;
   }
 
   setHighlight({ show, selectedId, hoveredId, filter }) {
