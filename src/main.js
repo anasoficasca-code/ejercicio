@@ -95,4 +95,4 @@ class App {
   }
 }
 
-window.__masterplanApp = new App();
+window.addEventListener('DOMContentLoaded', () => { window.__masterplanApp = new App(); });

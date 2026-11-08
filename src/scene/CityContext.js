@@ -411,7 +411,7 @@ export class CityContext {
         const p = pts[k], q = pts[(k + 1) % pts.length];
         const L = Math.hypot(q[0] - p[0], q[1] - p[1]);
         if (L < 0.05) continue;
-        const nx = (q[1] - p[1]) / L, nz = -(q[0] - p[0]) / L;
+        const nx = -(q[1] - p[1]) / L, nz = (q[0] - p[0]) / L;
         const quad = [[p, y0, per], [q, y0, per + L], [q, y1, per + L], [p, y0, per], [q, y1, per + L], [p, y1, per]];
         for (const [pp, yy, uu] of quad) {
           pos.push(pp[0], yy, pp[1]); nor.push(nx, 0, nz); uv.push(uu, yy - g); cen.push(cx, cz);
@@ -444,7 +444,13 @@ export class CityContext {
 
     const bounds = (L) => new THREE.Vector4(L.x0, L.zN, L.x1 - L.x0, L.zS - L.zN);
     const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.88, metalness: 0, envMapIntensity: 0.5, vertexColors: true });
+    const brick = new THREE.TextureLoader().load('./assets/textures/pbr/ladrillo-galerias.webp');
+    brick.wrapS = brick.wrapT = THREE.RepeatWrapping;
+    brick.colorSpace = THREE.SRGBColorSpace;
+    brick.anisotropy = 8;
+    const concrete = loadPBR('concrete_floor_worn_001', 'diff', true);
     const uni = {
+      tBrick: { value: brick }, tConcrete: { value: concrete },
       tSatA: { value: A.tex }, uSatA: { value: bounds(A) },
       tSatB: { value: B.tex }, uSatB: { value: bounds(B) },
       tSatC: { value: C.tex }, uSatC: { value: bounds(C) },
@@ -460,7 +466,7 @@ export class CityContext {
       s.fragmentShader = s.fragmentShader
         .replace('#include <common>', `#include <common>
           varying vec2 vCen; varying vec3 vCW; varying vec2 vFac; varying float vUp; varying float vSeed;
-          uniform sampler2D tSatA, tSatB, tSatC; uniform vec4 uSatA, uSatB, uSatC; uniform float uFlat, uNight;
+          uniform sampler2D tBrick, tConcrete, tSatA, tSatB, tSatC; uniform vec4 uSatA, uSatB, uSatC; uniform float uFlat, uNight;
           float hsh(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
           vec2 satUV(vec4 b, vec2 w){ vec2 t = (w - b.xy) / b.zw; return vec2(t.x, 1.0 - t.y); }
           bool inside(vec2 t){ return t.x > 0.002 && t.x < 0.998 && t.y > 0.002 && t.y < 0.998; }
@@ -487,7 +493,7 @@ export class CityContext {
             vec2 q = vCW.xz * 0.18 + vSeed * 31.0, i0 = floor(q), f0 = fract(q); f0 = f0 * f0 * (3.0 - 2.0 * f0);
             float n = mix(mix(hsh(i0), hsh(i0 + vec2(1.0, 0.0)), f0.x), mix(hsh(i0 + vec2(0.0, 1.0)), hsh(i0 + vec2(1.0, 1.0)), f0.x), f0.y);
             rc = pow(rc, vec3(2.2));
-            diffuseColor.rgb *= rc * (0.95 + 0.06 * tileN) * (0.82 + 0.26 * n);
+            diffuseColor.rgb *= mix(rc, texture2D(tConcrete, vCW.xz / 4.0).rgb, 0.58) * (0.95 + 0.06 * tileN) * (0.82 + 0.26 * n);
           } else {
             // fachada PBR: paleta bogotana (ladrillo, pañete crema, concreto gris) con relieve y luz horneada
             bool isBrick = rnd < 0.55, isCream = rnd >= 0.55 && rnd < 0.82;
@@ -557,6 +563,10 @@ export class CityContext {
             ao *= 1.0 - 0.3 * (1.0 - win) * step(0.25, fx) * step(fx, 0.75) * smoothstep(0.28, 0.36, fy) * step(fy, 0.36);
             ao *= 1.0 - (isBrick ? 0.3 * joint * (1.0 - dAA) : 0.0);
             base = pow(base, vec3(2.2));
+            if (isBrick) {
+              vec3 clay = texture2D(tBrick, vFac / vec2(3.6, 4.4) + vSeed).rgb;
+              base = mix(base, clay * (0.77 + 0.45 * rnd), 0.89 * (1.0 - frame));
+            }
             glass = pow(glass, vec3(2.2));
             diffuseColor.rgb = mix(mix(base * (1.0 - band), glass, win), mix(base, pow(vec3(0.16, 0.18, 0.2), vec3(2.2)), 0.2), aa) * mix(ao, 1.0, aa * 0.6);
             {

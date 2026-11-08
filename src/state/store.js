@@ -15,7 +15,7 @@ export class MasterplanStore {
       activeTab: 'inmuebles',        // 'ubicacion' | 'urbanismo' | 'inmuebles' | 'mercado' | 'predios' | 'galeria'
       viewMode: 'exterior',          // 'exterior' | 'contexto' | 'top'
       cityTheme: 'realista',         // 'realista' | 'maqueta' | 'usos' | 'valor' | 'altura'
-      layers: { estudio: true, servicios: true, competencia: true, predios: true, vias: true }
+      layers: { estudio: false, servicios: false, competencia: false, predios: false, vias: false }
     };
     this.listeners = new Set();
   }

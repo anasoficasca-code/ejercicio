@@ -94,6 +94,10 @@ export class MasterplanScene {
     this.city?.setNight(night);
     this.traffic?.setNight(night);
     this._night = night;
+    if (this.reflectionCamera) {
+      clearTimeout(this.reflectionTimer);
+      this.reflectionTimer = setTimeout(() => this.captureFacadeReflections(), 450);
+    }
   }
 
   /** Niebla y plano cercano según la distancia de la cámara; el cielo y las nubes la siguen. */
@@ -134,14 +138,39 @@ export class MasterplanScene {
     });
     await this.building.ready;
     const c = this.building.center();
-    this.home = { target: new THREE.Vector3(c.x, 7, c.z), pos: new THREE.Vector3(c.x - 62, 40, c.z - 60) };
+    this.home = { target: new THREE.Vector3(c.x, 7, c.z), pos: new THREE.Vector3(c.x - 44, 31, c.z - 47) };
     this.controls.target.copy(this.home.target);
     this.camera.position.copy(this.home.pos);
     this.sun.target.position.copy(c);
+    this.city.ready.then(() => {
+      const target = new THREE.WebGLCubeRenderTarget(this.mobile ? 64 : 128, { type: THREE.HalfFloatType });
+      this.reflectionCamera = new THREE.CubeCamera(0.5, 5000, target);
+      this.captureFacadeReflections();
+      this.building.group.traverse(mesh => {
+        const material = mesh.material;
+        if (material?.isMeshPhysicalMaterial || material?.metalness > 0.5) {
+          material.envMap = target.texture;
+          material.needsUpdate = true;
+        }
+      });
+    }).catch(error => console.warn('Reflejos del entorno', error));
 
     this._mode = store.state.viewMode; // la cámara ya está en la vista inicial
     store.setState({ project, units: this.building.units.map(({ worldCenter, ...u }) => u) });
     return this.data;
+  }
+
+  // Capture the surrounding blocks at window height for glass and anodized metal.
+  captureFacadeReflections() {
+    const group = this.building.group;
+    const visible = group.visible;
+    group.visible = false;
+    try {
+      this.reflectionCamera.position.copy(this.building.center());
+      this.reflectionCamera.update(this.renderer, this.scene);
+    } finally {
+      group.visible = visible;
+    }
   }
 
   // ---------------------------------------------------------------- estado → escena

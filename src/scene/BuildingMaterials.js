@@ -84,41 +84,12 @@ function grayCanvas(values, w, h) {
 // ------------------------------------------------------------------ ladrillo
 /** Tesela de 1,00 × 0,60 m: 4 ladrillos de 25 cm por 8 hiladas de 7,5 cm, trabados a media pieza. */
 function brickMaps() {
-  const W = 1024, H = 624, cols = 4, rows = 8, bw = W / cols, bh = H / rows, joint = 4;
-  const rand = rng(7);
-  const grain = fbm(W, H, rng(11), [[16, 0.4], [64, 0.35], [128, 0.25]]);
-  const blotch = fbm(W, H, rng(12), [[3, 0.6], [6, 0.4]]);
-  const col = new Float32Array(W * H * 3), hgt = new Float32Array(W * H), rough = new Float32Array(W * H);
-  // fondo: junta de mortero gris
-  for (let i = 0; i < W * H; i++) { const g = 0.62 + grain[i] * 0.08; col[i * 3] = g; col[i * 3 + 1] = g * 0.96; col[i * 3 + 2] = g * 0.9; hgt[i] = 0.25 + grain[i] * 0.05; rough[i] = 0.95; }
-  // paleta de arcilla cocida de la sabana: naranja rojizo, algunas piezas más quemadas y otras más claras
-  const tones = [[0.62, 0.29, 0.17], [0.56, 0.25, 0.15], [0.68, 0.34, 0.2], [0.5, 0.22, 0.14], [0.6, 0.31, 0.2], [0.45, 0.2, 0.13]];
-  for (let r = 0; r < rows; r++) {
-    const off = (r % 2) * bw / 2;
-    for (let k = -1; k < cols; k++) {
-      const x0 = Math.round(k * bw + off), y0 = Math.round(r * bh);
-      const t = tones[Math.floor(rand() * tones.length)], kk = 0.88 + rand() * 0.22, burnt = rand() < 0.12;
-      const bulge = 0.75 + rand() * 0.15;
-      for (let y = y0 + joint; y < y0 + bh - joint + 1; y++) for (let x = x0 + joint; x < x0 + bw - joint + 1; x++) {
-        const xx = ((x % W) + W) % W, yy = ((y % H) + H) % H, i = yy * W + xx;
-        // borde de la pieza un poco más oscuro (arista quemada) y cara con grano
-        const ex = Math.min(x - x0 - joint, x0 + bw - joint - x), ey = Math.min(y - y0 - joint, y0 + bh - joint - y);
-        const edge = Math.min(1, Math.min(ex, ey) / 5);
-        const g = grain[i] - 0.5, b = blotch[i] - 0.5;
-        let m = kk * (0.86 + 0.14 * edge) * (1 + g * 0.35 + b * 0.18);
-        if (burnt) m *= 0.72;
-        col[i * 3] = t[0] * m; col[i * 3 + 1] = t[1] * m; col[i * 3 + 2] = t[2] * m * (burnt ? 1.1 : 1);
-        hgt[i] = bulge * (0.85 + 0.15 * edge) + g * 0.12;
-        rough[i] = 0.82 + g * 0.2;
-      }
-    }
-  }
-  const [c, ctx] = canvas(W, H);
-  const img = ctx.createImageData(W, H), d = img.data;
-  for (let i = 0; i < W * H; i++) { d[i * 4] = Math.min(255, col[i * 3] * 255); d[i * 4 + 1] = Math.min(255, col[i * 3 + 1] * 255); d[i * 4 + 2] = Math.min(255, col[i * 3 + 2] * 255); d[i * 4 + 3] = 255; }
-  ctx.putImageData(img, 0, 0);
-  const rep = new THREE.Vector2(1 / 1.0, 1 / 0.6);
-  return { map: tex(c, true, rep), normalMap: tex(normalMap(hgt, W, H, 5), false, rep), roughnessMap: tex(grayCanvas(rough, W, H), false, rep) };
+  const map = new THREE.TextureLoader().load('./assets/textures/pbr/ladrillo-galerias.webp');
+  map.wrapS = map.wrapT = THREE.RepeatWrapping;
+  map.colorSpace = THREE.SRGBColorSpace;
+  map.anisotropy = 8;
+  map.repeat.set(1 / 3.6, 1 / 4.4);
+  return { map, bumpMap: map, bumpScale: 0.009 };
 }
 
 // ------------------------------------------------------------------ pañete / concreto
@@ -189,8 +160,8 @@ function build() {
   const concrete = mineralMaps({ seed: 31, metres: 2.4, base: 0xc9c6c0, blotchAmt: 0.14, streaks: 0.1, grainAmt: 0.1, bump: 2.2 });
   const paint = mineralMaps({ seed: 41, metres: 2.0, base: 0xf3f1ec, blotchAmt: 0.03, streaks: 0.02, grainAmt: 0.025, bump: 0.8 });
   const std = (o) => new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, metalness: 0, ...o });
-  const brickMat = std({ ...brick, color: 0xffffff, roughness: 1, normalScale: new THREE.Vector2(1.2, 1.2), envMapIntensity: 0.5 });
-  const brickDark = std({ ...brick, color: 0xd8c4b8, roughness: 1, normalScale: new THREE.Vector2(1.2, 1.2), envMapIntensity: 0.5 });
+  const brickMat = std({ ...brick, color: 0xffffff, roughness: 1, envMapIntensity: 0.5 });
+  const brickDark = std({ ...brick, color: 0xd8c4b8, roughness: 1, envMapIntensity: 0.5 });
   const stuccoMat = std({ ...stucco, color: 0xffffff, roughness: 1, normalScale: new THREE.Vector2(0.6, 0.6), envMapIntensity: 0.6 });
   const concreteMat = std({ ...concrete, color: 0xffffff, roughness: 1, normalScale: new THREE.Vector2(0.8, 0.8), envMapIntensity: 0.5 });
   const slabEdge = std({ ...paint, color: 0xf6f4f0, roughness: 0.9, normalScale: new THREE.Vector2(0.4, 0.4), envMapIntensity: 0.6 });

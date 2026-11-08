@@ -35,7 +35,7 @@ export class ContextDetails {
         const length = Math.hypot(q[0] - p[0], q[1] - p[1]);
         if (length < 0.05) continue;
         const ux = (q[0] - p[0]) / length, uz = (q[1] - p[1]) / length;
-        const nx = uz, nz = -ux, angle = -Math.atan2(uz, ux);
+        const nx = -uz, nz = ux, angle = -Math.atan2(uz, ux);
         const put = (list, along, y, w, ht, depth, offset) => list.push({
           x: p[0] + ux * along + nx * offset,
           y: ground + y,
