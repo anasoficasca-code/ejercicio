@@ -56,7 +56,7 @@ p { margin: 0; }
 .preloader { position: fixed; inset: 0; z-index: 100; background: var(--night); color: var(--on-night); display: grid; place-content: center; justify-items: center; gap: 28px; }
 .pl-name { display: flex; flex-direction: column; align-items: center; overflow: hidden; }
 .pl-small { font: 500 13px var(--text); letter-spacing: .4em; padding-left: .4em; color: var(--sky); }
-.pl-big { font: italic 300 clamp(64px, 12vw, 150px)/1 var(--display); letter-spacing: -0.02em; }
+.pl-big { font: 400 clamp(64px, 12vw, 150px)/1 var(--display); letter-spacing: -0.02em; }
 .pl-line { width: 180px; height: 1px; background: rgba(255, 255, 255, .15); }
 .pl-line i { display: block; height: 100%; background: var(--sky); transform: scaleX(0); transform-origin: left; }
 
@@ -86,7 +86,7 @@ p { margin: 0; }
 .hero-title { font-size: clamp(66px, 12.5vw, 196px); line-height: .88; letter-spacing: -0.03em; margin-bottom: 28px; }
 .ht-line { display: block; overflow: hidden; padding-bottom: .04em; }
 .ht-word { display: inline-block; will-change: transform; }
-.ht-italic { font-style: italic; font-weight: 300; padding-left: .12em; }
+.ht-italic { font-style: normal; font-weight: 400; }
 .hero-fact { font-size: clamp(17px, 1.6vw, 20px); max-width: 34ch; margin-bottom: 30px; color: rgba(255, 255, 255, .9); }
 .scroll-hint { position: absolute; right: var(--gutter); bottom: clamp(56px, 10vh, 110px); width: 26px; height: 42px; border: 1.5px solid rgba(255, 255, 255, .7); border-radius: 14px; }
 .scroll-hint span { position: absolute; left: 50%; top: 8px; width: 3px; height: 8px; margin-left: -1.5px; border-radius: 2px; background: #fff; animation: hint 2s var(--ease) infinite; }
@@ -94,7 +94,7 @@ p { margin: 0; }
 
 /* cinta */
 .marquee { background: var(--night); color: var(--on-night); overflow: hidden; padding: 22px 0; border-block: 1px solid rgba(255, 255, 255, .06); }
-.mq-track { display: flex; align-items: center; gap: 36px; width: max-content; animation: mq 38s linear infinite; font: italic 300 clamp(22px, 2.6vw, 34px) var(--display); white-space: nowrap; }
+.mq-track { display: flex; align-items: center; gap: 36px; width: max-content; animation: mq 38s linear infinite; font: 400 clamp(22px, 2.6vw, 34px) var(--display); white-space: nowrap; }
 .mq-track i { width: 10px; height: 10px; border-radius: 50% 0; background: var(--sky); transform: rotate(45deg); flex: none; }
 @keyframes mq { to { transform: translateX(-50%) } }
 
@@ -111,7 +111,7 @@ p { margin: 0; }
 .day-pin { height: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 36px; overflow: hidden; }
 .day-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
 .day-clock { display: flex; align-items: center; gap: 16px; }
-.dc-time { font: italic 300 clamp(36px, 4vw, 56px)/1 var(--display); color: var(--sky); font-variant-numeric: tabular-nums; min-width: 3.4ch; text-align: right; }
+.dc-time { font: 400 clamp(36px, 4vw, 56px)/1 var(--display); color: var(--sky); font-variant-numeric: tabular-nums; min-width: 3.4ch; text-align: right; }
 .dc-bar { width: 140px; height: 2px; background: rgba(255, 255, 255, .15); }
 .dc-bar i { display: block; height: 100%; background: var(--sky); transform: scaleX(0); transform-origin: left; }
 .day-track { display: flex; gap: 28px; padding-inline: var(--gutter); width: max-content; will-change: transform; }
@@ -217,7 +217,7 @@ fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap
 .chip input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 3px; }
 .form-msg { color: var(--blue); font-weight: 600; }
 .foot-row { display: grid; grid-template-columns: auto 1fr; gap: 16px 40px; align-items: center; margin-top: clamp(72px, 10vw, 120px); padding-top: 28px; border-top: 1px solid var(--hair); }
-.foot-brand { font: italic 300 30px var(--display); }
+.foot-brand { font: 400 30px var(--display); }
 .foot-links { display: flex; flex-wrap: wrap; gap: 22px; justify-content: flex-end; }
 .legal { grid-column: 1 / -1; color: var(--muted); font-size: 13px; max-width: 80ch; }
 

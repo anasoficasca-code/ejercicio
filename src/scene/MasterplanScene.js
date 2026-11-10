@@ -101,7 +101,7 @@ export class MasterplanScene {
     this.sun.intensity *= 1 + golden * 0.45 + morning * 0.15;
     // luz de relleno del cielo un poco más alta: las sombras quedan algo más suaves
     this._hemiBase = 0.46 * (1 - golden * 0.3) * (1 + morning * 0.1);
-    this.hemi.intensity = this._hemiBase * (this._cut ? 2.6 : 1);   // planta abierta: más luz de cielo adentro
+    this.hemi.intensity = this._hemiBase * (this._cut ? 1.6 : 1);   // planta abierta: más luz de cielo adentro
     this._baseExposure ??= this.renderer.toneMappingExposure;
     this.renderer.toneMappingExposure = this._baseExposure * (1 + golden * 0.08 + morning * 0.05 - noon * 0.05);
     // en la hora dorada los apartamentos y los bañadores de fachada se encienden antes que la calle
@@ -211,7 +211,7 @@ export class MasterplanScene {
     if (cut !== this._cut) {
       this._cut = cut;
       this.building.setCut(cut);
-      if (this._hemiBase != null) this.hemi.intensity = this._hemiBase * (cut ? 2.6 : 1);
+      if (this._hemiBase != null) this.hemi.intensity = this._hemiBase * (cut ? 1.6 : 1);
     }
 
     if (s.viewMode !== this._mode) { this._mode = s.viewMode; this.applyViewMode(s.viewMode); }

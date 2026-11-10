@@ -1258,7 +1258,7 @@ table.matrix tr.total td.hl{color:#ff858d}
 /* carga: la marca y una línea de ladrillo que crece */
 .ls-wrap{background:radial-gradient(ellipse at 50% 42%,#ffffff 0%,#f6f3ee 58%,#ebe6de 100%)}
 .ls-mark{display:flex;flex-direction:column;align-items:center;animation:lsIn 1.3s var(--ease-out-a) both}
-.ls-word{font-family:var(--serif-a);font-style:italic;font-weight:300;font-size:clamp(60px,10vw,120px);line-height:.9;color:#0d1b2a;letter-spacing:-.02em}
+.ls-word{font-family:var(--serif-a);font-style:normal;font-weight:400;font-size:clamp(60px,10vw,120px);line-height:.9;color:#0d1b2a;letter-spacing:-.02em}
 .ls-res{font-family:var(--sans-a);font-size:12px;letter-spacing:.32em;margin-bottom:10px;color:#6b6760;padding-left:.32em}
 .ls-bar{margin-top:40px;width:220px;height:1px;background:#d9d3c9;border-radius:0}
 .ls-bar i{width:100%;transform:scaleX(0);transform-origin:left;background:var(--brick);transition:transform .7s var(--ease-out-a)}
@@ -1271,7 +1271,7 @@ body.is-intro .bottom-dock-container,body.is-intro .labels-layer{opacity:0;point
 .aurea-intro{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;padding:0 clamp(20px,6vw,96px) clamp(48px,10vh,120px);pointer-events:none}
 .ai-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,14,10,0) 35%,rgba(18,14,10,.55) 100%),linear-gradient(90deg,rgba(18,14,10,.42) 0%,rgba(18,14,10,0) 60%)}
 .ai-copy{position:relative;max-width:640px;color:#fff;pointer-events:auto}
-.ai-word{font-family:var(--serif-a);font-weight:400;font-size:clamp(64px,11vw,168px);line-height:.9;margin:0;letter-spacing:-.025em;font-style:italic;font-weight:300;display:flex;overflow:hidden;padding-bottom:.06em}
+.ai-word{font-family:var(--serif-a);font-weight:400;font-size:clamp(64px,11vw,168px);line-height:.9;margin:0;letter-spacing:-.025em;font-style:normal;font-weight:400;display:flex;overflow:hidden;padding-bottom:.06em}
 .ai-ch{display:inline-block;will-change:transform}
 .ai-sub{font-family:var(--sans-a);font-size:clamp(12px,1.1vw,14px);letter-spacing:.32em;margin:0 0 8px;color:#a9c7e8}
 .ai-line{font-family:var(--sans-a);font-size:clamp(16px,1.5vw,19px);line-height:1.45;margin:22px 0 0;max-width:30ch;color:rgba(255,255,255,.92)}

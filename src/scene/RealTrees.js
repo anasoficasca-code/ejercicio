@@ -27,10 +27,11 @@ const RECTS = {
 };
 
 export const SPECIES = {
-  ash: { kind: 'broad', leaf: 'ash', bark: 'ash', h: 9, trunkFrac: 0.42, crownR: 3.4, crownH: 5.8, branches: 8, cards: 170, card: 1.35 },
-  celtis: { kind: 'broad', leaf: 'celtis', bark: 'celtis', h: 7.5, trunkFrac: 0.38, crownR: 3.6, crownH: 4.8, branches: 7, cards: 160, card: 1.25 },
-  euc: { kind: 'broad', leaf: 'euc', bark: 'euc', h: 12, trunkFrac: 0.5, crownR: 2.8, crownH: 6.5, branches: 7, cards: 140, card: 1.6 },
-  pine: { kind: 'conifer', leaf: 'pine', bark: 'pine', h: 10, crownR: 2.6, cards: 150, card: 1.3 },
+  // ramilletes pequeños y muchos (antes 1,3 m y ~160 por copa): hojas a escala y copa llena, sin huecos
+  ash: { kind: 'broad', leaf: 'ash', bark: 'ash', h: 9, trunkFrac: 0.42, crownR: 3.4, crownH: 5.8, branches: 9, cards: 460, card: 0.78 },
+  celtis: { kind: 'broad', leaf: 'celtis', bark: 'celtis', h: 7.5, trunkFrac: 0.38, crownR: 3.6, crownH: 4.8, branches: 8, cards: 440, card: 0.74 },
+  euc: { kind: 'broad', leaf: 'euc', bark: 'euc', h: 12, trunkFrac: 0.5, crownR: 2.8, crownH: 6.5, branches: 8, cards: 380, card: 0.9 },
+  pine: { kind: 'conifer', leaf: 'pine', bark: 'pine', h: 10, crownR: 2.6, cards: 300, card: 0.85 },
   palm: { kind: 'palm', leaf: 'palm', bark: 'palm', h: 8.5, fronds: 15, card: 3.4 }
 };
 
@@ -91,8 +92,10 @@ function leafCard(p, out, size, rect, rnd, center, shade, pos, nor, uv, col, idx
     uv.push(uvs[k][0], uvs[k][1]);
     // más oscuro hacia adentro y hacia abajo de la copa (oclusión del follaje)
     const dist = c.distanceTo(center);
-    const g = shade * (0.55 + 0.45 * Math.min(1, dist / 3.2)) * (0.8 + 0.2 * Math.min(1, Math.max(0, (c.y - center.y + 3) / 6)));
-    col.push(g * (0.92 + rnd() * 0.12), g * (0.95 + rnd() * 0.1), g * (0.9 + rnd() * 0.1));
+    const g = shade * (0.42 + 0.58 * Math.min(1, dist / 3.2)) * (0.72 + 0.28 * Math.min(1, Math.max(0, (c.y - center.y + 3) / 6)));
+    // verde más profundo y saturado (la foto de hojas es pálida): cada ramillete con su tono
+    const warm = rnd();
+    col.push(g * (0.62 + warm * 0.14), g * (0.82 + rnd() * 0.1), g * (0.5 + rnd() * 0.08));
   });
   idx.push(v, v + 1, v + 2, v, v + 2, v + 3);
 }
@@ -262,8 +265,8 @@ export class RealTrees {
     this.leafTex = tex('leaves.webp');
     this.leafTex.anisotropy = 8;
     this.leafMat = new THREE.MeshStandardMaterial({
-      map: this.leafTex, alphaTest: 0.42, side: THREE.DoubleSide, vertexColors: true,
-      roughness: 0.78, metalness: 0, envMapIntensity: 0.6
+      map: this.leafTex, alphaTest: 0.38, side: THREE.DoubleSide, vertexColors: true,
+      roughness: 0.88, metalness: 0, envMapIntensity: 0.3
     });
     applyWind(this.leafMat, { amp: 0.9, from: 1.5, to: 10 });
     this.barkMats = {};

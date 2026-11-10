@@ -514,7 +514,8 @@ export class ProjectBuilding {
       this.interiorLight = new THREE.PointLight(0xffe0b5, 0, 34, 1);
       this.plate.add(this.interiorLight);
     }
-    this.interiorLight.intensity = floor != null ? 140 : 0;
+    // vista en planta: sin foco central (quemaba el piso y los árboles); solo se enciende dentro (setInterior)
+    this.interiorLight.intensity = floor != null && this._interior ? 45 : 0;
     if (floor != null) this.interiorLight.position.set(PW / 2, (floor - 1) * FLOOR_H + 2.6, PD / 2);
   }
 
@@ -581,6 +582,7 @@ export class ProjectBuilding {
   /** Dentro de un apartamento se ocultan los volúmenes de selección (teñirían toda la vista). */
   setInterior(on) {
     this._interior = on;
+    if (this.interiorLight) this.interiorLight.intensity = on && this.cut != null ? 45 : 0;
     for (const v of this.unitVolumes) { v.material.visible = !on && v.material.visible; v.children[0].material.visible = !on && v.children[0].material.visible; }
   }
 
@@ -614,7 +616,8 @@ export class ProjectBuilding {
       v.material.visible = shown;
       v.children[0].material.visible = shown;
       // la unidad elegida casi sin tinte: el borde la marca y el interior se ve con sus acabados reales
-      v.material.opacity = sel ? 0.05 : hov ? 0.34 : 0.16;
+      // con un piso abierto las unidades solo llevan contorno: el relleno azul tapaba los acabados de la planta
+      v.material.opacity = sel ? 0.05 : hov ? 0.3 : this.cut != null ? 0 : 0.16;
       v.material.color.setHex(sel ? 0x1f4f8f : 0x3a78c2);
       v.children[0].material.opacity = sel ? 1 : 0.7;
     }
