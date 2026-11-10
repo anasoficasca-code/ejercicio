@@ -15,10 +15,11 @@ export class UnitDetailCard {
     store.subscribe(() => this.render());
   }
 
-  /** Marca el botón de la vista actual (planta, cocina o habitación) sin rehacer la tarjeta. */
+  /** Marca la vista actual (planta o recorrido, y el cuarto en que está la persona) sin rehacer la tarjeta. */
   syncViews(u) {
     const s = store.state, cur = s.interiorUnit === u.id ? s.interiorView || '' : '';
-    this.container.querySelectorAll('[data-iv]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.iv === cur)));
+    this.container.querySelectorAll('.view-seg [data-iv]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.iv === '' ? !cur : !!cur)));
+    this.container.querySelectorAll('.room-chips [data-iv]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.iv === cur)));
     this.container.classList.toggle('is-interior', !!cur);
   }
 
@@ -35,8 +36,12 @@ export class UnitDetailCard {
       <div class="detail-subtitle">${p.ubicacion.direccion} · ${p.ubicacion.barrio}</div>
       ${apt ? `<div class="view-seg" role="group" aria-label="Recorrer el apartamento">
         <button data-iv="" aria-pressed="true">Planta</button>
-        <button data-iv="cocina" aria-pressed="false">Cocina</button>
-        <button data-iv="habitacion" aria-pressed="false">Habitación</button>
+        <button data-iv="sala" aria-pressed="false">Recorrer por dentro</button>
+      </div>
+      <div class="room-chips" role="group" aria-label="Cuartos del apartamento">
+        ${[['sala', 'Sala'], ['cocina', 'Cocina'], ['habitacion', 'Alcoba principal'], ['alcoba2', 'Alcoba 2'], ['bano', 'Baño'], ['entrada', 'Entrada']]
+          .map(([k, l]) => `<button data-iv="${k}" aria-pressed="false">${l}</button>`).join('')}
+        <p class="walk-hint">Arrastra para mirar alrededor · toca un punto blanco del piso para caminar</p>
       </div>` : ''}
       <div class="detail-props">
         <div class="detail-prop-line"><span class="label">Piso:</span> ${u.floor} de ${p.proyectoActual.pisos}</div>

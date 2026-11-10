@@ -1425,3 +1425,33 @@ body.is-night .sky-time-control{box-shadow:0 0 0 1px rgba(242,180,90,.35),0 10px
 .ai-word, .ls-word, .detail-title, .tc-title { letter-spacing: -0.01em; }
 #app button, .aurea-intro button, .room-detail-card button, .tour-card button, input, select { text-transform: inherit; }
 .view-seg button, .mode-pill-btn, .contact-pill-btn, .dock-tab-btn, .detail-gallery-btn, .jmc-pill-btn, .ai-btn, .ai-skip { text-transform: uppercase; letter-spacing: .04em; }
+
+/* ---------------------------------------------------------------- recorrido por dentro (tipo 360°) */
+.view-seg{grid-template-columns:1fr 1.6fr}
+.room-chips{display:none;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+.room-detail-card.is-interior .room-chips{display:flex}
+.room-chips button{padding:7px 12px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.06);color:var(--text-soft);
+  font:600 11.5px var(--sans-a);letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:background .3s,color .3s,border-color .3s}
+.room-chips button:hover{border-color:rgba(255,255,255,.5);color:#fff}
+.room-chips button[aria-pressed="true"]{background:#fff;color:#1d1f1e;border-color:#fff}
+.room-chips button:focus-visible{outline:2px solid #a9c7e8;outline-offset:2px}
+.walk-hint{flex-basis:100%;margin:6px 2px 0;font:500 11px/1.4 var(--sans-a);color:var(--text-dim);text-transform:none}
+/* marcador sobre el piso: pastilla blanca acostada (como los tours 360°) con el nombre del cuarto al pasar */
+.walk-spot{pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0;border:0;background:none;cursor:pointer;transform:translateY(-4px)}
+.walk-spot i{display:block;width:58px;height:16px;border-radius:999px;background:rgba(255,255,255,.92);
+  box-shadow:0 2px 10px rgba(0,0,0,.35),0 0 0 6px rgba(255,255,255,.18);transform:perspective(120px) rotateX(58deg);transition:transform .35s var(--ease-out-a),box-shadow .35s}
+.walk-spot span{padding:4px 9px;border-radius:999px;background:rgba(14,24,38,.72);color:#fff;font:600 11px var(--sans-a);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;opacity:.85;transition:opacity .3s}
+.walk-spot:hover i,.walk-spot:focus-visible i{transform:perspective(120px) rotateX(58deg) scale(1.18);box-shadow:0 2px 14px rgba(0,0,0,.4),0 0 0 9px rgba(255,255,255,.28)}
+.walk-spot:hover span{opacity:1}
+.walk-spot:focus-visible{outline:none}
+/* adentro: interfaz mínima para que se sienta como estar en el apartamento */
+body.is-walking .left-sidebar-wrapper,body.is-walking .bottom-dock-container,body.is-walking .labels-layer .project-tag,body.is-walking .labels-layer .poi-pin,
+body.is-walking .labels-layer .hotspot{opacity:0!important;pointer-events:none!important;transition:opacity .4s}
+body.is-walking #canvas-container{cursor:grab}
+body.is-walking #canvas-container:active{cursor:grabbing}
+.walk-spot{transition:opacity .35s}
+.walk-spot.hidden{opacity:0;pointer-events:none}
+.walk-spot.behind{opacity:.38}
+.walk-spot.behind span{display:none}
+.walk-spot.behind:hover{opacity:1}
+.walk-spot.behind:hover span{display:block}

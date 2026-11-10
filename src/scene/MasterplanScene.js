@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { SkyEnvironment } from './SkyEnvironment.js';
 import { PostFX } from './PostFX.js';
 import { applyWind, windUniforms } from './Wind.js';
@@ -236,11 +236,9 @@ export class MasterplanScene {
     if (iv !== this._iv) {
       const was = this._iv;
       this._iv = iv;
-      this.building.setInterior(!!iv);
-      this._minDist ??= this.controls.minDistance;
-      this.controls.minDistance = iv ? 0.3 : this._minDist;
+      if (!!iv !== !!was) { this.building.setInterior(!!iv); this._setWalk(!!iv); }
       if (iv) this.viewInterior(sel, iv);
-      else if (was && sel) this.focusUnit(sel.id);
+      else if (was && sel) { this._clearSpots(); this.focusUnit(sel.id); }
     }
     this.pois.setCompact(s.viewMode === 'exterior' && !!sel);
   }
@@ -289,10 +287,89 @@ export class MasterplanScene {
     b.aptFurniture.forEach((m) => { m.visible = false; });
   }
 
-  /** Entra al apartamento: la cámara baja a la altura de los ojos mirando la cocina o la habitación. */
+  /**
+   * Recorrido por dentro (como un tour 360°): la cámara llega a la altura de los ojos al cuarto `kind`.
+   * El punto de giro queda a 25 cm delante de la cámara, así arrastrar hace mirar alrededor en el sitio.
+   * Desde lejos (planta) el viaje es más largo; entre cuartos es un paso corto.
+   */
   viewInterior(unit, kind) {
-    const { pos, target } = this.building.interiorCamera(unit, kind);
-    this.flyTo(pos, target, 2.2, 'power3.inOut');
+    const room = this.building.interiorCamera(unit, kind);
+    const dir = room.target.clone().sub(room.pos).normalize();
+    const look = room.pos.clone().addScaledVector(dir, 0.25);
+    const far = this.camera.position.distanceTo(room.pos) > 6;
+    this.flyTo(room.pos, look, far ? 2.4 : 1.3, far ? 'power3.inOut' : 'power2.inOut');
+    this.building.moveInteriorLight(room.pos);
+    this._showSpots(unit, kind);
+  }
+
+  /** Modo caminar: sin zoom ni desplazamiento, giro suave en el sitio y se puede mirar arriba y abajo. */
+  _setWalk(on) {
+    const c = this.controls;
+    if (on) {
+      this._orbitPrefs ??= { min: c.minDistance, max: c.maxDistance, zoom: c.enableZoom, pan: c.enablePan, rot: c.rotateSpeed, minP: c.minPolarAngle, maxP: c.maxPolarAngle };
+      Object.assign(c, { minDistance: 0.05, maxDistance: 0.6, enableZoom: false, enablePan: false, rotateSpeed: 0.45, minPolarAngle: 0.35, maxPolarAngle: Math.PI - 0.45 });
+    } else if (this._orbitPrefs) {
+      const p = this._orbitPrefs;
+      Object.assign(c, { minDistance: p.min, maxDistance: p.max, enableZoom: p.zoom, enablePan: p.pan, rotateSpeed: p.rot, minPolarAngle: p.minP, maxPolarAngle: p.maxP });
+    }
+    document.body.classList.toggle('is-walking', on);
+    // lente abierta adentro (como una foto 360°) y la de siempre afuera, con transición
+    const fov = on ? 72 : 42, g = window.gsap, cam = this.camera;
+    if (g) g.to(cam, { fov, duration: 1.6, ease: 'power2.inOut', onUpdate: () => cam.updateProjectionMatrix() });
+    else { cam.fov = fov; cam.updateProjectionMatrix(); }
+  }
+
+  /** Marcadores blancos sobre el piso de cada cuarto (menos el actual): un clic lleva a ese cuarto. */
+  _showSpots(unit, current) {
+    this._clearSpots();
+    this._spots = this.building.unitRooms(unit).filter((r) => r.key !== current).map((r) => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'walk-spot';
+      el.innerHTML = `<i aria-hidden="true"></i><span>${r.label}</span>`;
+      el.addEventListener('click', (e) => { e.stopPropagation(); store.setState({ interiorView: r.key, interiorUnit: unit.id }); });
+      const o = new CSS2DObject(el);
+      o.position.copy(r.floorPoint);
+      this.scene.add(o);
+      return o;
+    });
+  }
+
+  /**
+   * Cada 250 ms: un marcador se muestra solo si desde la cámara se ve su punto del piso (sin muro en medio),
+   * como en los tours 360°, donde solo se señalan los cuartos a la vista.
+   */
+  _updateSpots() {
+    if (!this._spots?.length) return;
+    const now = performance.now();
+    if (now - (this._spotT || 0) < 250) return;
+    this._spotT = now;
+    const b = this.building, g = b.floorGroups[(b.cut ?? 1) - 1];
+    if (!g) return;
+    this._walls ??= new Map();
+    if (!this._walls.has(g)) {
+      const list = [];
+      // muros y losas tapan; las puertas no (las del modelo están cerradas y se "pasa" a través de ellas)
+      const DOORS = new Set(['764633', 'd29f5f']);
+      g.traverse((m) => { if (m.isMesh && m.userData.layer === 'arquitectura' && !m.material.transparent && !DOORS.has(m.userData.hex)) list.push(m); });
+      this._walls.set(g, list);
+    }
+    const walls = this._walls.get(g), cam = this.camera.position, ray = this.raycaster, p = new THREE.Vector3();
+    for (const o of this._spots) {
+      p.copy(o.position).y += 0.35;
+      const d = p.distanceTo(cam);
+      ray.set(cam, p.clone().sub(cam).normalize());
+      ray.far = d - 0.25;
+      const blocked = ray.intersectObjects(walls, false).length > 0;
+      o.element.classList.toggle('behind', blocked);
+      o.element.classList.toggle('hidden', d > 11);
+    }
+    ray.far = Infinity;
+  }
+
+  _clearSpots() {
+    (this._spots || []).forEach((o) => { o.element.remove(); this.scene.remove(o); });
+    this._spots = [];
   }
 
   /** Vista de un piso abierto: la cámara baja al nivel del piso mirando la planta desde arriba en diagonal. */
@@ -380,6 +457,7 @@ export class MasterplanScene {
   render() {
     const dt = Math.min(this.clock.getDelta(), 0.1);
     this._adapt(dt);
+    this._updateSpots();
     // las sombras se recalculan un cuadro de cada dos (el sol y casi todo el barrio están quietos)
     this._frame = (this._frame || 0) + 1;
     this.renderer.shadowMap.needsUpdate = this._frame % 2 === 0;

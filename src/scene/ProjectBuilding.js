@@ -564,26 +564,63 @@ export class ProjectBuilding {
    * comedor) o 'habitacion' (desde la puerta hacia la cama principal). Coordenadas de la planta de Revit.
    */
   interiorCamera(unit, kind) {
-    const n = +String(unit.id).slice(-1);                  // x01 A · x02 C · x03 B · x04 D
-    const VIEWS = {
-      // la habitación se mira desde la franja libre entre el ventanal y el clóset (el baño privado ocupa la otra esquina)
-      A: { cocina: [[4.6, 1.0], [0.6, 5.6]], habitacion: [[11.75, 0.55], [8.6, 1.65]] },
-      B: { cocina: [[4.8, 13.4], [1.0, 8.8]], habitacion: [[11.9, 13.55], [8.8, 12.7]] }
-    };
-    const v = VIEWS[n === 1 || n === 2 ? 'A' : 'B'][kind];
-    const mx = (x) => (n === 2 || n === 4 ? PW - x : x);
-    const y0 = (unit.floor - 1) * FLOOR_H;
-    return {
-      pos: this.world(mx(v[0][0]), y0 + 1.5, v[0][1]),
-      target: this.world(mx(v[1][0]), y0 + (kind === 'cocina' ? 1.0 : 0.55), v[1][1])
-    };
+    return this.unitRooms(unit).find((r) => r.key === kind) || this.unitRooms(unit)[0];
   }
 
-  /** Dentro de un apartamento se ocultan los volúmenes de selección (teñirían toda la vista). */
+  /**
+   * Cuartos de un apartamento para el recorrido: dónde se para la persona (a 1,55 m del piso) y hacia
+   * dónde mira al llegar. Medidas de las habitaciones de Revit (metros desde la esquina Calle 56 / Cra 18);
+   * x02 y x04 son el espejo de x01 y x03.
+   */
+  unitRooms(unit) {
+    const n = +String(unit.id).slice(-1);                  // x01 A · x02 C · x03 B · x04 D
+    const ROOMS = {
+      A: [
+        ['sala', 'Sala', [0.9, 3.5], [4.4, 1.0]],
+        ['cocina', 'Cocina y comedor', [3.4, 2.6], [1.3, 6.2]],
+        ['habitacion', 'Alcoba principal', [11.5, 0.75], [8.6, 1.65]],
+        ['alcoba2', 'Alcoba 2', [6.0, 3.4], [7.2, 1.4]],
+        ['bano', 'Baño', [5.3, 5.6], [5.3, 7.6]],
+        ['entrada', 'Entrada', [8.6, 6.6], [6.8, 4.6]]
+      ],
+      B: [
+        ['sala', 'Sala', [0.9, 10.6], [4.5, 13.0]],
+        ['cocina', 'Cocina y comedor', [3.4, 11.5], [1.2, 8.6]],
+        ['habitacion', 'Alcoba principal', [11.7, 13.3], [8.8, 12.6]],
+        ['alcoba2', 'Alcoba 2', [6.0, 11.5], [7.3, 13.4]],
+        ['bano', 'Baño', [6.9, 9.15], [6.9, 7.95]],
+        ['entrada', 'Entrada', [9.6, 10.2], [4.0, 10.6]]
+      ]
+    };
+    const mx = (x) => (n === 2 || n === 4 ? PW - x : x);
+    const y0 = (unit.floor - 1) * FLOOR_H;
+    return ROOMS[n === 1 || n === 2 ? 'A' : 'B'].map(([key, label, p, t]) => ({
+      key, label,
+      pos: this.world(mx(p[0]), y0 + 1.55, p[1]),
+      target: this.world(mx(t[0]), y0 + 1.15, t[1]),
+      floorPoint: this.world(mx(p[0]), y0 - 0.12, p[1])
+    }));
+  }
+
+  /**
+   * Dentro de un apartamento: se ocultan los volúmenes de selección, vuelve el techo (el piso de arriba)
+   * y una luz cálida acompaña a la persona de cuarto en cuarto (moveInteriorLight).
+   */
   setInterior(on) {
     this._interior = on;
-    if (this.interiorLight) this.interiorLight.intensity = on && this.cut != null ? 45 : 0;
+    // puertas abiertas al recorrer: se ocultan las hojas (#d29f5f) del piso abierto y quedan los marcos
+    if (this.cut != null) this.floorGroups[this.cut - 1]?.traverse((m) => { if (m.isMesh && m.userData.hex === 'd29f5f') m.visible = !on; });
+    if (this.cut != null && this.floorGroups[this.cut]) {
+      this.floorGroups[this.cut].visible = on;
+      this.floorGroups[this.cut].position.y = 0;
+    }
+    if (this.interiorLight) { this.interiorLight.intensity = on && this.cut != null ? 18 : 0; this.interiorLight.distance = 9; }
     for (const v of this.unitVolumes) { v.material.visible = !on && v.material.visible; v.children[0].material.visible = !on && v.children[0].material.visible; }
+  }
+
+  moveInteriorLight(worldPos) {
+    if (!this.interiorLight) return;
+    this.interiorLight.position.copy(this.plate.worldToLocal(worldPos.clone())).y += 0.9;
   }
 
   /**
