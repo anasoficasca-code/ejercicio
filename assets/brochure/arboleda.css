@@ -1,6 +1,6 @@
 /* Distrito Arboleda · brochure de venta
    Gama azul: noche bogotana (#0b1626) para las secciones oscuras, azul pizarra (#1f4f8f) como único color
-   de acción y cielo (#a9c7e8) para los acentos sobre fondo oscuro. Fraunces para el nombre y los títulos,
+   de acción y cielo (#a9c7e8) para los acentos sobre fondo oscuro. Inter Tight para el nombre y los títulos,
    Manrope para el texto. */
 :root {
   --bg: #f3f6fa;
@@ -16,7 +16,7 @@
   --blue: #1f4f8f;
   --blue-press: #173d70;
   --sky: #a9c7e8;
-  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --display: 'Inter Tight', 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --text: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --gutter: clamp(20px, 4.4vw, 64px);
   --maxw: 1320px;
