@@ -215,6 +215,21 @@ export class MasterplanScene {
     }
 
     if (s.viewMode !== this._mode) { this._mode = s.viewMode; this.applyViewMode(s.viewMode); }
+    // cada filtro del panel lleva la cámara a lo que muestra: el piso elegido, las zonas comunes del piso 1,
+    // el edificio completo, o el barrio con las capas que se encienden
+    if (!sel && s.viewMode === 'exterior') {
+      if (s.activeFloor !== this._floorF) { this._floorF = s.activeFloor; if (s.activeFloor) this.focusFloor(s.activeFloor); else if (this._seen) this.applyViewMode('exterior'); }
+      if (s.activeTypology !== this._typoF) {
+        this._typoF = s.activeTypology;
+        if (s.activeTypology === 'Zona común') this.focusFloor(1);
+        else if (s.activeTypology === 'Apartamento' && !s.activeFloor) this.applyViewMode('exterior');
+      }
+    }
+    const on = (k) => s.layers[k] && !(this._layersSeen || {})[k];
+    if (this._seen && (on('servicios') || on('competencia') || on('estudio'))) store.setState({ viewMode: 'contexto' });
+    else if (this._seen && on('predios')) this.focusPoint(0, 0, 420);
+    this._layersSeen = { ...s.layers };
+    this._seen = true;
     if (s.selectedUnitId !== this._sel) { this._sel = s.selectedUnitId; if (sel) this.focusUnit(sel.id); }
     // vista interior (cocina o habitación) de la unidad elegida
     const iv = sel && s.interiorUnit === sel.id ? s.interiorView : null;
@@ -278,6 +293,14 @@ export class MasterplanScene {
   viewInterior(unit, kind) {
     const { pos, target } = this.building.interiorCamera(unit, kind);
     this.flyTo(pos, target, 2.2, 'power3.inOut');
+  }
+
+  /** Vista de un piso abierto: la cámara baja al nivel del piso mirando la planta desde arriba en diagonal. */
+  focusFloor(f) {
+    const c = this.building.center(), y = (f - 1) * 3.1;
+    const back = this.camera.position.clone().sub(this.controls.target).setY(0).normalize();
+    if (back.lengthSq() < 0.1) back.set(-0.7, 0, -0.7);
+    this.flyTo(c.clone().addScaledVector(back, 30).setY(y + 26), c.clone().setY(y), 1.4);
   }
 
   focusPoint(x, z, dist = 260) {

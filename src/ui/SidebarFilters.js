@@ -197,7 +197,12 @@ export class SidebarFilters {
   bind(el) {
     el.querySelector('[data-action="toggle-units"]')?.addEventListener('click', () => store.setState({ showUnitsOverlay: !store.state.showUnitsOverlay }));
     el.querySelectorAll('[data-floor]').forEach((b) => (b.onclick = () => store.setState({ activeFloor: b.dataset.floor ? +b.dataset.floor : null, selectedUnitId: null })));
-    el.querySelectorAll('[data-typo]').forEach((b) => (b.onclick = () => store.setState({ activeTypology: b.dataset.typo || null })));
+    // "Zona común" abre el piso 1 (donde están); "Apartamento" o "Todas" vuelven al edificio completo
+    el.querySelectorAll('[data-typo]').forEach((b) => (b.onclick = () => store.setState({
+      activeTypology: b.dataset.typo || null,
+      activeFloor: b.dataset.typo === 'Zona común' ? 1 : null,
+      selectedUnitId: null
+    })));
     el.querySelectorAll('.jmc-room-card').forEach((c) => (c.onclick = () => this.onSelectUnit(c.dataset.id)));
     el.querySelectorAll('[data-layer]').forEach((b) => (b.onclick = () => store.setLayer(b.dataset.layer, !store.state.layers[b.dataset.layer])));
     el.querySelectorAll('[data-theme]').forEach((b) => (b.onclick = () => store.setState({ cityTheme: b.dataset.theme })));
