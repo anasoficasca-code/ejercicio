@@ -1250,7 +1250,7 @@ table.matrix tr.total td.hl{color:#ff858d}
 :root{
   --brick:#1f4f8f; --brick-press:#173d70; --brick-on-dark:#a9c7e8;
   --stone:#f5f2ec; --ink-a:#1d1f1e;
-  --serif-a:'Inter Tight','Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --serif-a:'Montserrat','Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
   --sans-a:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
   --ease-out-a:cubic-bezier(.16,1,.3,1);
 }
@@ -1455,3 +1455,17 @@ body.is-walking #canvas-container:active{cursor:grabbing}
 .walk-spot.behind span{display:none}
 .walk-spot.behind:hover{opacity:1}
 .walk-spot.behind:hover span{display:block}
+
+/* ---------------------------------------------------------------- títulos en Montserrat, más pequeños */
+.ai-word{font-size:clamp(38px,6vw,88px);font-weight:300;letter-spacing:.1em;line-height:1.05}
+.ai-sub{letter-spacing:.4em}
+.ls-word{font-size:clamp(32px,5vw,64px);font-weight:300;letter-spacing:.12em}
+.room-detail-card .detail-title{font-size:20px;font-weight:500;letter-spacing:.06em;line-height:1.2}
+.tc-title{font-size:20px;font-weight:500;letter-spacing:.05em;line-height:1.2}
+.arb-stats strong{font-size:16px;font-weight:500;letter-spacing:.02em}
+.arb-level-name{font-size:13px;font-weight:500;letter-spacing:.06em}
+.mode-pill-btn,.contact-pill-btn,.dock-tab-btn,.detail-gallery-btn,.jmc-pill-btn,.ai-btn,.ai-skip,.view-seg button,.room-chips button,.walk-spot span,.jmc-brand-name,.jmc-brand-project,.filter-section-label,.toggle-label,.jmc-room-title,.jmc-room-type,.arb-stats span,.arb-level-meta{font-family:var(--serif-a)!important;letter-spacing:.08em}
+.arb-stats strong{font-size:14px;letter-spacing:0}
+.arb-stats span{font-size:9.5px;letter-spacing:.06em}
+.dock-tab-btn{font-size:9.5px!important;letter-spacing:.04em!important}
+.arb-level-meta{font-size:10.5px;letter-spacing:.06em}
