@@ -315,3 +315,12 @@ body.tour-open .nav { opacity: 0; pointer-events: none; }
 .lift.static .lift-copy { position: relative; bottom: auto; padding: 22svh 0 18svh; gap: 56px; }
 .lift.static .lift-step { grid-area: auto; opacity: 1; visibility: visible; }
 .lift.static .lift-level, .lift.static .lift-rail { display: none; }
+
+/* ------------------------------------------------------------------ todo en mayúscula (títulos, nombre, menú, botones, etiquetas) */
+h1, h2, h3, .brand-word, .nav-links a, .btn, .hero-kicker, .pl-small, .pl-big, .mq-track, .ls-where, .ll-label, .lift-rail li,
+.tab, .zone-list b, .place-list b, .figures dd, .dtime, .foot-brand, .foot-links a, .apt-where, .areas th, .chip span, legend, label, .link-3d, figcaption {
+  text-transform: uppercase;
+}
+h1, h2, h3, .pl-big, .foot-brand, .brand-word { letter-spacing: -0.01em; }
+.hero-title { letter-spacing: -0.035em; }
+.nav-links a, .btn, .hero-kicker, .ls-where, .ll-label, .tab, .lift-rail li, .figures dd, .dtime, .foot-links a, label, legend, figcaption { letter-spacing: 0.06em; }

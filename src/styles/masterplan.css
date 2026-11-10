@@ -1418,3 +1418,10 @@ body.is-night .sky-time-control{box-shadow:0 0 0 1px rgba(242,180,90,.35),0 10px
 .room-detail-card .detail-props,.room-detail-card .finish-row{transition:max-height .5s var(--ease-out-a),opacity .4s}
 .room-detail-card .detail-props{max-height:600px;overflow:hidden}
 .room-detail-card.is-interior .detail-props,.room-detail-card.is-interior .finish-row{max-height:0;opacity:0;margin:0;overflow:hidden}
+
+/* ---------------------------------------------------------------- todo en mayúscula salvo los párrafos largos */
+#app, .aurea-intro, .loading-screen, .tour-card, .room-detail-card, .hover-room-tooltip, .labels-layer { text-transform: uppercase; }
+.ai-line, .tc-text, .sidebar-note, .side-text, .detail-prop-line.dim, .modal p, .modal-body p, .ls-msg { text-transform: none; }
+.ai-word, .ls-word, .detail-title, .tc-title { letter-spacing: -0.01em; }
+#app button, .aurea-intro button, .room-detail-card button, .tour-card button, input, select { text-transform: inherit; }
+.view-seg button, .mode-pill-btn, .contact-pill-btn, .dock-tab-btn, .detail-gallery-btn, .jmc-pill-btn, .ai-btn, .ai-skip { text-transform: uppercase; letter-spacing: .04em; }
