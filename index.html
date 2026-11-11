@@ -15,8 +15,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=360a" />
-</head>
+  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=s3d3" />
+  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script></head>
 <body class="is-loading">
   <a class="skip" href="#main">Saltar al contenido</a>
 
@@ -109,6 +109,14 @@
           <article class="lift-step" data-level="06"><p class="ls-where">Fachada</p><h3>Balcones con jardinera</h3><p>Baranda de vidrio para que desde la calle se vean las plantas, y dos franjas de ladrillo calado que dan sombra.</p></article>
           <article class="lift-step" data-level="T"><p class="ls-where">Cubierta</p><h3>Una terraza frente a los cerros</h3><p>Pérgola de madera, zona BBQ, café lounge y gimnasio al aire libre para todos los vecinos.</p></article>
         </div>
+        <aside class="lift-model" aria-label="Maqueta del modelo de Revit cortada en el piso que muestra la imagen">
+          <header class="lm-head">
+            <span class="lm-tag">Modelo Revit · corte</span>
+            <span class="lm-room" aria-live="polite">Lobby</span>
+          </header>
+          <div class="lm-canvas"></div>
+          <footer class="lm-key" aria-hidden="true"><i class="k-cam"></i>Donde se tomó la imagen<i class="k-unit"></i>Unidad</footer>
+        </aside>
         <div class="lift-level" aria-hidden="true"><span class="ll-label">Piso</span><span class="ll-num">01</span></div>
         <ol class="lift-rail" aria-hidden="true">
           <li data-l="T">Terraza</li><li data-l="06">6</li><li data-l="05">5</li><li data-l="04">4</li><li data-l="03">3</li><li data-l="02">2</li><li data-l="01" class="on">1</li>
@@ -342,6 +350,30 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="./assets/brochure/arboleda.js?v=360a"></script>
-</body>
+  <script src="./assets/brochure/arboleda.js?v=s3d3"></script>
+  <script type="module">
+    // maqueta 3D del modelo de Revit: se descarga solo cuando la sección del edificio se acerca
+    const panel = document.querySelector('.lift-model');
+    const motionOK = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (panel && motionOK && document.createElement('canvas').getContext('webgl2')) {
+      const io = new IntersectionObserver(([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        import('./assets/brochure/section3d.js?v=s3d3').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
+      }, { rootMargin: '120% 0px' });
+      io.observe(document.querySelector('.lift'));
+    } else panel?.remove();
+  </script>  <script type="module">
+    // maqueta 3D del modelo de Revit: se descarga solo cuando la sección del edificio se acerca
+    const panel = document.querySelector('.lift-model');
+    const motionOK = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (panel && motionOK && document.createElement('canvas').getContext('webgl2')) {
+      const io = new IntersectionObserver(([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        import('./assets/brochure/section3d.js?v=s3d3').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
+      }, { rootMargin: '120% 0px' });
+      io.observe(document.querySelector('.lift'));
+    } else panel?.remove();
+  </script></body>
 </html>

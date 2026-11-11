@@ -380,3 +380,34 @@ h3 { font-size: clamp(18px, 1.7vw, 24px); }
 /* "Volver al brochure" abajo a la izquierda: arriba tapaba la barra de vistas del 3D */
 .tour-exit { top: auto; bottom: calc(env(safe-area-inset-bottom) + 18px); left: 18px; transform: none; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
 @media (max-width: 760px) { .tour-exit { bottom: auto; top: calc(env(safe-area-inset-top) + 12px); left: 12px; } }
+
+/* ------------------------------------------------------------------ maqueta del modelo de Revit en "sube por el edificio" */
+.lift-model { position: absolute; z-index: 3; right: var(--gutter); top: 13svh; bottom: 9svh; width: min(38vw, 600px);
+  display: grid; grid-template-rows: auto 1fr auto; border-radius: 6px; overflow: hidden;
+  background: linear-gradient(180deg, rgba(236, 231, 222, .94), rgba(214, 208, 198, .94));
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .35); color: #1d2430;
+  opacity: 0; transform: translateY(24px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
+.lift-model.ready { opacity: 1; transform: none; }
+.lm-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 16px 20px 0; }
+.lm-tag { font: 600 10.5px var(--display); letter-spacing: .2em; text-transform: uppercase; color: #6f6656; }
+.lm-room { font: 500 13px var(--display); letter-spacing: .12em; text-transform: uppercase; text-align: right; }
+.lm-canvas { position: relative; min-height: 0; }
+.lm-canvas canvas { position: absolute; inset: 0; display: block; }
+.lm-key { display: flex; align-items: center; gap: 8px; padding: 0 20px 14px; font: 500 11px var(--text); color: #5d5547; }
+.lm-key i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.lm-key .k-cam { background: #2a63ad; box-shadow: 0 0 0 3px #fff; }
+.lm-key .k-unit { margin-left: 14px; border-radius: 2px; background: rgba(42, 99, 173, .35); border: 1px solid #2a63ad; }
+/* con la maqueta, el contador de piso pasa arriba a la izquierda y la barra de pisos sobra */
+.lift:has(.lift-model) .lift-rail { display: none; }
+.lift:has(.lift-model) .lift-level { right: auto; left: var(--gutter); top: 13svh; bottom: auto; align-items: flex-start; }
+.lift:has(.lift-model) .lift-step { max-width: min(34rem, 46vw); }
+.lift.static .lift-model { display: none; }
+@media (max-width: 760px) {
+  .lift-model { left: 12px; right: 12px; top: calc(env(safe-area-inset-top) + 76px); bottom: auto; width: auto; height: 36svh; }
+  .lm-head { padding: 10px 14px 0; }
+  .lm-key { display: none; }
+  .lift:has(.lift-model) .lift-level { display: none; }
+  .lift:has(.lift-model) .lift-step { max-width: none; }
+  .lift:has(.lift-model) .lift-copy { bottom: 7svh; }
+}
+@media (max-width: 760px) { .lift-model { top: calc(env(safe-area-inset-top) + 102px); height: 34svh; } .lm-room { font-size: 11px; } .lm-tag { font-size: 9.5px; } }

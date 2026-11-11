@@ -175,6 +175,9 @@ if (lift) {
       g.fromTo(steps[i].children, { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.07, ease: 'expo.out', overwrite: true });
     }
     setLevel(levelOf(i));
+    // la maqueta 3D (section3d.js) corta el edificio en el piso de este paso
+    window.__liftStep = i;
+    dispatchEvent(new CustomEvent('lift:step', { detail: { index: i } }));
   };
   if (motion) {
     ST.create({
