@@ -46,20 +46,21 @@ function oakPlanks() {
       const off = (j % 3) * (w / 6);
       for (let k = -1; k < 3; k++) {
         const x = off + k * (w / 2), tone = 0.82 + r() * 0.26;
-        ctx.fillStyle = `rgb(${Math.round(112 * tone)},${Math.round(70 * tone)},${Math.round(44 * tone)})`;
+        // madera clara, como los renders finales
+        ctx.fillStyle = `rgb(${Math.round(198 * tone)},${Math.round(166 * tone)},${Math.round(128 * tone)})`;
         ctx.fillRect(x, j * rowH, w / 2, rowH);
         for (let s = 0; s < 22; s++) {
-          ctx.strokeStyle = `rgba(${r() < 0.5 ? '52,30,16' : '150,100,62'},${0.06 + r() * 0.1})`;
+          ctx.strokeStyle = `rgba(${r() < 0.5 ? '120,88,58' : '226,200,166'},${0.06 + r() * 0.1})`;
           ctx.lineWidth = 0.6 + r() * 1.6;
           const y = j * rowH + r() * rowH;
           ctx.beginPath(); ctx.moveTo(x, y);
           for (let q = 0; q <= w / 2; q += 24) ctx.lineTo(x + q, y + Math.sin(q / 50 + s) * 1.6);
           ctx.stroke();
         }
-        ctx.fillStyle = 'rgba(30,18,10,0.6)';
+        ctx.fillStyle = 'rgba(90,64,40,0.45)';
         ctx.fillRect(x, j * rowH, 2, rowH);
       }
-      ctx.fillStyle = 'rgba(30,18,10,0.55)';
+      ctx.fillStyle = 'rgba(90,64,40,0.4)';
       ctx.fillRect(0, j * rowH, w, 2);
     }
   }, true, 1 / 2.4);
@@ -149,10 +150,11 @@ export function interiorMaterial(hex, name = '', glass = false) {
   if (kind === 'plain' && Math.abs(c.r - c.g) < 0.02 && Math.abs(c.g - c.b) < 0.02 && c.r > 0.55) c = new THREE.Color(0xe9e4dc);
   // paleta de los renders de venta: nogal, tela crema, cuero café y mármol cálido
   const luma = 0.3 * c.r + 0.59 * c.g + 0.11 * c.b;
-  if (kind === 'wood') c = new THREE.Color(0x4a2b18).multiplyScalar(0.9 + 0.2 * Math.min(1, luma));
+  // (renders finales: nogal medio, tela crema, cuero camel y piedra gris cálida en la isla)
+  if (kind === 'wood') c = new THREE.Color(0x6b4a32).multiplyScalar(0.9 + 0.2 * Math.min(1, luma));
   if (kind === 'fabric' && luma < 0.8) c = new THREE.Color(luma < 0.25 ? 0x4a3f36 : 0xe2d6c3);
-  if (kind === 'leather') c = new THREE.Color(0x6a4430);
-  if (kind === 'stone') c = new THREE.Color(0xebe3d5);
+  if (kind === 'leather') c = new THREE.Color(0xa06c46);
+  if (kind === 'stone') c = new THREE.Color(0xcfc8bd);
   const m = lib[kind](c);
   lib.cache.set(key, m);
   return m;

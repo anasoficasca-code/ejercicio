@@ -95,6 +95,11 @@ if (motion) {
     g.from(el, { y: 40, opacity: 0, duration: 1.1, ease: 'expo.out', scrollTrigger: { trigger: el, start: 'top 88%' } });
   });
 
+  // interiores: la foto se asienta desde un leve zoom al entrar (transición en CSS)
+  g.utils.toArray('.inside-hero, .inside-pic').forEach((el) => {
+    window.ScrollTrigger?.create({ trigger: el, start: 'top 80%', once: true, onEnter: () => el.classList.add('is-in') });
+  });
+
   // fotos: se descubren de abajo hacia arriba y se asientan desde un leve zoom; luego un parallax suave
   g.utils.toArray('.pic').forEach((pic) => {
     const img = pic.querySelector('img');

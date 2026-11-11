@@ -10,6 +10,7 @@ import { setNight } from './BuildingMaterials.js';
 import { Traffic } from './Traffic.js';
 import { PoiLayer } from './PoiLayer.js';
 import { store } from '../state/store.js';
+import { RoomPhoto } from '../ui/RoomPhoto.js';
 
 /**
  * MasterplanScene — motor Three.js del masterplan, con el mismo cielo (atmósfera + nubes volumétricas),
@@ -230,7 +231,7 @@ export class MasterplanScene {
     else if (this._seen && on('predios')) this.focusPoint(0, 0, 420);
     this._layersSeen = { ...s.layers };
     this._seen = true;
-    if (s.selectedUnitId !== this._sel) { this._sel = s.selectedUnitId; if (sel) this.focusUnit(sel.id); }
+    if (s.selectedUnitId !== this._sel) { this._sel = s.selectedUnitId; this.hideRoomPhoto(); if (sel) this.focusUnit(sel.id); }
     // vista interior (cocina o habitación) de la unidad elegida
     const iv = sel && s.interiorUnit === sel.id ? s.interiorView : null;
     if (iv !== this._iv) {
@@ -238,7 +239,8 @@ export class MasterplanScene {
       this._iv = iv;
       if (!!iv !== !!was) { this.building.setInterior(!!iv); this._setWalk(!!iv); }
       if (iv) this.viewInterior(sel, iv);
-      else if (was && sel) { this._clearSpots(); this.focusUnit(sel.id); }
+      else if (was && sel) { this._clearSpots(); this.hideRoomPhoto(); this.focusUnit(sel.id); }
+      else if (was) { this._clearSpots(); this.hideRoomPhoto(); }
     }
     this.pois.setCompact(s.viewMode === 'exterior' && !!sel);
   }
@@ -300,7 +302,17 @@ export class MasterplanScene {
     this.flyTo(room.pos, look, far ? 2.4 : 1.3, far ? 'power3.inOut' : 'power2.inOut');
     this.building.moveInteriorLight(room.pos);
     this._showSpots(unit, kind);
+    // al llegar, el render final del cuarto a pantalla completa (si lo hay); si no, queda el 3D
+    this.showRoomPhoto(kind, (far ? 2.4 : 1.3) * 1000 - 300);
   }
+
+  /** Render a pantalla completa (sala, cocina, alcoba, lobby, restaurante). */
+  showRoomPhoto(key, delay = 0) {
+    this.photo ??= new RoomPhoto(document.getElementById('app'));
+    return this.photo.show(key, { delay });
+  }
+
+  hideRoomPhoto() { this.photo?.hide(); }
 
   /** Modo caminar: sin zoom ni desplazamiento, giro suave en el sitio y se puede mirar arriba y abajo. */
   _setWalk(on) {

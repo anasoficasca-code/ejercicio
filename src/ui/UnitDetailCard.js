@@ -7,8 +7,9 @@ export class UnitDetailCard {
     this.container = container;
     this.container.className = 'room-detail-card';
     this.container.addEventListener('click', (e) => {
-      const iv = e.target.closest('[data-iv]');
-      if (iv) store.setState({ interiorView: iv.dataset.iv || null, interiorUnit: store.state.selectedUnitId });
+      const iv = e.target.closest('[data-iv]'), ph = e.target.closest('[data-photo]');
+      if (ph) window.__masterplan?.showRoomPhoto(ph.dataset.photo);
+      else if (iv) store.setState({ interiorView: iv.dataset.iv || null, interiorUnit: store.state.selectedUnitId });
       else if (e.target.closest('#btn-close-detail')) store.setState({ selectedUnitId: null, interiorView: null });
       else if (e.target.closest('#btn-view-gallery')) onOpenGallery(store.getSelectedUnit());
     });
@@ -42,6 +43,10 @@ export class UnitDetailCard {
         ${[['sala', 'Sala'], ['cocina', 'Cocina'], ['habitacion', 'Alcoba principal'], ['alcoba2', 'Alcoba 2'], ['bano', 'Baño'], ['entrada', 'Entrada']]
           .map(([k, l]) => `<button data-iv="${k}" aria-pressed="false">${l}</button>`).join('')}
         <p class="walk-hint">Arrastra para mirar alrededor · toca un punto blanco del piso para caminar</p>
+      </div>` : u.id === 'lobby' ? `<div class="view-seg" role="group" aria-label="Ver el lobby">
+        <button data-photo="lobby">Recepción</button><button data-photo="lobby2">Sala de espera</button>
+      </div>` : u.id === 'salon' ? `<div class="view-seg" role="group" aria-label="Ver el restaurante">
+        <button data-photo="salon">Ver el restaurante</button><button data-photo="lobby2">Ver el lobby</button>
       </div>` : ''}
       <div class="detail-props">
         <div class="detail-prop-line"><span class="label">Piso:</span> ${u.floor} de ${p.proyectoActual.pisos}</div>

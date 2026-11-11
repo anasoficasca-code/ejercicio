@@ -176,8 +176,8 @@ function build() {
   const railGlass = fresnelGlass({ color: 0xe4eeeb, base: 0.10, edge: 0.55, env: 1.0, lit: 0 });
   const grass = std({ color: 0x5f7f3e, roughness: 1 });
   // interiores como los renders de venta: muros de placa de yeso en beige cálido y puertas de nogal
-  const warmWall = std({ ...paint, color: 0xe9ddca, roughness: 0.9, normalScale: new THREE.Vector2(0.25, 0.25), envMapIntensity: 0.4 });
-  const walnut = std({ color: 0x55341f, roughness: 0.55, envMapIntensity: 0.7 });
+  const warmWall = std({ ...paint, color: 0xefe7dc, roughness: 0.9, normalScale: new THREE.Vector2(0.25, 0.25), envMapIntensity: 0.4 });
+  const walnut = std({ color: 0x6b4a32, roughness: 0.55, envMapIntensity: 0.7 });
   return {
     glass: { '0a64f4': windowGlass, '0080c0': railGlass },
     byHex: {

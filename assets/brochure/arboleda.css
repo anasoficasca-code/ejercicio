@@ -353,3 +353,27 @@ h3 { font-size: clamp(18px, 1.7vw, 24px); }
   font-family: var(--display); font-weight: 500; letter-spacing: .12em; font-size: 12.5px;
 }
 .btn { font-size: 13px; }
+
+/* ------------------------------------------------------------------ interiores: foto a todo el ancho y dos debajo */
+.inside { padding-bottom: clamp(64px, 9vw, 130px); }
+.inside-head { margin-bottom: clamp(28px, 4vw, 48px); }
+.inside-head h2 { max-width: 22ch; }
+.inside-hero, .inside-pic { position: relative; margin: 0; overflow: hidden; }
+.inside-hero { height: min(92vh, 56vw); min-height: 340px; }
+.inside-hero img, .inside-pic img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.06); transition: transform 1.6s var(--ease); }
+.inside-hero.is-in img, .inside-pic.is-in img { transform: scale(1); }
+.inside-pic:hover img { transform: scale(1.03); }
+.inside-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(12px, 1.6vw, 22px); margin-top: clamp(12px, 1.6vw, 22px); }
+.inside-pic { aspect-ratio: 16 / 10; border-radius: 4px; }
+.inside-hero figcaption, .inside-pic figcaption {
+  position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: 4px;
+  padding: 60px clamp(18px, 3vw, 40px) clamp(16px, 2.4vw, 30px); color: #fff;
+  background: linear-gradient(to top, rgba(10, 16, 24, .62), transparent);
+}
+.inside-hero figcaption b, .inside-pic figcaption b { font: 500 clamp(14px, 1.3vw, 17px) var(--display); letter-spacing: .14em; text-transform: uppercase; }
+.inside-hero figcaption span, .inside-pic figcaption span { font-size: 14px; opacity: .85; }
+@media (max-width: 760px) {
+  .inside-grid { grid-template-columns: 1fr; }
+  .inside-hero { height: 62vh; }
+}
+@media (prefers-reduced-motion: reduce) { .inside-hero img, .inside-pic img { transform: none; transition: none; } }
