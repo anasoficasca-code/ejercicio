@@ -377,3 +377,6 @@ h3 { font-size: clamp(18px, 1.7vw, 24px); }
   .inside-hero { height: 62vh; }
 }
 @media (prefers-reduced-motion: reduce) { .inside-hero img, .inside-pic img { transform: none; transition: none; } }
+/* "Volver al brochure" abajo a la izquierda: arriba tapaba la barra de vistas del 3D */
+.tour-exit { top: auto; bottom: calc(env(safe-area-inset-bottom) + 18px); left: 18px; transform: none; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+@media (max-width: 760px) { .tour-exit { bottom: auto; top: calc(env(safe-area-inset-top) + 12px); left: 12px; } }
