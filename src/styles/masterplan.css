@@ -1494,3 +1494,30 @@ body.has-room-photo .labels-layer{opacity:0;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.room-photo.on .rp-img{animation:none}.rp-hint{animation:none}}
 @media (max-width:760px){.rp-cap{bottom:auto;top:80px}.rp-3d{bottom:auto;top:132px}}
 .room-photo .rp-3d{text-transform:uppercase!important}
+
+/* ---------------------------------------------------------------- visor 360 del cuarto */
+.rp-view{position:absolute;inset:0;cursor:grab;touch-action:none;outline:none}
+.rp-view:active{cursor:grabbing}
+.rp-view canvas{display:block;width:100%;height:100%}
+.room-photo.flat .rp-view{background-size:cover;background-position:50% 50%}
+.room-photo.on .rp-view{animation:rp-in 1.4s cubic-bezier(.2,.7,.2,1) both}
+.rp-badge{position:absolute;right:clamp(18px,3vw,40px);bottom:clamp(40px,6vh,60px);z-index:1;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;
+  border:1.5px solid rgba(255,255,255,.75);color:#fff;font:600 13px var(--serif-a);letter-spacing:.04em;background:rgba(10,16,24,.3);backdrop-filter:blur(6px);pointer-events:none}
+.room-photo.flat .rp-badge{display:none}
+body.has-room-photo .room-detail-card{background:rgba(14,22,34,.72);backdrop-filter:blur(14px)}
+@media (max-width:760px){.rp-badge{bottom:auto;top:132px;right:16px;width:44px;height:44px;font-size:11px}}
+/* 360 en celular: solo lo esencial, la panorámica ocupa la pantalla */
+@media (max-width:760px){
+  body.has-room-photo .top-right-bar,body.has-room-photo .sky-time-control{opacity:0;pointer-events:none;transition:opacity .4s}
+  body.has-room-photo .rp-cap{top:calc(env(safe-area-inset-top) + 18px);left:16px;bottom:auto}
+  body.has-room-photo .rp-cap span{display:none}
+  body.has-room-photo .rp-3d{top:calc(env(safe-area-inset-top) + 56px);left:16px;bottom:auto;padding:8px 14px;font-size:10.5px}
+  body.has-room-photo .rp-badge{top:calc(env(safe-area-inset-top) + 16px);right:16px}
+  body.has-room-photo .rp-hint{top:auto;bottom:210px}
+  body.has-room-photo .room-detail-card{top:auto!important;bottom:calc(env(safe-area-inset-bottom) + 12px)!important;left:12px!important;right:12px!important;width:auto!important;max-height:none;padding:14px 14px 10px}
+  body.has-room-photo .room-detail-card .detail-title{font-size:14px}
+  body.has-room-photo .room-detail-card .detail-subtitle,body.has-room-photo .room-detail-card .walk-hint,body.has-room-photo .room-detail-card .detail-actions,body.has-room-photo .room-detail-card .finish-row{display:none}
+  body.has-room-photo .room-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-top:8px}
+  body.has-room-photo .room-chips button{flex:none}
+}
+@media (max-width:760px){body.has-room-photo .room-detail-card{transform:none!important;margin:0!important}}

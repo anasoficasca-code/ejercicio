@@ -468,6 +468,8 @@ export class MasterplanScene {
 
   render() {
     const dt = Math.min(this.clock.getDelta(), 0.1);
+    // con el 360 abierto tapando todo, la ciudad no se dibuja (el visor usa la GPU)
+    if (this.photo?.covering) return;
     this._adapt(dt);
     this._updateSpots();
     // las sombras se recalculan un cuadro de cada dos (el sol y casi todo el barrio están quietos)
