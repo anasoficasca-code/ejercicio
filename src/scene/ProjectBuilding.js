@@ -190,6 +190,7 @@ export class ProjectBuilding {
       // alfajía de piedra que sobresale bajo el ventanal
       push(w.piso, 'sill', box(a0 - 0.05, a1 + 0.05, y0 - 0.05, y0, 0, 0.16));
     }
+    this._buildSconces(ventanas);
     for (const [k, geos] of parts) {
       const [floor, kind] = k.split('|');
       const mesh = new THREE.Mesh(mergeGeometries(geos, false), mats[kind]);
@@ -200,6 +201,57 @@ export class ProjectBuilding {
       if (kind === 'glass') mesh.renderOrder = 3;
       this.floorGroups[+floor]?.add(mesh);
     }
+  }
+
+  /**
+   * Apliques de fachada como en los renders: en cada muro libre entre ventanales (≥ 0,9 m) un aplique negro
+   * con su abanico de luz cálida hacia arriba y hacia abajo. Se encienden con la hora dorada (setNight).
+   */
+  _buildSconces(ventanas) {
+    const c = document.createElement('canvas');
+    c.width = 128; c.height = 256;
+    const ctx = c.getContext('2d');
+    for (const dir of [-1, 1]) {                       // dos conos: arriba y abajo desde el centro
+      const g = ctx.createRadialGradient(64, 128, 2, 64, 128 + dir * 40, 130);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.25, 'rgba(255,255,255,.55)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(64, 128); ctx.lineTo(64 - 56, 128 + dir * 128); ctx.lineTo(64 + 56, 128 + dir * 128); ctx.closePath(); ctx.clip();
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 256);
+      ctx.restore();
+    }
+    const map = new THREE.CanvasTexture(c);
+    map.colorSpace = THREE.SRGBColorSpace;
+    this.sconceMat = new THREE.MeshBasicMaterial({ map, color: 0xffb46e, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+    this.sconceFix = new THREE.MeshStandardMaterial({ color: 0x1f1d1b, roughness: 0.5, metalness: 0.5, emissive: 0xffc27a, emissiveIntensity: 0 });
+    const washG = new THREE.PlaneGeometry(1.5, 2.9);
+    const fixG = new THREE.BoxGeometry(0.1, 0.22, 0.08);
+    // ventanas agrupadas por piso y fachada, ordenadas a lo largo del muro
+    const groups = new Map();
+    for (const w of ventanas) { const k = `${w.piso}|${w.f}|${Math.round(w.face / 100)}`; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(w); }
+    const per = new Map();
+    for (const list of groups.values()) {
+      list.sort((a, b) => a.c - b.c);
+      for (let i = 0; i < list.length - 1; i++) {
+        const a = list[i], b = list[i + 1];
+        const gap = (b.c - b.w / 2) - (a.c + a.w / 2);
+        if (gap < 600 || gap > 6000) continue;
+        const along = ((a.c + a.w / 2) + (b.c - b.w / 2)) / 2000, face = a.face / 1000;
+        const y = (a.y0 + (a.y1 - a.y0) * 0.62) / 1000;
+        const out = a.f === 'N' || a.f === 'W' ? -1 : 1, alongX = a.f === 'N' || a.f === 'S';
+        const rotY = alongX ? (out > 0 ? 0 : Math.PI) : (out > 0 ? Math.PI / 2 : -Math.PI / 2);
+        const pos = (o) => (alongX ? new THREE.Vector3(along, y, face + out * o) : new THREE.Vector3(face + out * o, y, along));
+        const wash = new THREE.Mesh(washG, this.sconceMat);
+        wash.position.copy(pos(0.03)); wash.rotation.y = rotY; wash.renderOrder = 5;
+        const fix = new THREE.Mesh(fixG, this.sconceFix);
+        fix.position.copy(pos(0.05)); fix.rotation.y = rotY;
+        if (!per.has(a.piso)) per.set(a.piso, new THREE.Group());
+        per.get(a.piso).add(wash, fix);
+      }
+    }
+    for (const [floor, g] of per) { g.name = 'Apliques de fachada'; this.floorGroups[+floor]?.add(g); }
+    this.setNight(this._nightV ?? 0);
   }
 
   /**
@@ -420,6 +472,8 @@ export class ProjectBuilding {
 
   /** 0 de día, 1 de noche: bañadores de fachada y luminarias de piso. */
   setNight(v) {
+    this._nightV = v;
+    if (this.sconceMat) { this.sconceMat.opacity = Math.min(1, v * 1.25); this.sconceFix.emissiveIntensity = v * 4; }
     setRestaurantNight(v);
     if (!this.washMat) return;
     this.washMat.opacity = v * 0.5;

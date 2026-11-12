@@ -12,6 +12,8 @@ export const ROOM_PHOTOS = {
   cocina: { pano: P + 'cocina-sala.jpg', yaw: -60, title: 'Cocina abierta', text: 'Isla de mármol, nogal y comedor junto al balcón' },
   habitacion: { pano: P + 'habitacion.jpg', yaw: 0, title: 'Alcoba principal', text: 'Ventanal sobre los árboles, clóset de nogal' },
   alcoba2: { pano: P + 'habitacion.jpg', yaw: 60, title: 'Alcoba', text: 'Piso de madera clara y ventanal a la calle' },
+  bano: { pano: P + 'bano.jpg', yaw: -20, title: 'Baño', text: 'Mueble de nogal, ducha en vidrio y piedra beige' },
+  entrada: { pano: P + 'cocina-sala.jpg', yaw: -150, title: 'Entrada', text: 'Pasillo de acceso hacia la cocina y la sala' },
   lobby: { pano: P + 'lobby.jpg', yaw: 0, title: 'Lobby', text: 'Recepción, sala de espera y ascensores' },
   lobby2: { pano: P + 'lobby.jpg', yaw: 120, title: 'Lobby', text: 'Sala de espera junto al ventanal' },
   salon: { pano: P + 'restaurante.jpg', yaw: 0, title: 'Restaurante con terraza', text: 'Primer piso, sobre la Calle 56' }
@@ -156,12 +158,22 @@ export class RoomPhoto {
       this.el.setAttribute('aria-hidden', 'false');
       document.body.classList.add('has-room-photo');
       if (!was && this.renderer) { this._t0 = 0; this._loop(); }
+      clearTimeout(this._shownT);
+      this._shownT = setTimeout(() => { const f = this.onShown; this.onShown = null; f?.(); }, was ? 0 : 950);
     }).catch(() => {}), delay);
     return true;
   }
 
+  /** Descarga las panorámicas antes de entrar, para que el 360 abra al instante. */
+  preload(keys) {
+    if (!this.renderer) return;
+    for (const k of keys) if (ROOM_PHOTOS[k]) this._texture(ROOM_PHOTOS[k].pano).catch(() => {});
+  }
+
   hide() {
     clearTimeout(this._tm);
+    clearTimeout(this._shownT);
+    const f = this.onShown; this.onShown = null; f?.();
     this._token = (this._token || 0) + 1;
     cancelAnimationFrame(this._raf);
     this.covering = false;

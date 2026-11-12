@@ -1,0 +1,1 @@
+﻿new Promise(r=>{document.querySelector('.ai-skip')?.click();setTimeout(()=>{const h=document.getElementById('sky-hour');h.value=17.55;h.dispatchEvent(new Event('input'));},2500);setTimeout(()=>r('now'),8000)})

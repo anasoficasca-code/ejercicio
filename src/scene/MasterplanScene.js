@@ -231,7 +231,7 @@ export class MasterplanScene {
     else if (this._seen && on('predios')) this.focusPoint(0, 0, 420);
     this._layersSeen = { ...s.layers };
     this._seen = true;
-    if (s.selectedUnitId !== this._sel) { this._sel = s.selectedUnitId; this.hideRoomPhoto(); if (sel) this.focusUnit(sel.id); }
+    if (s.selectedUnitId !== this._sel) { this._sel = s.selectedUnitId; this.hideRoomPhoto(); if (sel) { this.focusUnit(sel.id); this._preloadPanos(sel); } }
     // vista interior (cocina o habitación) de la unidad elegida
     const iv = sel && s.interiorUnit === sel.id ? s.interiorView : null;
     if (iv !== this._iv) {
@@ -298,12 +298,22 @@ export class MasterplanScene {
     const room = this.building.interiorCamera(unit, kind);
     const dir = room.target.clone().sub(room.pos).normalize();
     const look = room.pos.clone().addScaledVector(dir, 0.25);
-    const far = this.camera.position.distanceTo(room.pos) > 6;
-    this.flyTo(room.pos, look, far ? 2.4 : 1.3, far ? 'power3.inOut' : 'power2.inOut');
     this.building.moveInteriorLight(room.pos);
     this._showSpots(unit, kind);
-    // al llegar, el render final del cuarto a pantalla completa (si lo hay); si no, queda el 3D
-    this.showRoomPhoto(kind, (far ? 2.4 : 1.3) * 1000 - 300);
+    // directo al 360 del cuarto: la cámara salta (sin volar por el modelo) y el 360 aparece sobre la vista
+    if (this.showRoomPhoto(kind, 0)) {
+      // la cámara salta al cuarto cuando el 360 ya tapa la vista (así nunca se ve el salto)
+      this.photo.onShown = () => {
+        window.gsap?.killTweensOf(this.camera.position);
+        window.gsap?.killTweensOf(this.controls.target);
+        this.camera.position.copy(room.pos);
+        this.controls.target.copy(look);
+        this.controls.update();
+      };
+      return;
+    }
+    const far = this.camera.position.distanceTo(room.pos) > 6;
+    this.flyTo(room.pos, look, far ? 2.4 : 1.3, far ? 'power3.inOut' : 'power2.inOut');
   }
 
   /** Render a pantalla completa (sala, cocina, alcoba, lobby, restaurante). */
@@ -313,6 +323,14 @@ export class MasterplanScene {
   }
 
   hideRoomPhoto() { this.photo?.hide(); }
+
+  /** Al elegir una unidad se bajan sus 360 en segundo plano (abren al instante al entrar). */
+  _preloadPanos(unit) {
+    const keys = unit.typology === 'Apartamento' ? ['sala', 'habitacion', 'bano'] : unit.id === 'lobby' ? ['lobby'] : unit.id === 'salon' ? ['salon', 'lobby'] : [];
+    if (!keys.length) return;
+    this.photo ??= new RoomPhoto(document.getElementById('app'));
+    setTimeout(() => this.photo.preload(keys), 1500);
+  }
 
   /** Modo caminar: sin zoom ni desplazamiento, giro suave en el sitio y se puede mirar arriba y abajo. */
   _setWalk(on) {
