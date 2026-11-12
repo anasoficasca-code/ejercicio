@@ -72,7 +72,7 @@ export async function mountSection(panel) {
   const baseAz = Math.atan2(front.x, front.z);
 
   // resalte de la unidad: volumen azul suave con borde
-  const hiMat = new THREE.MeshBasicMaterial({ color: 0x2a63ad, transparent: true, opacity: 0, depthWrite: false });
+  const hiMat = new THREE.MeshBasicMaterial({ color: 0x9c4f2e, transparent: true, opacity: 0, depthWrite: false });
   let hiVol = null;
   const setUnit = (id) => {
     if (hiVol) { const old = hiVol; g ? g.to(old.material, { opacity: 0, duration: 0.4, onComplete: () => { old.visible = false; } }) : (old.visible = false); }
@@ -93,7 +93,7 @@ export async function mountSection(panel) {
   const mark = new THREE.Group();
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.7, 1.0, 48), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthTest: false }));
   ring.rotation.x = -Math.PI / 2;
-  const dot = new THREE.Mesh(new THREE.CircleGeometry(0.45, 32), new THREE.MeshBasicMaterial({ color: 0x2a63ad, depthTest: false }));
+  const dot = new THREE.Mesh(new THREE.CircleGeometry(0.45, 32), new THREE.MeshBasicMaterial({ color: 0x9c4f2e, depthTest: false }));
   dot.rotation.x = -Math.PI / 2; dot.position.y = 0.01;
   const coneGeo = new THREE.BufferGeometry();
   const L = 7.5, half = THREE.MathUtils.degToRad(34);
@@ -102,7 +102,7 @@ export async function mountSection(panel) {
   const idx = []; for (let i = 1; i <= 16; i++) idx.push(0, i, i + 1);
   coneGeo.setAttribute('position', new THREE.Float32BufferAttribute(fan, 3));
   coneGeo.setIndex(idx);
-  const cone = new THREE.Mesh(coneGeo, new THREE.MeshBasicMaterial({ color: 0x5b8fd6, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthTest: false }));
+  const cone = new THREE.Mesh(coneGeo, new THREE.MeshBasicMaterial({ color: 0xd9894f, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthTest: false }));
   cone.position.y = 0.02;
   mark.add(cone, ring, dot);
   mark.renderOrder = 10;
