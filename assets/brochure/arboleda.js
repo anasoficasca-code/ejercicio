@@ -279,10 +279,15 @@ if (window.L) {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);
-  L.circle([LAT, LNG], { radius: 500, color: '#1f4f8f', weight: 1, fillColor: '#1f4f8f', fillOpacity: 0.06, dashArray: '4 6' })
+  L.circle([LAT, LNG], { radius: 500, color: '#9c4f2e', weight: 1, fillColor: '#9c4f2e', fillOpacity: 0.06, dashArray: '4 6' })
     .addTo(map).bindTooltip('500 m, unos 6 minutos a pie', { sticky: true });
   L.marker([LAT, LNG], { title: 'Distrito Arboleda', icon: L.divIcon({ className: '', html: '<div class="pin"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }) })
     .addTo(map).bindPopup('<b>Distrito Arboleda</b><br>Calle 56 con Carrera 18, Galerías');
+  // lugares cercanos (los mismos del radar), con su número
+  const marks = (window.CERCA || []).map((c, i) => L.marker(c.ll, { title: c.n, icon: L.divIcon({ className: '', html: `<div class="pin-n">${i + 1}</div>`, iconSize: [22, 22], iconAnchor: [11, 11] }) })
+    .addTo(map).bindTooltip(`${c.n} · ${c.d >= 1000 ? (c.d / 1000).toFixed(1).replace('.', ',') + ' km' : Math.round(c.d / 10) * 10 + ' m'}`));
+  if (marks.length) map.fitBounds(L.latLngBounds(window.CERCA.filter((c) => c.d < 1300).map((c) => c.ll)).extend([LAT, LNG]).pad(0.12));
+  window.__cercaMap = { map, marks };
 } else {
   document.getElementById('map').innerHTML = '<p style="padding:24px">Calle 56 con Carrera 18, Galerías, Bogotá.</p>';
 }
@@ -308,3 +313,115 @@ form.addEventListener('submit', (e) => {
     msg.textContent = 'Abrimos tu correo con el mensaje listo. Solo falta enviarlo.';
   }
 });
+
+// ================================================================== secciones nuevas
+// barra de avance de lectura
+const prog = document.querySelector('.progress i');
+if (prog && motion) g.to(prog, { scaleX: 1, ease: 'none', scrollTrigger: { start: 0, end: 'max', scrub: 0.3 } });
+
+// cifras con decimales (cabida): cuentan hasta su valor con formato colombiano
+const fmt = (v, d) => v.toLocaleString('es-CO', { minimumFractionDigits: d, maximumFractionDigits: d });
+if (motion) document.querySelectorAll('[data-num]').forEach((el) => {
+  const to = +el.dataset.num, d = +el.dataset.dec, pre = el.dataset.pre || '', suf = el.dataset.suf || '', n = { v: 0 };
+  g.to(n, { v: to, duration: 1.8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%' },
+    onUpdate: () => { el.textContent = pre + fmt(n.v, d) + suf; }, onComplete: () => { el.textContent = pre + fmt(to, d) + suf; } });
+});
+
+// ------------------------------------------------------------------ corte: cada nivel se enciende con su texto
+const corte = document.querySelector('.corte');
+if (corte) {
+  const floors = [...corte.querySelectorAll('.cx-floor')], items = [...corte.querySelectorAll('.cx-list button')];
+  let auto = null;
+  const pick = (key, idx) => {
+    floors.forEach((f) => f.classList.toggle('on', idx != null ? +f.dataset.i === idx : f.dataset.l === key));
+    items.forEach((b) => b.classList.toggle('on', b.dataset.l === key));
+  };
+  const stop = () => { auto?.kill(); auto = null; };
+  floors.forEach((f) => {
+    const on = () => { stop(); pick(f.dataset.l, +f.dataset.i); };
+    f.addEventListener('pointerenter', on); f.addEventListener('focus', on); f.addEventListener('click', on);
+  });
+  items.forEach((b) => {
+    const on = () => { stop(); pick(b.dataset.l); };
+    b.addEventListener('pointerenter', on); b.addEventListener('focus', on); b.addEventListener('click', on);
+  });
+  pick('p1', 0);
+  if (motion) {
+    // el edificio se levanta piso por piso, luego aparecen cotas y árboles; después un "ascensor" recorre los niveles
+    const tl = g.timeline({ scrollTrigger: { trigger: '.corte-fig', start: 'top 72%' } });
+    tl.from('.cx-site > *', { opacity: 0, duration: 0.6, stagger: 0.05 })
+      .from(floors, { y: -70, opacity: 0, duration: 0.75, stagger: 0.13, ease: 'back.out(1.3)' }, 0.2)
+      .from('.cx-dim > *', { opacity: 0, x: 12, duration: 0.5, stagger: 0.03 }, '-=0.3')
+      .add(() => {
+        const o = { i: 0 };
+        auto = g.to(o, { i: floors.length - 1, duration: 4.2, ease: 'none', repeat: 1, yoyo: true, onUpdate: () => { const f = floors[Math.round(o.i)]; pick(f.dataset.l, +f.dataset.i); } });
+      });
+  }
+}
+
+// ------------------------------------------------------------------ cabida: se traza el lote y se asienta la huella
+if (motion && document.querySelector('.cabida')) {
+  const tl = g.timeline({ scrollTrigger: { trigger: '.cabida-fig', start: 'top 75%' } });
+  tl.from('.cb-lot', { strokeDashoffset: 1, duration: 1.8, ease: 'power2.inOut' })
+    .from('.cb-ant', { opacity: 0, duration: 0.7 }, 0.9)
+    .from('.cb-foot', { scale: 0, duration: 1.1, ease: 'expo.out' }, 1.2)
+    .from('.cb-core, .cb-split, .cb-u, .cb-s, .cb-st, .cb-north', { opacity: 0, duration: 0.5, stagger: 0.05 }, 1.7)
+    .from('.cb-dim > *', { opacity: 0, duration: 0.5, stagger: 0.06 }, 2.0);
+  g.from('.cb-row', { y: 26, opacity: 0, duration: 0.8, stagger: 0.07, ease: 'expo.out', scrollTrigger: { trigger: '.cabida-dl', start: 'top 82%' } });
+}
+
+// ------------------------------------------------------------------ qué hay cerca: radar y lista enlazados (y el mapa)
+const cerca = document.querySelector('.cerca');
+if (cerca) {
+  const dots = [...cerca.querySelectorAll('.nr-dot')], rows = [...cerca.querySelectorAll('.nr-list button')];
+  const sel = (i, pan) => {
+    dots.forEach((d) => d.classList.toggle('on', +d.dataset.i === i));
+    rows.forEach((r) => r.classList.toggle('on', +r.dataset.i === i));
+    const m = window.__cercaMap;
+    if (pan && m?.marks[i]) { m.map.panTo(m.marks[i].getLatLng()); m.marks[i].openTooltip(); }
+  };
+  [...dots, ...rows].forEach((el) => {
+    const i = +el.dataset.i;
+    el.addEventListener('pointerenter', () => sel(i));
+    el.addEventListener('focus', () => sel(i));
+    el.addEventListener('click', () => sel(i, true));
+  });
+  if (motion) {
+    const tl = g.timeline({ scrollTrigger: { trigger: '.cerca-grid', start: 'top 72%' } });
+    tl.from('.nr-ring', { scale: 0, opacity: 0, transformOrigin: '50% 50%', duration: 1, stagger: 0.14, ease: 'expo.out' })
+      .from('.nr-axis, .nr-rl', { opacity: 0, duration: 0.5 }, 0.5)
+      .from(dots, { scale: 0, transformOrigin: '50% 50%', duration: 0.6, stagger: 0.07, ease: 'back.out(2.4)' }, 0.7)
+      .from(rows, { x: 30, opacity: 0, duration: 0.6, stagger: 0.05, ease: 'expo.out' }, 0.7);
+  }
+}
+
+// ------------------------------------------------------------------ la firma
+const firma = document.querySelector('.firma');
+if (firma) {
+  // el párrafo se ilumina palabra por palabra al bajar
+  const lead = firma.querySelector('[data-wh2]'), ws = [];
+  lead.innerHTML = lead.textContent.trim().split(/\s+/).map((t) => `<span class="w">${t}</span>`).join(' ');
+  lead.querySelectorAll('.w').forEach((w) => ws.push(w));
+  const cards = [...firma.querySelectorAll('.fcard')];
+  if (motion) {
+    g.from('.firma-name .ch', { yPercent: 115, rotate: 6, duration: 1.1, stagger: 0.035, ease: 'expo.out', scrollTrigger: { trigger: '.firma-name', start: 'top 82%' } });
+    ST.create({ trigger: lead, start: 'top 82%', end: 'bottom 50%', scrub: true, onUpdate: (st) => { const k = Math.round(st.progress * ws.length); ws.forEach((w, i) => w.classList.toggle('on', i < k)); } });
+    cards.forEach((c, i) => {
+      g.from(c, { y: 90, rotateX: -18, opacity: 0, duration: 1.2, delay: i * 0.14, ease: 'expo.out', scrollTrigger: { trigger: '.firma-cards', start: 'top 80%', onEnter: () => c.classList.add('is-in') } });
+      g.to(c.querySelector('.fcard-n'), { yPercent: -30, ease: 'none', scrollTrigger: { trigger: c, start: 'top bottom', end: 'bottom top', scrub: true } });
+      // la tarjeta se inclina hacia el puntero y un brillo lo sigue
+      if (matchMedia('(pointer: fine)').matches) {
+        c.addEventListener('pointermove', (e) => {
+          const r = c.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+          c.style.setProperty('--mx', `${px * 100}%`); c.style.setProperty('--my', `${py * 100}%`);
+          g.to(c, { rotateY: (px - 0.5) * 9, rotateX: (0.5 - py) * 7, duration: 0.5, ease: 'power3.out' });
+        });
+        c.addEventListener('pointerleave', () => g.to(c, { rotateX: 0, rotateY: 0, duration: 0.9, ease: 'elastic.out(1, 0.5)' }));
+      }
+    });
+    g.from('.firma-vals li', { y: 34, opacity: 0, duration: 0.9, stagger: 0.12, ease: 'expo.out', scrollTrigger: { trigger: '.firma-vals', start: 'top 85%' } });
+    g.from('.firma-team', { opacity: 0, letterSpacing: '0.5em', duration: 1.2, ease: 'power2.out', scrollTrigger: { trigger: '.firma-team', start: 'top 92%' } });
+  } else { ws.forEach((w) => w.classList.add('on')); cards.forEach((c) => c.classList.add('is-in')); }
+}
+// las secciones fijadas cambian el alto de la página: se recalculan los disparadores al terminar de cargar
+if (motion) addEventListener('load', () => ST.refresh());

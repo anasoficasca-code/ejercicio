@@ -15,9 +15,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=calido1" />
+  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=firma1" />
   <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script></head>
 <body class="is-loading">
+  <div class="progress" aria-hidden="true"><i></i></div>
   <a class="skip" href="#main">Saltar al contenido</a>
 
   <!-- Entrada: el nombre y una línea que crece; luego el telón sube y aparece el edificio -->
@@ -35,8 +36,9 @@
       <nav class="nav-links" aria-label="Secciones">
         <a href="#edificio">El edificio</a>
         <a href="#apartamentos">Apartamentos</a>
-        <a href="#zonas">Zonas sociales</a>
-        <a href="#ubicacion">Ubicación</a>
+        <a href="#cabida">Cabida</a>
+        <a href="#ubicacion">Qué hay cerca</a>
+        <a href="#firma">La firma</a>
         <a href="#recorrido">Recorrido 3D</a>
       </nav>
       <a class="btn btn-sm" href="#visita">Agendar una visita</a>
@@ -90,18 +92,18 @@
       <div class="lift-pin">
         <div class="lift-stage" aria-hidden="true">
           <figure class="lift-shot on"><img src="./assets/renders/lobby-recepcion.webp" alt="" /></figure>
-          <figure class="lift-shot"><img src="./assets/renders/restaurante.webp" alt="" loading="lazy" /></figure>
+          <figure class="lift-shot"><img src="./assets/renders/restaurante-360.webp" alt="" loading="lazy" /></figure>
           <figure class="lift-shot"><img src="./assets/renders/sala-final.webp" alt="" loading="lazy" /></figure>
           <figure class="lift-shot"><img src="./assets/renders/habitacion-360.webp" alt="" loading="lazy" /></figure>
-          <figure class="lift-shot contain"><img src="./assets/renders/planta-nogal.webp" alt="" loading="lazy" /></figure>
-          <figure class="lift-shot contain light"><img src="./assets/renders/corte-nogal.webp" alt="" loading="lazy" /></figure>
+          <figure class="lift-shot"><img src="./assets/renders/cocina-final.webp" alt="" loading="lazy" /></figure>
+          <figure class="lift-shot"><img src="./assets/renders/sala-360.webp" alt="" loading="lazy" /></figure>
           <figure class="lift-shot"><img src="./assets/renders/fachada-celosia.webp" alt="" loading="lazy" /></figure>
-          <figure class="lift-shot"><img src="./assets/renders/terraza-dorada.webp" alt="" loading="lazy" /></figure>
+          <figure class="lift-shot"><img src="./assets/renders/terraza-aerea.webp" alt="" loading="lazy" /></figure>
         </div>
         <div class="lift-shade" aria-hidden="true"></div>
         <div class="wrap lift-copy">
           <article class="lift-step on" data-level="01"><p class="ls-where">Primer piso</p><h3>Un lobby de vidrio y piedra</h3><p>Recepción en piedra con listones de madera, piso de mármol beige, plantas grandes y un ventanal sobre los árboles de la calle.</p></article>
-          <article class="lift-step" data-level="01"><p class="ls-where">Primer piso, sobre la Calle 56</p><h3>Restaurante con terraza</h3><p>Mesas bajo los árboles del antejardín, parasoles y bombillos que se encienden al atardecer. El barrio entra al edificio.</p></article>
+          <article class="lift-step" data-level="01"><p class="ls-where">Primer piso, sobre la Calle 56</p><h3>Restaurante con terraza</h3><p>Barra de madera, mesas junto a los ventanales y terraza sobre el antejardín. El barrio entra al edificio.</p></article>
           <article class="lift-step" data-level="02"><p class="ls-where">Pisos 2 a 6</p><h3>Sala, comedor y cocina en un solo espacio</h3><p>41 m² abiertos al balcón con ventanales de piso a techo, cocina con isla de piedra y biblioteca de nogal.</p></article>
           <article class="lift-step" data-level="03"><p class="ls-where">Pisos 2 a 6</p><h3>La alcoba principal mira a los árboles</h3><p>Ventanal de piso a techo, baño privado y clóset. La segunda alcoba queda junto al baño social.</p></article>
           <article class="lift-step" data-level="04"><p class="ls-where">Apartamento tipo A, 78,75 m²</p><h3>Dos alcobas, dos baños, balcón</h3><p>Pisos de nogal en las zonas de estar y porcelanato claro en baños y pasillo. Ropas y depósito dentro del apartamento.</p></article>
@@ -123,6 +125,24 @@
         </ol>
       </div>
     </section>
+
+    <!-- gen:corte -->
+    <section class="sec corte" id="corte" aria-labelledby="corte-h">
+      <div class="wrap corte-grid">
+        <div class="corte-copy">
+          <p class="hero-kicker" data-reveal>Corte longitudinal</p>
+          <h2 id="corte-h" data-reveal>Qué hay en cada piso</h2>
+          <p class="corte-lead" data-reveal>El edificio cortado a lo largo de la Calle 56. Pasa por cada nivel para ver qué espacios tiene.</p>
+          <ol class="cx-list">
+            <li><button type="button" data-l="t"><b>Terraza</b><span>Zona BBQ, café lounge bajo la pérgola y gimnasio al aire libre. A 18,60 m sobre la calle.</span></button></li>
+            <li><button type="button" data-l="apt"><b>Pisos 2 a 6</b><span>Cuatro apartamentos por piso alrededor del punto fijo: dos tipo A de 78,75 m² sobre la Calle 56 y dos tipo B de 70 m² hacia el jardín. Altura de piso a piso de 3,10 m.</span></button></li>
+            <li><button type="button" data-l="p1"><b>Piso 1</b><span>Lobby con bicicletero en la esquina, restaurante con terraza sobre la Calle 56, sala de cine y gimnasio hacia el patio.</span></button></li>
+          </ol>
+        </div>
+        <figure class="corte-fig"><svg class="cx-svg" viewBox="-70 0 970 690" role="img" aria-labelledby="cx-t cx-d"><title id="cx-t">Corte longitudinal de Distrito Arboleda</title><desc id="cx-d">Seis pisos de 3,10 metros y terraza: primer piso con lobby y restaurante, pisos 2 a 6 con apartamentos a cada lado del punto fijo, y cubierta con zona BBQ, café lounge y gimnasio.</desc><defs><pattern id="cx-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" class="cx-h"/></pattern></defs><g class="cx-site"><rect x="-40" y="600" width="900" height="26" fill="url(#cx-hatch)"/><line x1="-40" y1="600" x2="860" y2="600" class="cx-ground"/><path d="M746.2 600V446.4H856.6L899.8 403.2L943.0 446.4V600" class="cx-nb"/><text x="849.4" y="537.6" class="cx-s" text-anchor="middle">Vecino</text><g class="cx-tree"><line x1="73.2" y1="600" x2="73.2" y2="446.4"/><circle cx="73.2" cy="446.4" r="50.400000000000006"/><circle cx="61.2" cy="468.0" r="31.248000000000005"/></g><g class="cx-tree"><line x1="114.0" y1="600" x2="114.0" y2="489.6"/><circle cx="114.0" cy="489.6" r="36.0"/><circle cx="102.0" cy="511.2" r="22.32"/></g><text x="92.4" y="618.0" class="cx-s" text-anchor="middle">Antejardín 3,50 m</text><text x="448.1" y="618.0" class="cx-s" text-anchor="middle">Calle 56 · fachada de 24,84 m</text></g><g class="cx-floor" data-l="p1" data-i="0" tabindex="0" role="button" aria-label="Piso 1"><rect class="cx-room" x="150" y="525.6" width="225.8" height="74.4"/><rect class="cx-core" x="375.8" y="525.6" width="140.4" height="74.4"/><rect class="cx-room" x="516.2" y="525.6" width="229.9" height="74.4"/><polyline class="cx-stair" points="387.8,592.8 397.9,584.9 408.0,577.0 418.1,569.0 428.2,561.1 438.2,553.2 448.3,545.3 458.4,537.4"/><rect class="cx-lift" x="470.6" y="536.4" width="36.0" height="57.6"/><rect class="cx-slab" x="150" y="525.6" width="596.2" height="6.2"/><text class="cx-t" x="262.9" y="568.8" text-anchor="middle">Lobby y bicicletero</text><text class="cx-t" x="631.2" y="568.8" text-anchor="middle">Restaurante con terraza</text><text class="cx-lv" x="12" y="565.2" text-anchor="end">Piso 1</text><text class="cx-n" x="12" y="580.8" text-anchor="end">N +0,00</text></g><g class="cx-floor" data-l="apt" data-i="1" tabindex="0" role="button" aria-label="Piso 2"><rect class="cx-room" x="150" y="451.2" width="225.8" height="74.4"/><rect class="cx-core" x="375.8" y="451.2" width="140.4" height="74.4"/><rect class="cx-room" x="516.2" y="451.2" width="229.9" height="74.4"/><polyline class="cx-stair" points="387.8,518.4 397.9,510.5 408.0,502.6 418.1,494.6 428.2,486.7 438.2,478.8 448.3,470.9 458.4,463.0"/><rect class="cx-lift" x="470.6" y="462.0" width="36.0" height="57.6"/><rect class="cx-slab" x="118.8" y="451.2" width="627.4" height="6.2"/><path class="cx-rail" d="M118.8 525.6V499.2"/><text class="cx-t" x="262.9" y="494.4" text-anchor="middle">Apto 201 · tipo A</text><text class="cx-t" x="631.2" y="494.4" text-anchor="middle">Apto 202 · tipo A</text><text class="cx-lv" x="12" y="490.8" text-anchor="end">Piso 2</text><text class="cx-n" x="12" y="506.4" text-anchor="end">N +3,10</text></g><g class="cx-floor" data-l="apt" data-i="2" tabindex="0" role="button" aria-label="Piso 3"><rect class="cx-room" x="150" y="376.8" width="225.8" height="74.4"/><rect class="cx-core" x="375.8" y="376.8" width="140.4" height="74.4"/><rect class="cx-room" x="516.2" y="376.8" width="229.9" height="74.4"/><polyline class="cx-stair" points="387.8,444.0 397.9,436.1 408.0,428.2 418.1,420.2 428.2,412.3 438.2,404.4 448.3,396.5 458.4,388.6"/><rect class="cx-lift" x="470.6" y="387.6" width="36.0" height="57.6"/><rect class="cx-slab" x="118.8" y="376.8" width="627.4" height="6.2"/><path class="cx-rail" d="M118.8 451.2V424.8"/><text class="cx-t" x="262.9" y="420.0" text-anchor="middle">Apto 301 · tipo A</text><text class="cx-t" x="631.2" y="420.0" text-anchor="middle">Apto 302 · tipo A</text><text class="cx-lv" x="12" y="416.4" text-anchor="end">Piso 3</text><text class="cx-n" x="12" y="432.0" text-anchor="end">N +6,20</text></g><g class="cx-floor" data-l="apt" data-i="3" tabindex="0" role="button" aria-label="Piso 4"><rect class="cx-room" x="150" y="302.4" width="225.8" height="74.4"/><rect class="cx-core" x="375.8" y="302.4" width="140.4" height="74.4"/><rect class="cx-room" x="516.2" y="302.4" width="229.9" height="74.4"/><polyline class="cx-stair" points="387.8,369.6 397.9,361.7 408.0,353.8 418.1,345.8 428.2,337.9 438.2,330.0 448.3,322.1 458.4,314.2"/><rect class="cx-lift" x="470.6" y="313.2" width="36.0" height="57.6"/><rect class="cx-slab" x="118.8" y="302.4" width="627.4" height="6.2"/><path class="cx-rail" d="M118.8 376.8V350.4"/><text class="cx-t" x="262.9" y="345.6" text-anchor="middle">Apto 401 · tipo A</text><text class="cx-t" x="631.2" y="345.6" text-anchor="middle">Apto 402 · tipo A</text><text class="cx-lv" x="12" y="342.0" text-anchor="end">Piso 4</text><text class="cx-n" x="12" y="357.6" text-anchor="end">N +9,30</text></g><g class="cx-floor" data-l="apt" data-i="4" tabindex="0" role="button" aria-label="Piso 5"><rect class="cx-room" x="150" y="228.0" width="225.8" height="74.4"/><rect class="cx-core" x="375.8" y="228.0" width="140.4" height="74.4"/><rect class="cx-room" x="516.2" y="228.0" width="229.9" height="74.4"/><polyline class="cx-stair" points="387.8,295.2 397.9,287.3 408.0,279.4 418.1,271.4 428.2,263.5 438.2,255.6 448.3,247.7 458.4,239.8"/><rect class="cx-lift" x="470.6" y="238.8" width="36.0" height="57.6"/><rect class="cx-slab" x="118.8" y="228.0" width="627.4" height="6.2"/><path class="cx-rail" d="M118.8 302.4V276.0"/><text class="cx-t" x="262.9" y="271.2" text-anchor="middle">Apto 501 · tipo A</text><text class="cx-t" x="631.2" y="271.2" text-anchor="middle">Apto 502 · tipo A</text><text class="cx-lv" x="12" y="267.6" text-anchor="end">Piso 5</text><text class="cx-n" x="12" y="283.2" text-anchor="end">N +12,40</text></g><g class="cx-floor" data-l="apt" data-i="5" tabindex="0" role="button" aria-label="Piso 6"><rect class="cx-room" x="150" y="153.6" width="225.8" height="74.4"/><rect class="cx-core" x="375.8" y="153.6" width="140.4" height="74.4"/><rect class="cx-room" x="516.2" y="153.6" width="229.9" height="74.4"/><polyline class="cx-stair" points="387.8,220.8 397.9,212.9 408.0,205.0 418.1,197.0 428.2,189.1 438.2,181.2 448.3,173.3 458.4,165.4"/><rect class="cx-lift" x="470.6" y="164.4" width="36.0" height="57.6"/><rect class="cx-slab" x="118.8" y="153.6" width="627.4" height="6.2"/><path class="cx-rail" d="M118.8 228.0V201.6"/><text class="cx-t" x="262.9" y="196.8" text-anchor="middle">Apto 601 · tipo A</text><text class="cx-t" x="631.2" y="196.8" text-anchor="middle">Apto 602 · tipo A</text><text class="cx-lv" x="12" y="193.2" text-anchor="end">Piso 6</text><text class="cx-n" x="12" y="208.8" text-anchor="end">N +15,50</text></g><g class="cx-floor cx-roof" data-l="t" data-i="6" tabindex="0" role="button" aria-label="Terraza en la cubierta"><rect class="cx-hit" x="150" y="72.0" width="596.2" height="81.6"/><path class="cx-rail" d="M150 153.6V127.2M746.2 153.6V127.2"/><rect class="cx-core" x="375.8" y="84.0" width="140.4" height="69.6"/><rect class="cx-slab" x="371.0" y="79.2" width="150.0" height="4.8"/><path class="cx-perg" d="M178.8 153.6V91.2M346.8 153.6V91.2M166.8 91.2H358.8M174.0 91.2v-5M188.9 91.2v-5M203.8 91.2v-5M218.6 91.2v-5M233.5 91.2v-5M248.4 91.2v-5M263.3 91.2v-5M278.2 91.2v-5M293.0 91.2v-5M307.9 91.2v-5M322.8 91.2v-5M337.7 91.2v-5M352.6 91.2v-5"/><text class="cx-t" x="262.8" y="129.6" text-anchor="middle">BBQ · café lounge</text><text class="cx-t" x="631.2" y="129.6" text-anchor="middle">Gimnasio al aire libre</text><text class="cx-lv" x="12" y="127.2" text-anchor="end">Terraza</text><text class="cx-n" x="12" y="142.8" text-anchor="end">N +18,60</text></g><g class="cx-dim"><path class="cx-dl" d="M790.2 600V153.6"/><path class="cx-dt" d="M785.2 600.0h10"/><path class="cx-dt" d="M785.2 525.6h10"/><path class="cx-dt" d="M785.2 451.2h10"/><path class="cx-dt" d="M785.2 376.8h10"/><path class="cx-dt" d="M785.2 302.4h10"/><path class="cx-dt" d="M785.2 228.0h10"/><path class="cx-dt" d="M785.2 153.6h10"/><text class="cx-n" x="800.2" y="566.4">3,10</text><text class="cx-n" x="800.2" y="492.0">3,10</text><text class="cx-n" x="800.2" y="417.6">3,10</text><text class="cx-n" x="800.2" y="343.2">3,10</text><text class="cx-n" x="800.2" y="268.8">3,10</text><text class="cx-n" x="800.2" y="194.4">3,10</text><text class="cx-total" x="852.2" y="376.8" transform="rotate(-90 852.2 376.8)" text-anchor="middle">18,60 m en 6 pisos</text><path class="cx-dl" d="M150 638.4H746.2"/><path class="cx-dt" d="M150 633.4v10M375.8 633.4v10M516.2 633.4v10M746.2 633.4v10"/><text class="cx-n" x="262.9" y="656.4" text-anchor="middle">9,41</text><text class="cx-n" x="446.0" y="656.4" text-anchor="middle">Punto fijo 5,85</text><text class="cx-n" x="631.2" y="656.4" text-anchor="middle">9,58</text></g></svg><figcaption>Corte esquemático con las medidas del modelo de Revit. El punto fijo tiene escalera y ascensor.</figcaption></figure>
+      </div>
+    </section>
+    <!-- /gen:corte -->
 
     <!-- Interiores: fotos grandes, la primera a todo el ancho -->
     <section class="sec inside" id="interiores" aria-labelledby="inside-h">
@@ -262,6 +282,24 @@
       </div>
     </section>
 
+    <!-- gen:cabida -->
+    <section class="sec cabida dark" id="cabida" aria-labelledby="cabida-h">
+      <div class="wrap">
+        <div class="cabida-head">
+          <p class="hero-kicker" data-reveal>Cabida arquitectónica</p>
+          <h2 id="cabida-h" data-reveal>Cuánto cabe en el lote</h2>
+        </div>
+        <div class="cabida-grid">
+          <figure class="cabida-fig"><svg class="cb-svg" viewBox="0 0 727 561" role="img" aria-labelledby="cb-t cb-d"><title id="cb-t">Implantación del edificio en el lote</title><desc id="cb-d">Lote de 1.104,84 metros cuadrados con la huella del edificio de 24,84 por 14,00 metros, retirada 3,50 metros de la Calle 56 y de la Carrera 18.</desc><defs><pattern id="cb-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" class="cb-h"/></pattern><clipPath id="cb-clip"><path d="M78.4 70.0L70.0 498.6L350.5 501.0L350.5 494.9L653.3 497.3L657.1 70.0Z"/></clipPath></defs><path class="cb-lot" d="M78.4 70.0L70.0 498.6L350.5 501.0L350.5 494.9L653.3 497.3L657.1 70.0Z" pathLength="1"/><g clip-path="url(#cb-clip)"><rect class="cb-ant" x="70.0" y="70.0" width="587.1" height="52.5" fill="url(#cb-hatch)"/><rect class="cb-ant" x="70.0" y="70.0" width="60.9" height="431.0" fill="url(#cb-hatch)"/></g><rect class="cb-foot" x="130.9" y="122.5" width="372.6" height="210.0"/><rect class="cb-core" x="272.1" y="189.1" width="87.8" height="76.2"/><path class="cb-split" d="M313.0 122.5V189.1M315.4 265.3V332.5M130.9 240.0H272.1M359.8 240.0H503.5"/><text class="cb-u" x="201.4" y="185.5" text-anchor="middle">A</text><text class="cb-u" x="430.9" y="185.5" text-anchor="middle">A</text><text class="cb-u" x="201.4" y="290.5" text-anchor="middle">B</text><text class="cb-u" x="430.9" y="290.5" text-anchor="middle">B</text><text class="cb-s" x="317.2" y="231.2" text-anchor="middle">Punto fijo</text><text class="cb-s" x="317.2" y="420.8" text-anchor="middle">Jardín del patio</text><text class="cb-st" x="363.5" y="38" text-anchor="middle">Calle 56</text><text class="cb-st" x="30" y="285.5" text-anchor="middle" transform="rotate(-90 30 285.5)">Carrera 18</text><g class="cb-dim"><path d="M130.9 348.5H503.5M130.9 343.5v10M503.5 343.5v10"/><text x="317.2" y="364.5" text-anchor="middle">24,84 m</text><path d="M519.5 122.5V332.5M514.5 122.5h10M514.5 332.5h10"/><text x="533.5" y="227.5" transform="rotate(-90 533.5 227.5)" text-anchor="middle">14,00 m</text><text x="317.2" y="100.2" text-anchor="middle">Antejardín 3,50 m</text></g><g class="cb-north" transform="translate(683 517) rotate(-9.4)"><circle r="17"/><path d="M0 -13L5 6L0 2L-5 6Z"/></g><text class="cb-s" x="683" y="551" text-anchor="middle">N</text></svg>
+            <figcaption><span><i class="k-foot"></i>Huella del edificio</span><span><i class="k-ant"></i>Antejardín de 3,50 m</span><span><i class="k-lot"></i>Lindero del lote</span></figcaption>
+          </figure>
+          <dl class="cabida-dl"><div class="cb-row"><dt data-num="1104.8400" data-dec="2" data-pre="" data-suf=" m²">1.104,84 m²</dt><dd><b>Lote</b><span>Englobe de cinco predios del parqueadero Divino Salvador (Catastro Bogotá)</span></dd></div><div class="cb-row"><dt data-num="347.7600" data-dec="2" data-pre="" data-suf=" m²">347,76 m²</dt><dd><b>Huella del edificio</b><span>24,84 × 14,00 m, con punto fijo de 27,08 m²</span></dd></div><div class="cb-row"><dt data-num="0.3148" data-dec="2" data-pre="" data-suf="">0,31</dt><dd><b>Índice de ocupación</b><span>El 31 % del lote; el resto es antejardín y jardín</span></dd></div><div class="cb-row"><dt data-num="2086.5600" data-dec="2" data-pre="" data-suf=" m²">2.086,56 m²</dt><dd><b>Área construida</b><span>6 pisos de 347,76 m²</span></dd></div><div class="cb-row"><dt data-num="1.8886" data-dec="2" data-pre="" data-suf="">1,89</dt><dd><b>Índice de construcción</b><span>Área construida sobre área del lote</span></dd></div><div class="cb-row"><dt data-num="18.6000" data-dec="2" data-pre="" data-suf=" m">18,60 m</dt><dd><b>Altura</b><span>6 pisos de 3,10 m, más la terraza</span></dd></div><div class="cb-row"><dt data-num="20.0000" data-dec="0" data-pre="" data-suf="">20</dt><dd><b>Apartamentos</b><span>4 por piso en los pisos 2 a 6: 10 tipo A y 10 tipo B</span></dd></div><div class="cb-row"><dt data-num="1487.5000" data-dec="2" data-pre="" data-suf=" m²">1.487,50 m²</dt><dd><b>Área vendible</b><span>10 × 78,75 m² + 10 × 70,00 m²</span></dd></div><div class="cb-row"><dt data-num="13387.5000" data-dec="0" data-pre="$" data-suf=" M">$13.388 M</dt><dd><b>Ventas estimadas</b><span>Suma de los 20 apartamentos a precio de lista, en millones de pesos</span></dd></div><div class="cb-row"><dt data-num="260.8200" data-dec="1" data-pre="" data-suf=" m²">260,8 m²</dt><dd><b>Equipamiento comunal exigido</b><span>10 m² por cada 80 m² construidos (POT, Decreto 555 de 2021)</span></dd></div></dl>
+        </div>
+        <p class="cabida-src">Fuentes: Catastro Bogotá (lote), POT de Bogotá, Decreto 555 de 2021 (antejardín, aislamiento posterior de 3,00 m y equipamiento comunal) y modelo de Revit del proyecto (huella, alturas y áreas).</p>
+      </div>
+    </section>
+    <!-- /gen:cabida -->
+
     <!-- Zonas sociales: al señalar un nombre cambia la foto grande -->
     <section class="sec zones dark" id="zonas">
       <div class="wrap zones-grid">
@@ -279,29 +317,60 @@
           </ul>
         </div>
         <div class="zone-stage">
-          <figure class="zpic on" data-z="0"><img src="./assets/renders/terraza-dorada.webp" alt="Terraza en la cubierta con pérgola y café lounge al atardecer" loading="lazy" /></figure>
-          <figure class="zpic" data-z="1"><img src="./assets/renders/fachada-restaurante.webp" alt="Restaurante con terraza en el primer piso, sobre la Calle 56" loading="lazy" /></figure>
+          <figure class="zpic on" data-z="0"><img src="./assets/renders/terraza-aerea.webp" alt="Terraza en la cubierta con pérgola, mesas y jardineras, vista desde arriba al anochecer" loading="lazy" /></figure>
+          <figure class="zpic" data-z="1"><img src="./assets/renders/restaurante-360.webp" alt="Restaurante del primer piso con barra, mesas y ventanales a la calle" loading="lazy" /></figure>
           <figure class="zpic" data-z="2"><img src="./assets/renders/lobby-recepcion.webp" alt="Lobby con recepción de piedra y listones de madera" loading="lazy" /></figure>
-          <figure class="zpic" data-z="3"><img src="./assets/renders/fachada-jardin.webp" alt="Jardín y antejardines sembrados frente al edificio" loading="lazy" /></figure>
+          <figure class="zpic" data-z="3"><img src="./assets/renders/fachada-restaurante.webp" alt="Antejardín sembrado y terraza del restaurante frente al edificio" loading="lazy" /></figure>
         </div>
       </div>
     </section>
 
-    <!-- Ubicación -->
-    <section class="sec place" id="ubicacion">
-      <div class="wrap place-grid">
-        <div>
-          <h2 data-reveal>En Galerías, Teusaquillo</h2>
-          <p data-reveal>Calle 56 con Carrera 18. Un barrio de casas de ladrillo y calles arborizadas, con comercio de barrio sobre las calles 53 y 57.</p>
-          <ul class="place-list">
-            <li><b>TransMilenio</b><span>Troncal NQS y estación Movistar Arena a pocas cuadras</span></li>
-            <li><b>SITP</b><span>Rutas por las calles 53, 57 y 63 y las carreras 13 y 24</span></li>
-            <li><b>A pie</b><span>Panaderías, cafés y almacenes sobre la Calle 53</span></li>
-          </ul>
+    <!-- gen:cerca -->
+    <section class="sec cerca" id="ubicacion" aria-labelledby="cerca-h">
+      <div class="wrap">
+        <div class="cerca-head">
+          <p class="hero-kicker" data-reveal>Galerías, Teusaquillo</p>
+          <h2 id="cerca-h" data-reveal>Qué hay cerca</h2>
+          <p data-reveal>Calle 56 con Carrera 18, frente a la Parroquia Divino Salvador. Cada punto está puesto en su dirección y distancia reales desde el edificio.</p>
         </div>
-        <div class="map" id="map" role="region" aria-label="Mapa de Galerías con la ubicación de Distrito Arboleda"></div>
+        <div class="cerca-grid">
+          <figure class="cerca-radar"><svg class="nr-svg" viewBox="-260 -260 520 520" role="img" aria-labelledby="nr-t"><title id="nr-t">Lugares cercanos a Distrito Arboleda, ubicados según su dirección y distancia reales</title><defs><linearGradient id="nr-sweep" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".0"/><stop offset="1" stop-color="currentColor" stop-opacity=".34"/></linearGradient></defs><circle class="nr-ring" r="70.0"/><text class="nr-rl" x="4" y="-75.0">400 m</text><circle class="nr-ring" r="140.0"/><text class="nr-rl" x="4" y="-145.0">800 m</text><circle class="nr-ring" r="210.0"/><text class="nr-rl" x="4" y="-215.0">1,2 km</text><path class="nr-axis" d="M-230 0H230M0 -230V230"/><text class="nr-rl" x="0" y="-238" text-anchor="middle">N</text><g class="nr-sweep"><path d="M0 0L0 -210A210 210 0 0 1 160.9 -135.0Z" fill="url(#nr-sweep)"/></g><g class="nr-dot" data-i="0" transform="translate(72.1 -6.1)"><circle class="nr-pulse" r="13"/><circle class="nr-c" r="11"/><text y="4" text-anchor="middle">1</text></g><g class="nr-dot" data-i="1" transform="translate(-96.3 29.5)"><circle class="nr-pulse" r="13"/><circle class="nr-c" r="11"/><text y="4" text-anchor="middle">2</text></g><g class="nr-dot" data-i="2" transform="translate(-38.1 125.6)"><circle class="nr-pulse" r="13"/><circle class="nr-c" r="11"/><text y="4" text-anchor="middle">3</text></g><g class="nr-dot" data-i="3" transform="translate(-112.9 -91.8)"><circle class="nr-pulse" r="13"/><circle class="nr-c" r="11"/><text y="4" text-anchor="middle">4</text></g><g class="nr-dot" data-i="4" transform="translate(80.7 134.1)"><circle class="nr-pulse" r="13"/><circle class="nr-c" r="11"/><text y="4" text-anchor="middle">5</text></g><g class="nr-dot" data-i="5" transform="translate(56.2 -147.5)"><circle class="nr-pulse" r="13"/><circle class="nr-c" r="11"/><text y="4" text-anchor="middle">6</text></g><g class="nr-dot" data-i="6" transform="translate(-154.1 -38.0)"><circle class="nr-pulse" r="13"/><circle class="nr-c" r="11"/><text y="4" text-anchor="middle">7</text></g><g class="nr-dot" data-i="7" transform="translate(-85.4 160.5)"><circle class="nr-pulse" r="13"/><circle class="nr-c" r="11"/><text y="4" text-anchor="middle">8</text></g><g class="nr-dot" data-i="8" transform="translate(-183.0 -35.9)"><circle class="nr-pulse" r="13"/><circle class="nr-c" r="11"/><text y="4" text-anchor="middle">9</text></g><g class="nr-dot nr-far" data-i="9" transform="translate(-229.8 50.3)"><circle class="nr-pulse" r="13"/><circle class="nr-c" r="11"/><text y="4" text-anchor="middle">10</text></g><g class="nr-me"><circle class="nr-pulse" r="18"/><circle r="7"/></g></svg></figure>
+          <ol class="nr-list"><li><button type="button" data-i="0"><i>1</i><span class="nr-name"><b>TransMilenio Estación Calle 57</b><small>Transporte · Corredor Avenida Caracas</small></span><span class="nr-dist"><b>410 m</b><small>7 min a pie</small></span></button></li><li><button type="button" data-i="1"><i>2</i><span class="nr-name"><b>Centro Comercial Galerías</b><small>Comercio · Avenida Carrera 24 con Calle 53</small></span><span class="nr-dist"><b>580 m</b><small>9 min a pie</small></span></button></li><li><button type="button" data-i="2"><i>3</i><span class="nr-name"><b>Universidad ECCI</b><small>Educación · Carrera 19 # 49-20</small></span><span class="nr-dist"><b>750 m</b><small>12 min a pie</small></span></button></li><li><button type="button" data-i="3"><i>4</i><span class="nr-name"><b>Movistar Arena</b><small>Recreación · Diagonal 61C # 26-36</small></span><span class="nr-dist"><b>830 m</b><small>14 min a pie</small></span></button></li><li><button type="button" data-i="4"><i>5</i><span class="nr-name"><b>Clínica de Marly</b><small>Salud · Calle 50 # 9-67</small></span><span class="nr-dist"><b>890 m</b><small>15 min a pie</small></span></button></li><li><button type="button" data-i="5"><i>6</i><span class="nr-name"><b>Fundación Universitaria Los Libertadores</b><small>Educación · Carrera 16 # 63A-68</small></span><span class="nr-dist"><b>900 m</b><small>15 min a pie</small></span></button></li><li><button type="button" data-i="6"><i>7</i><span class="nr-name"><b>Estadio El Campín</b><small>Recreación · Carrera 30 con Calle 57</small></span><span class="nr-dist"><b>910 m</b><small>15 min a pie</small></span></button></li><li><button type="button" data-i="7"><i>8</i><span class="nr-name"><b>Clínica Palermo</b><small>Salud · Calle 45C # 22-02</small></span><span class="nr-dist"><b>1,0 km</b><small>17 min a pie</small></span></button></li><li><button type="button" data-i="8"><i>9</i><span class="nr-name"><b>TransMilenio Estación Movistar Arena / El Campín</b><small>Transporte · Corredor Avenida NQS (Carrera 30)</small></span><span class="nr-dist"><b>1,1 km</b><small>17 min a pie</small></span></button></li><li><button type="button" data-i="9"><i>10</i><span class="nr-name"><b>Universidad Nacional</b><small>Educación · Carrera 45 # 26-85</small></span><span class="nr-dist"><b>2,3 km</b><small>12 min en bici</small></span></button></li></ol>
+        </div>
+        <p class="cerca-note">Distancias en línea recta desde el lote. Los minutos son aproximados: recorrido 30 % más largo que la línea recta, a 80 m por minuto a pie y 250 m por minuto en bicicleta. Además pasan rutas del SITP por las calles 53, 57 y 63 y las carreras 13 y 24.</p>
+        <div class="map" id="map" role="region" aria-label="Mapa de Galerías con Distrito Arboleda y los lugares cercanos"></div>
+      </div>
+      <script>window.CERCA = [{"n": "TransMilenio Estación Calle 57", "ll": [4.64425, -74.06555], "d": 414}, {"n": "Centro Comercial Galerías", "ll": [4.642411, -74.074227], "d": 576}, {"n": "Universidad ECCI", "ll": [4.6374434, -74.0712273], "d": 750}, {"n": "Movistar Arena", "ll": [4.648681, -74.0750777], "d": 831}, {"n": "Clínica de Marly", "ll": [4.6370064, -74.0651061], "d": 894}, {"n": "Fundación Universitaria Los Libertadores", "ll": [4.6515614, -74.0663684], "d": 902}, {"n": "Estadio El Campín", "ll": [4.6459, -74.0772], "d": 907}, {"n": "Clínica Palermo", "ll": [4.6356406, -74.0736627], "d": 1039}, {"n": "TransMilenio Estación Movistar Arena / El Campín", "ll": [4.6457929, -74.0786874], "d": 1065}, {"n": "Universidad Nacional", "ll": [4.6394208, -74.0898158], "d": 2334}];</script>
+    </section>
+    <!-- /gen:cerca -->
+
+    <!-- gen:firma -->
+    <section class="sec firma dark" id="firma" aria-labelledby="firma-h">
+      <div class="wrap">
+        <p class="hero-kicker" data-reveal>La firma</p>
+        <h2 class="firma-name" id="firma-h" aria-label="JMC Arquitectura"><span aria-hidden="true" data-split>JMC</span> <span aria-hidden="true" data-split>Arquitectura</span></h2>
+        <p class="firma-lead wh2" data-wh2>Somos un estudio de Bogotá que diseña vivienda en barrios que ya existen. Tomamos lotes subutilizados, como un parqueadero en Galerías, y los convertimos en edificios de escala media que le devuelven árboles, vecinos y vida de primer piso a la calle.</p>
+        <div class="firma-cards">
+          <article class="fcard" data-tilt>
+            <span class="fcard-n" aria-hidden="true">01</span>
+            <h3>Misión</h3>
+            <p>Diseñar vivienda que mejore la calle donde se construye: apartamentos con buena luz y ventilación, materiales que duran décadas y primeros pisos abiertos al barrio.</p>
+          </article>
+          <article class="fcard" data-tilt>
+            <span class="fcard-n" aria-hidden="true">02</span>
+            <h3>Visión</h3>
+            <p>Ser en 2035 el estudio de referencia en Bogotá para vivienda de escala media en barrios tradicionales, con proyectos que sumen árboles, comercio de barrio y nuevos vecinos a cada cuadra.</p>
+          </article>
+        </div>
+        <ul class="firma-vals">
+          <li><b>El barrio primero</b><span>Cada proyecto empieza por la calle: antejardines sembrados, andenes amplios y un primer piso que se puede usar.</span></li>
+          <li><b>Materiales honestos</b><span>Ladrillo de la sabana, pañete, madera y vidrio. Lo que se ve es lo que hay, y envejece bien.</span></li>
+          <li><b>Números claros</b><span>Norma, cabida y mercado verificados antes de dibujar: cada metro cuadrado tiene una razón.</span></li>
+        </ul>
+        <p class="firma-team"><span>Equipo</span>Ana Casas · Martín Jaramillo · Jorge</p>
       </div>
     </section>
+    <!-- /gen:firma -->
 
     <!-- Recorrido 3D: la foto se abre desde una ventana al bajar y adentro queda el edificio navegable -->
     <section class="tour" id="recorrido">
@@ -358,7 +427,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="./assets/brochure/arboleda.js?v=calido1"></script>
+  <script src="./assets/brochure/arboleda.js?v=firma1"></script>
   <script type="module">
     // maqueta 3D del modelo de Revit: se descarga solo cuando la sección del edificio se acerca
     const panel = document.querySelector('.lift-model');
@@ -367,7 +436,7 @@
       const io = new IntersectionObserver(([e]) => {
         if (!e.isIntersecting) return;
         io.disconnect();
-        import('./assets/brochure/section3d.js?v=calido1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
+        import('./assets/brochure/section3d.js?v=firma1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
       }, { rootMargin: '120% 0px' });
       io.observe(document.querySelector('.lift'));
     } else panel?.remove();
@@ -379,7 +448,7 @@
       const io = new IntersectionObserver(([e]) => {
         if (!e.isIntersecting) return;
         io.disconnect();
-        import('./assets/brochure/section3d.js?v=calido1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
+        import('./assets/brochure/section3d.js?v=firma1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
       }, { rootMargin: '120% 0px' });
       io.observe(document.querySelector('.lift'));
     } else panel?.remove();
