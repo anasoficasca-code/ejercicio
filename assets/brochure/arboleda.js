@@ -31,12 +31,12 @@ function intro() {
     .to('.pl-line i', { scaleX: 1, duration: 0.9, ease: 'power2.inOut' }, 0.2)
     .to('.pl-name, .pl-line', { yPercent: -40, opacity: 0, duration: 0.5, ease: 'power2.in' }, 1.25)
     .to(preloader, { clipPath: 'inset(0 0 100% 0)', duration: 0.9, ease: 'expo.inOut', onComplete: () => preloader.remove() }, 1.45)
-    .fromTo('.hero-media img', { scale: 1.25 }, { scale: 1, duration: 2.4, ease: 'expo.out' }, 1.5)
+    .fromTo('.hero-media img', { scale: 1.1 }, { scale: 1, duration: 2.4, ease: 'expo.out' }, 1.5)
     // letra animada: cada letra sube girando levemente, con la segunda línea en cursiva un poco después
     .from('.ht-word .ch', { yPercent: 120, rotate: 8, opacity: 0, duration: 1.2, stagger: 0.05, ease: 'expo.out' }, 1.75)
     .from('.hero-kicker, .hero-fact, .hero .actions, .nav', { opacity: 0, y: 18, duration: 0.9, stagger: 0.08, ease: 'power3.out' }, 2.3)
     // después, el render respira muy despacio (acercamiento suave y continuo)
-    .to('.hero-media img', { scale: 1.07, duration: 16, ease: 'sine.inOut', yoyo: true, repeat: -1 }, 3.9);
+    .to('.hero-media img', { scale: 1.03, duration: 16, ease: 'sine.inOut', yoyo: true, repeat: -1 }, 3.9);
 }
 if (document.readyState === 'complete') intro(); else addEventListener('load', intro);
 // si la portada tarda, la entrada no espera más de 3 s
@@ -171,7 +171,7 @@ if (lift) {
     if (motion) {
       g.to(shots[prev], { opacity: 0, duration: 0.9, ease: 'power2.inOut', overwrite: true });
       g.fromTo(shots[i], { opacity: 0 }, { opacity: 1, duration: 0.9, ease: 'power2.inOut', overwrite: true });
-      if (!shots[i].classList.contains('contain')) g.fromTo(shots[i].querySelector('img'), { scale: 1.16 }, { scale: 1.04, duration: 2.6, ease: 'expo.out' });
+      if (!shots[i].classList.contains('contain')) g.fromTo(shots[i].querySelector('img'), { scale: 1.06 }, { scale: 1, duration: 2.6, ease: 'expo.out' });
       g.fromTo(steps[i].children, { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.07, ease: 'expo.out', overwrite: true });
     }
     setLevel(levelOf(i));
@@ -271,24 +271,35 @@ zoneBtns.forEach((b) => {
 });
 showZone(0);
 
-// ------------------------------------------------------------------ mapa
+// ------------------------------------------------------------------ mapa real con los lugares cercanos
 const LAT = 4.6438909, LNG = -74.0692778;
-if (window.L) {
-  const map = L.map('map', { scrollWheelZoom: false, attributionControl: true }).setView([LAT, LNG], 16);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
-  L.circle([LAT, LNG], { radius: 500, color: '#9c4f2e', weight: 1, fillColor: '#9c4f2e', fillOpacity: 0.06, dashArray: '4 6' })
-    .addTo(map).bindTooltip('500 m, unos 6 minutos a pie', { sticky: true });
-  L.marker([LAT, LNG], { title: 'Distrito Arboleda', icon: L.divIcon({ className: '', html: '<div class="pin"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }) })
-    .addTo(map).bindPopup('<b>Distrito Arboleda</b><br>Calle 56 con Carrera 18, Galerías');
-  // lugares cercanos (los mismos del radar), con su número
-  const marks = (window.CERCA || []).map((c, i) => L.marker(c.ll, { title: c.n, icon: L.divIcon({ className: '', html: `<div class="pin-n">${i + 1}</div>`, iconSize: [22, 22], iconAnchor: [11, 11] }) })
-    .addTo(map).bindTooltip(`${c.n} · ${c.d >= 1000 ? (c.d / 1000).toFixed(1).replace('.', ',') + ' km' : Math.round(c.d / 10) * 10 + ' m'}`));
-  if (marks.length) map.fitBounds(L.latLngBounds(window.CERCA.filter((c) => c.d < 1300).map((c) => c.ll)).extend([LAT, LNG]).pad(0.12));
-  window.__cercaMap = { map, marks };
-} else {
+if (window.L && document.getElementById('map')) {
+  const map = L.map('map', { scrollWheelZoom: false, zoomSnap: 0.25 }).setView([LAT, LNG], 15);
+  const bases = {
+    calles: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }),
+    satelite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19,
+      attribution: 'Imagen: Esri, Maxar, Earthstar Geographics' })
+  };
+  bases.calles.addTo(map);
+  document.querySelectorAll('.map-modes button').forEach((b) => b.addEventListener('click', () => {
+    Object.values(bases).forEach((l) => map.removeLayer(l));
+    bases[b.dataset.base].addTo(map);
+    document.querySelectorAll('.map-modes button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+  // anillos de 400 m, 800 m y 1,2 km
+  [400, 800, 1200].forEach((r) => L.circle([LAT, LNG], { radius: r, color: '#9c4f2e', weight: 1.2, fill: r === 400, fillColor: '#9c4f2e', fillOpacity: 0.07, dashArray: '4 7', interactive: false }).addTo(map));
+  L.marker([LAT, LNG], { title: 'Distrito Arboleda', zIndexOffset: 1000, icon: L.divIcon({ className: '', html: '<div class="pin"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }) })
+    .addTo(map).bindTooltip('Distrito Arboleda', { permanent: true, direction: 'top', offset: [0, -12], className: 'tip-me' });
+  const C = window.CERCA || [];
+  const dist = (c) => (c.d >= 1000 ? (c.d / 1000).toFixed(1).replace('.', ',') + ' km' : Math.round(c.d / 10) * 10 + ' m');
+  const marks = C.map((c, i) => L.marker(c.ll, { title: c.n, icon: L.divIcon({ className: 'pin-wrap', html: `<div class="pin-n">${i + 1}</div>`, iconSize: [26, 26], iconAnchor: [13, 13] }) })
+    .addTo(map).bindTooltip(`<b>${c.n}</b><br>${dist(c)}`, { direction: 'top', offset: [0, -12] }));
+  const home = () => L.latLngBounds(C.filter((c) => c.d < 1300).map((c) => c.ll)).extend([LAT, LNG]).pad(0.1);
+  if (C.length) map.fitBounds(home());
+  const line = L.polyline([], { color: '#9c4f2e', weight: 3, dashArray: '2 9', lineCap: 'round', className: 'route' }).addTo(map);
+  window.__cercaMap = { map, marks, line, home, me: [LAT, LNG] };
+} else if (document.getElementById('map')) {
   document.getElementById('map').innerHTML = '<p style="padding:24px">Calle 56 con Carrera 18, Galerías, Bogotá.</p>';
 }
 
@@ -370,28 +381,35 @@ if (motion && document.querySelector('.cabida')) {
   g.from('.cb-row', { y: 26, opacity: 0, duration: 0.8, stagger: 0.07, ease: 'expo.out', scrollTrigger: { trigger: '.cabida-dl', start: 'top 82%' } });
 }
 
-// ------------------------------------------------------------------ qué hay cerca: radar y lista enlazados (y el mapa)
+// ------------------------------------------------------------------ qué hay cerca: la lista mueve el mapa real
 const cerca = document.querySelector('.cerca');
 if (cerca) {
-  const dots = [...cerca.querySelectorAll('.nr-dot')], rows = [...cerca.querySelectorAll('.nr-list button')];
-  const sel = (i, pan) => {
-    dots.forEach((d) => d.classList.toggle('on', +d.dataset.i === i));
+  const rows = [...cerca.querySelectorAll('.nr-list button')];
+  const sel = (i, fly) => {
     rows.forEach((r) => r.classList.toggle('on', +r.dataset.i === i));
     const m = window.__cercaMap;
-    if (pan && m?.marks[i]) { m.map.panTo(m.marks[i].getLatLng()); m.marks[i].openTooltip(); }
+    if (!m) return;
+    m.marks.forEach((k, j) => k.getElement()?.classList.toggle('on', j === i));
+    const to = m.marks[i].getLatLng();
+    m.line.setLatLngs([m.me, to]);
+    m.marks[i].openTooltip();
+    if (fly) m.map.flyToBounds(L.latLngBounds([m.me, to]).pad(0.35), { duration: reduce ? 0 : 1.1, maxZoom: 17 });
   };
-  [...dots, ...rows].forEach((el) => {
+  rows.forEach((el) => {
     const i = +el.dataset.i;
     el.addEventListener('pointerenter', () => sel(i));
     el.addEventListener('focus', () => sel(i));
     el.addEventListener('click', () => sel(i, true));
   });
+  window.__cercaMap?.marks.forEach((k, i) => k.on('click', () => sel(i, true)));
   if (motion) {
-    const tl = g.timeline({ scrollTrigger: { trigger: '.cerca-grid', start: 'top 72%' } });
-    tl.from('.nr-ring', { scale: 0, opacity: 0, transformOrigin: '50% 50%', duration: 1, stagger: 0.14, ease: 'expo.out' })
-      .from('.nr-axis, .nr-rl', { opacity: 0, duration: 0.5 }, 0.5)
-      .from(dots, { scale: 0, transformOrigin: '50% 50%', duration: 0.6, stagger: 0.07, ease: 'back.out(2.4)' }, 0.7)
-      .from(rows, { x: 30, opacity: 0, duration: 0.6, stagger: 0.05, ease: 'expo.out' }, 0.7);
+    // al llegar: los marcadores caen uno por uno sobre el mapa y entra la lista
+    ST.create({ trigger: '.cerca-grid', start: 'top 70%', once: true, onEnter: () => {
+      window.__cercaMap?.map.invalidateSize();
+      const pins = [...cerca.querySelectorAll('.pin-n')];
+      g.from(pins, { y: -46, opacity: 0, scale: 0.4, duration: 0.7, stagger: 0.09, ease: 'bounce.out', clearProps: 'transform,opacity' });
+      g.from(rows, { x: 30, opacity: 0, duration: 0.6, stagger: 0.05, ease: 'expo.out' });
+    } });
   }
 }
 

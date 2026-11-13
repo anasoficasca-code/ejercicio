@@ -609,3 +609,42 @@ h3 { font-size: clamp(18px, 1.7vw, 24px); }
   .nav .btn-sm { padding: 8px 10px; font-size: 10px; }
   .nav-in { padding-right: 4px; }
 }
+
+/* ---- nitidez: las fotos ya no se amplían por encima de su tamaño */
+.lift-shot img { transform: none; }
+.inside-hero img, .inside-pic img { transform: scale(1.02); }
+.inside-pic:hover img { transform: scale(1.02); }
+img { image-rendering: auto; }
+
+/* ---- qué hay cerca: mapa real */
+.cerca-grid { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start; }
+.cerca-map { position: sticky; top: 92px; }
+.cerca .cerca-map .map { height: min(76svh, 720px); min-height: 420px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--hair); background: #e8e0d4; }
+.map-modes { position: absolute; z-index: 500; top: 12px; right: 12px; display: flex; background: var(--paper); border: 1px solid var(--hair); border-radius: 3px; overflow: hidden; box-shadow: 0 4px 14px rgba(0, 0, 0, .14); }
+.map-modes button { padding: 8px 14px; border: 0; background: none; font: 600 11px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); cursor: pointer; }
+.map-modes button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+.map-modes button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+.pin-n { width: 26px; height: 26px; font-size: 12px; transition: background .3s, color .3s, border-color .3s, transform .4s var(--ease); }
+.pin-wrap.on .pin-n { background: var(--blue); border-color: #fff; color: #fff; transform: scale(1.35); }
+.pin { box-shadow: 0 0 0 3px #fff, 0 0 0 9px rgba(156, 79, 46, .3), 0 0 0 20px rgba(156, 79, 46, .12); animation: pin-beat 2.4s ease-out infinite; }
+@keyframes pin-beat { 0% { box-shadow: 0 0 0 3px #fff, 0 0 0 4px rgba(156, 79, 46, .45), 0 0 0 6px rgba(156, 79, 46, .2); } 100% { box-shadow: 0 0 0 3px #fff, 0 0 0 16px rgba(156, 79, 46, 0), 0 0 0 30px rgba(156, 79, 46, 0); } }
+.leaflet-tooltip { font: 500 12px var(--text); color: var(--ink); border: 0; border-radius: 3px; box-shadow: 0 4px 14px rgba(0, 0, 0, .2); padding: 6px 10px; }
+.leaflet-tooltip b { font: 600 11px var(--display); letter-spacing: .08em; text-transform: uppercase; }
+.leaflet-tooltip.tip-me { background: var(--blue); color: #fff; font: 600 11px var(--display); letter-spacing: .12em; text-transform: uppercase; }
+.leaflet-tooltip.tip-me::before { border-top-color: var(--blue); }
+.route { animation: route-run 1.2s linear infinite; }
+@keyframes route-run { to { stroke-dashoffset: -22; } }
+.leaflet-container { font-family: var(--text); }
+@media (max-width: 900px) {
+  .cerca-grid { grid-template-columns: 1fr; }
+  .cerca-map { position: static; }
+  .cerca .cerca-map .map { height: 58svh; min-height: 340px; }
+}
+@media (prefers-reduced-motion: reduce) { .pin, .route { animation: none; } }
+.pin-n { transition: background .3s, color .3s, border-color .3s, box-shadow .3s; }
+.pin-wrap.on .pin-n { transform: none; box-shadow: 0 0 0 5px rgba(156, 79, 46, .3), 0 2px 8px rgba(0, 0, 0, .3); }
+.pin-wrap.on { z-index: 900 !important; }
+.cerca-map { min-width: 0; }
+.cerca .cerca-map .map { width: 100%; aspect-ratio: auto; max-width: none; }
+.nr-list { position: relative; z-index: 1; background: var(--bg); }
+@media (max-width: 900px) { .cerca-map { position: relative; } }

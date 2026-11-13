@@ -14,11 +14,9 @@ const FLOOR_H = 3.1, PW = 24.84, PD = 14.0;
 // y encuadre de la maqueta (azimut, elevación en grados, distancia)
 const STEPS = [
   { cut: 1, unit: 'lobby', room: 'Lobby · piso 1', eye: [6.5, 1.5, 5.6], look: [2.2, 1.4, 1.2], az: -38, el: 42, dist: 74 },
-  { cut: 1, unit: 'salon', room: 'Restaurante · piso 1', eye: [21.5, 1.5, -2.8], look: [16.5, 1.2, 3.5], az: -8, el: 38, dist: 74 },
+  { cut: 1, unit: 'lobby', room: 'Sala de espera · piso 1', eye: [3.0, 1.5, 2.2], look: [7.5, 1.4, 5.0], az: -20, el: 46, dist: 70 },
   { cut: 2, unit: '201', room: 'Sala · apto 201', roomKey: 'sala', az: -30, el: 48, dist: 70 },
-  { cut: 3, unit: '301', room: 'Alcoba principal · apto 301', roomKey: 'habitacion', az: -16, el: 52, dist: 70 },
-  { cut: 4, unit: '401', room: 'Tipo A · apto 401', az: -24, el: 64, dist: 66 },
-  { cut: 5, unit: null, room: 'Planta tipo · piso 5', az: 0, el: 84, dist: 64 },
+  { cut: 4, unit: '401', room: 'Cocina · apto 401', roomKey: 'cocina', az: -24, el: 60, dist: 66 },
   { cut: null, unit: null, room: 'Fachada · Calle 56', az: -24, el: 12, dist: 86 },
   { cut: null, unit: null, room: 'Terraza · cubierta', eye: [9, 6 * FLOOR_H + 1.6, 3.5], look: [14, 6 * FLOOR_H + 1.4, 9], az: 32, el: 38, dist: 84 }
 ];

@@ -214,14 +214,16 @@ blocks['cerca'] = f'''
         <div class="cerca-head">
           <p class="hero-kicker" data-reveal>Galerías, Teusaquillo</p>
           <h2 id="cerca-h" data-reveal>Qué hay cerca</h2>
-          <p data-reveal>Calle 56 con Carrera 18, frente a la Parroquia Divino Salvador. Cada punto está puesto en su dirección y distancia reales desde el edificio.</p>
+          <p data-reveal>Calle 56 con Carrera 18, frente a la Parroquia Divino Salvador. Toca un lugar de la lista para verlo en el mapa, con la línea desde el edificio.</p>
         </div>
         <div class="cerca-grid">
-          <figure class="cerca-radar">{radar_svg}</figure>
+          <div class="cerca-map">
+            <div class="map" id="map" role="region" aria-label="Mapa de Galerías con Distrito Arboleda y los lugares cercanos"></div>
+            <div class="map-modes" role="group" aria-label="Tipo de mapa"><button type="button" data-base="calles" aria-pressed="true">Calles</button><button type="button" data-base="satelite" aria-pressed="false">Satélite</button></div>
+          </div>
           <ol class="nr-list">{near_li}</ol>
         </div>
         <p class="cerca-note">Distancias en línea recta desde el lote. Los minutos son aproximados: recorrido 30 % más largo que la línea recta, a 80 m por minuto a pie y 250 m por minuto en bicicleta. Además pasan rutas del SITP por las calles 53, 57 y 63 y las carreras 13 y 24.</p>
-        <div class="map" id="map" role="region" aria-label="Mapa de Galerías con Distrito Arboleda y los lugares cercanos"></div>
       </div>
       <script>window.CERCA = {near_js};</script>
     </section>
