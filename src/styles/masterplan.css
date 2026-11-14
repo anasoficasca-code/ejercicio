@@ -1529,3 +1529,6 @@ body.has-room-photo .room-detail-card{background:rgba(14,22,34,.72);backdrop-fil
 .ls-wrap .ls-bar i{background:#e2b58b}
 .ls-wrap .ls-logo{filter:brightness(0) invert(1);opacity:.85}
 .gctx-attr{position:fixed;left:10px;bottom:6px;z-index:6;font:500 10px var(--font-main);color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.7);pointer-events:none;text-transform:none;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* vista previa dentro del brochure: solo la escena, sin paneles */
+body.is-preview .left-sidebar-wrapper,body.is-preview .bottom-dock-container,body.is-preview .top-right-bar,body.is-preview .sky-time-control,body.is-preview .room-detail-card,body.is-preview .labels-layer,body.is-preview .gctx-attr{opacity:0!important;pointer-events:none!important;transition:opacity .5s}

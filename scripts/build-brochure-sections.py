@@ -13,57 +13,171 @@ FH, NF = pa['alturaPisoM'], pa['pisos']
 CX0, CX1 = 9.41, 15.26
 es = lambda v, d=2: f'{v:,.{d}f}'.replace(',', '§').replace('.', ',').replace('§', '.')
 
-# ------------------------------------------------------------------ corte
+# ------------------------------------------------------------------ corte (lenguaje de plano: poché, vidrio, escalera, mobiliario, figuras, cotas)
+import random
 S = 24
 X = lambda m: round(150 + m * S, 1)
 Y = lambda m: round(600 - m * S, 1)
+Wd = lambda m: round(m * S, 1)
+SL = 0.3                      # espesor de losa
 c = []
 a = c.append
-a('<svg class="cx-svg" viewBox="-70 0 970 690" role="img" aria-labelledby="cx-t cx-d">')
-a('<title id="cx-t">Corte longitudinal de Distrito Arboleda</title>')
-a(f'<desc id="cx-d">Seis pisos de {es(FH)} metros y terraza: primer piso con lobby y restaurante, pisos 2 a 6 con apartamentos a cada lado del punto fijo, y cubierta con zona BBQ, café lounge y gimnasio.</desc>')
-a('<defs><pattern id="cx-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" class="cx-h"/></pattern></defs>')
-# terreno, vecino y árboles
-a(f'<g class="cx-site"><rect x="-40" y="{Y(0)}" width="900" height="26" fill="url(#cx-hatch)"/><line x1="-40" y1="{Y(0)}" x2="860" y2="{Y(0)}" class="cx-ground"/>')
-a(f'<path d="M{X(PW)} {Y(0)}V{Y(6.4)}H{X(PW+4.6)}L{X(PW+6.4)} {Y(8.2)}L{X(PW+8.2)} {Y(6.4)}V{Y(0)}" class="cx-nb"/><text x="{X(PW+4.3)}" y="{Y(2.6)}" class="cx-s" text-anchor="middle">Vecino</text>')
-for tx, th, tr in ((-3.2, 6.4, 2.1), (-1.5, 4.6, 1.5)):
-    a(f'<g class="cx-tree"><line x1="{X(tx)}" y1="{Y(0)}" x2="{X(tx)}" y2="{Y(th)}"/><circle cx="{X(tx)}" cy="{Y(th)}" r="{tr*S}"/><circle cx="{X(tx-0.5)}" cy="{Y(th-0.9)}" r="{tr*S*0.62}"/></g>')
-a(f'<text x="{X(-2.4)}" y="{Y(-0.75)}" class="cx-s" text-anchor="middle">Antejardín 3,50 m</text><text x="{X(PW/2)}" y="{Y(-0.75)}" class="cx-s" text-anchor="middle">Calle 56 · fachada de {es(PW)} m</text></g>')
+def rect(x0, y0, x1, y1, cls):
+    a(f'<rect class="{cls}" x="{X(min(x0,x1))}" y="{Y(max(y0,y1))}" width="{Wd(abs(x1-x0))}" height="{Wd(abs(y1-y0))}"/>')
+def path(d, cls): a(f'<path class="{cls}" d="{d}"/>')
+def P(x, y): return f'{X(x)} {Y(y)}'
+def person(x, y, h=1.72, flip=1, sit=False):
+    k = h / 1.72
+    hx, hy = x, y + 1.6 * k
+    if sit:
+        d = (f'M{P(x-0.12*flip, y+0.45)}L{P(x-0.12*flip, y+1.0*k)}Q{P(x, y+1.18*k)} {P(x+0.12*flip, y+1.0*k)}L{P(x+0.14*flip, y+0.55)}'
+             f'L{P(x+0.5*flip, y+0.5)}L{P(x+0.52*flip, y)}L{P(x+0.4*flip, y)}L{P(x+0.38*flip, y+0.4)}L{P(x-0.1*flip, y+0.42)}Z')
+        a(f'<g class="cx-ppl"><circle cx="{X(x)}" cy="{Y(y+1.3*k)}" r="{Wd(0.11*k)}"/><path d="{d}"/></g>'); return
+    d = (f'M{P(x-0.07, y)}L{P(x-0.13, y+0.85*k)}L{P(x-0.2, y+1.42*k)}Q{P(x, y+1.52*k)} {P(x+0.2, y+1.42*k)}'
+         f'L{P(x+0.13, y+0.85*k)}L{P(x+0.07, y)}L{P(x+0.02, y)}L{P(x, y+0.78*k)}L{P(x-0.02, y)}Z')
+    a(f'<g class="cx-ppl"><circle cx="{X(hx)}" cy="{Y(hy)}" r="{Wd(0.11*k)}"/><path d="{d}"/></g>')
+def sofa(x, y, w=2.1):
+    path(f'M{P(x, y)}V{P(x, y+0.42)[P(x, y+0.42).index(" ")+1:]}' if False else f'M{P(x, y)}L{P(x, y+0.85)}L{P(x+0.18, y+0.85)}L{P(x+0.18, y+0.45)}L{P(x+w-0.18, y+0.45)}L{P(x+w-0.18, y+0.6)}L{P(x+w, y+0.6)}L{P(x+w, y)}', 'cx-furn')
+def table(x, y, w=1.4, h=0.75):
+    path(f'M{P(x, y+h)}L{P(x+w, y+h)}M{P(x+0.1, y+h)}L{P(x+0.1, y)}M{P(x+w-0.1, y+h)}L{P(x+w-0.1, y)}', 'cx-furn')
+def chair(x, y, f=1):
+    path(f'M{P(x, y)}L{P(x, y+0.45)}L{P(x+0.42*f, y+0.45)}M{P(x+0.42*f, y)}L{P(x+0.42*f, y+0.9)}', 'cx-furn')
+def bed(x, y, w=2.0):
+    path(f'M{P(x, y)}L{P(x, y+1.05)}M{P(x, y+0.5)}L{P(x+w, y+0.5)}L{P(x+w, y)}M{P(x+0.15, y+0.6)}Q{P(x+0.4, y+0.72)} {P(x+0.65, y+0.6)}', 'cx-furn')
+def counter(x, y, w=2.4):
+    path(f'M{P(x, y)}L{P(x, y+0.9)}L{P(x+w, y+0.9)}L{P(x+w, y)}M{P(x, y+1.5)}L{P(x+w, y+1.5)}L{P(x+w, y+2.25)}L{P(x, y+2.25)}Z', 'cx-furn')
+def plant(x, y, h=1.1):
+    path(f'M{P(x-0.18, y)}L{P(x-0.22, y+0.35)}L{P(x+0.22, y+0.35)}L{P(x+0.18, y)}Z', 'cx-furn')
+    path(f'M{P(x, y+0.35)}Q{P(x-0.45, y+h*0.7)} {P(x-0.3, y+h)}M{P(x, y+0.35)}Q{P(x+0.4, y+h*0.75)} {P(x+0.35, y+h*0.95)}M{P(x, y+0.35)}L{P(x+0.05, y+h*1.05)}', 'cx-leaf')
+def tree(cx, h, r, seed, cls=''):
+    rnd = random.Random(seed)
+    cy = h - r * 0.95
+    base = h - r * 1.7
+    a(f'<g class="cx-tree{cls}">')
+    path(f'M{P(cx-0.2, 0)}Q{P(cx-0.12, base*0.5)} {P(cx-0.07, base)}L{P(cx+0.07, base)}Q{P(cx+0.12, base*0.5)} {P(cx+0.2, 0)}Z', 'cx-trunk')
+    pts = []
+    N = 26
+    for k in range(N):
+        t = k / N * 6.2832
+        rr = 1 + 0.1 * __import__('math').sin(t * 3 + seed) + 0.07 * (rnd.random() - 0.5) * 2
+        pts.append((cx + r * rr * __import__('math').cos(t), cy + r * 0.82 * rr * __import__('math').sin(t)))
+    mids = [((pts[i][0] + pts[(i+1) % N][0]) / 2, (pts[i][1] + pts[(i+1) % N][1]) / 2) for i in range(N)]
+    d = f'M{P(*mids[-1])}' + ''.join(f'Q{P(*pts[i])} {P(*mids[i])}' for i in range(N)) + 'Z'
+    path(d, 'cx-crown')
+    br = ''
+    for k in range(5):
+        ang = -0.9 + k * 0.45 + (rnd.random() - 0.5) * 0.2
+        ex, ey = cx + r * 0.75 * __import__('math').sin(ang), cy + r * 0.55 * __import__('math').cos(ang) * (0.6 + rnd.random() * 0.4)
+        mx, my = cx + (ex - cx) * 0.4, base + (ey - base) * 0.5
+        br += f'M{P(cx, base - 0.2)}Q{P(mx, my)} {P(ex, ey)}'
+    path(br, 'cx-branch')
+    for k in range(9):
+        t = rnd.random() * 6.28; rr = rnd.random() ** 0.6 * r * 0.7
+        x, y = cx + rr * __import__('math').cos(t), cy + rr * 0.8 * __import__('math').sin(t)
+        path(f'M{P(x-0.3, y)}Q{P(x, y+0.28)} {P(x+0.3, y)}', 'cx-tex')
+    a('</g>')
+
+top = NF * FH
+a('<svg class="cx-svg" viewBox="-70 0 1080 760" role="img" aria-labelledby="cx-t cx-d">')
+a('<title id="cx-t">Corte A-A de Distrito Arboleda</title>')
+a(f'<desc id="cx-d">Corte longitudinal: seis pisos de {es(FH)} metros y terraza. Primer piso con lobby y restaurante, pisos 2 a 6 con apartamentos a cada lado del punto fijo con escalera y ascensor, y cubierta con zona BBQ, café lounge y gimnasio.</desc>')
+a('<defs><pattern id="cx-earth" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" class="cx-h"/></pattern>'
+  '<pattern id="cx-dots" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r=".7" class="cx-dot"/></pattern></defs>')
+# niveles (líneas finas a todo lo ancho)
+for k in range(NF + 1):
+    yy = k * FH + SL if k < NF else top + SL
+    a(f'<line class="cx-lvl" x1="-30" x2="{X(PW)+8}" y1="{Y(yy)}" y2="{Y(yy)}"/>')
+# árboles del antejardín y del fondo, vecino
+tree(PW + 5.4, 10.5, 2.6, 7, ' cx-far')
+a('<g class="cx-site">')
+path(f'M{P(PW, 0)}L{P(PW, 6.6)}L{P(PW+3.2, 8.4)}L{P(PW+6.6, 6.6)}L{P(PW+6.6, 0)}', 'cx-nb')
+for yy in (1.0, 4.1):
+    for xx in (PW + 1.0, PW + 4.2):
+        rect(xx, yy, xx + 1.3, yy + 1.5, 'cx-nbw')
+a(f'<text x="{X(PW+3.3)}" y="{Y(7.3)}" class="cx-s" text-anchor="middle">Vecino</text></g>')
+tree(-3.0, 9.2, 2.5, 3)
+tree(-1.0, 6.6, 1.7, 11)
+# suelo
+a(f'<rect x="-70" y="{Y(0)}" width="1080" height="{Wd(2.4)}" fill="url(#cx-earth)"/>')
+a(f'<line class="cx-ground" x1="-70" x2="1010" y1="{Y(0)}" y2="{Y(0)}"/>')
 # pisos
 for i in range(NF):
     y0, y1 = i * FH, (i + 1) * FH
+    f0 = y0 + SL
     key = 'p1' if i == 0 else 'apt'
     a(f'<g class="cx-floor" data-l="{key}" data-i="{i}" tabindex="0" role="button" aria-label="Piso {i+1}">')
-    a(f'<rect class="cx-room" x="{X(0)}" y="{Y(y1)}" width="{round((CX0)*S,1)}" height="{round(FH*S,1)}"/>')
-    a(f'<rect class="cx-core" x="{X(CX0)}" y="{Y(y1)}" width="{round((CX1-CX0)*S,1)}" height="{round(FH*S,1)}"/>')
-    a(f'<rect class="cx-room" x="{X(CX1)}" y="{Y(y1)}" width="{round((PW-CX1)*S,1)}" height="{round(FH*S,1)}"/>')
-    # escalera en el punto fijo
-    st = ' '.join(f'{X(CX0+0.5+k*0.42)},{Y(y0+0.3+k*0.33)}' for k in range(8))
-    a(f'<polyline class="cx-stair" points="{st}"/><rect class="cx-lift" x="{X(CX1-1.9)}" y="{Y(y1-0.45)}" width="{1.5*S}" height="{round((FH-0.7)*S,1)}"/>')
-    a(f'<rect class="cx-slab" x="{X(-1.3 if i else 0)}" y="{Y(y1)}" width="{round((PW+(1.3 if i else 0))*S,1)}" height="{0.26*S:.1f}"/>')
-    if i:  # balcón sobre la Carrera 18
-        a(f'<path class="cx-rail" d="M{X(-1.3)} {Y(y0)}V{Y(y0+1.1)}"/>')
-    lab = ('Lobby y bicicletero', 'Restaurante con terraza') if i == 0 else (f'Apto {i+1}01 · tipo A', f'Apto {i+1}02 · tipo A')
-    a(f'<text class="cx-t" x="{X(CX0/2)}" y="{Y(y0+FH/2-0.25)}" text-anchor="middle">{lab[0]}</text><text class="cx-t" x="{X((CX1+PW)/2)}" y="{Y(y0+FH/2-0.25)}" text-anchor="middle">{lab[1]}</text>')
-    a(f'<text class="cx-lv" x="12" y="{Y(y0+FH/2-0.1)}" text-anchor="end">Piso {i+1}</text><text class="cx-n" x="12" y="{Y(y0+FH/2-0.75)}" text-anchor="end">N +{es(y0)}</text>')
+    rect(0.25, f0, CX0, y1, 'cx-room'); rect(CX0, f0, CX1, y1, 'cx-core'); rect(CX1, f0, PW - 0.3, y1, 'cx-room')
+    # poché: losa (con voladizo del balcón), fachada oeste (dintel + vidrio), medianera este, muros del punto fijo, divisiones
+    rect(-1.45 if i else -0.2, y0, PW, f0, 'cx-poche')
+    rect(0, y1 - 0.45, 0.25, y1, 'cx-poche'); rect(0, f0, 0.25, y1 - 0.45, 'cx-glass')
+    rect(PW - 0.3, f0, PW, y1, 'cx-poche')
+    rect(CX0, f0 + 2.25, CX0 + 0.2, y1, 'cx-poche'); rect(CX1 - 0.2, f0, CX1, y1, 'cx-poche')
+    if i:
+        rect(5.3, f0 + 2.15, 5.42, y1, 'cx-poche'); rect(19.6, f0 + 2.15, 19.72, y1, 'cx-poche')
+        # balcón: baranda de vidrio y jardinera
+        rect(-1.45, f0, -1.38, f0 + 1.05, 'cx-glass'); rect(-1.3, f0, -0.55, f0 + 0.45, 'cx-poche')
+        path(f'M{P(-0.95, f0+0.45)}Q{P(-1.3, f0+1.1)} {P(-1.2, f0+1.35)}M{P(-0.95, f0+0.45)}Q{P(-0.6, f0+1.0)} {P(-0.7, f0+1.25)}M{P(-0.95, f0+0.45)}L{P(-0.9, f0+1.4)}', 'cx-leaf')
+        sofa(1.0, f0); table(3.4, f0, 1.3, 0.45); plant(4.75, f0)
+        counter(6.0, f0, 2.6); person(2.9 if i % 2 else 7.6, f0, flip=-1)
+        bed(16.0, f0, 2.1); chair(20.6, f0); table(21.1, f0, 1.1); plant(23.6, f0, 0.9)
+        if i % 2 == 0: person(18.7, f0)
+        lab = (f'Apto {i+1}01 · sala y cocina', f'Apto {i+1}02 · alcoba')
+    else:
+        # primer piso: lobby (recepción) y restaurante (mesas y barra)
+        rect(-0.2, f0 + 2.45, 0.25, y1, 'cx-poche')
+        counter(5.6, f0, 2.2) if False else path(f'M{P(5.4, f0)}L{P(5.4, f0+1.05)}L{P(7.9, f0+1.05)}L{P(7.9, f0)}', 'cx-furn')
+        sofa(1.0, f0, 1.8); plant(3.5, f0, 1.3); person(4.4, f0); person(8.6, f0, flip=-1)
+        for tx in (16.0, 19.4):
+            table(tx, f0, 0.9); chair(tx - 0.55, f0); chair(tx + 1.45, f0, -1)
+            person(tx - 0.42, f0, sit=True)
+        path(f'M{P(21.9, f0)}L{P(21.9, f0+1.1)}L{P(24.0, f0+1.1)}', 'cx-furn'); person(23.1, f0, flip=-1)
+        lab = ('Lobby y recepción', 'Restaurante')
+    # escalera (tramo cortado en poché fino y tramo visto en línea) y ascensor
+    st = ''.join(f'L{P(CX0+0.55+k*0.28, f0+k*0.172)}L{P(CX0+0.55+(k+1)*0.28, f0+k*0.172)}' for k in range(9))
+    path(f'M{P(CX0+0.55, f0)}{st}L{P(CX0+3.35, f0+1.55)}L{P(CX0+3.35, f0+1.4)}L{P(CX0+0.55, f0-0.12)}Z', 'cx-stair')
+    path(f'M{P(CX0+3.35, f0+1.55)}L{P(CX0+0.55, y1+SL-0.02)}', 'cx-stair-v')
+    rect(CX1 - 2.05, f0, CX1 - 0.35, y1, 'cx-lift')
+    if i == 2: rect(CX1 - 1.9, f0 + 0.05, CX1 - 0.5, f0 + 2.3, 'cx-cab')
+    a(f'<text class="cx-t" x="{X(CX0/2+0.1)}" y="{Y(f0+2.35)}" text-anchor="middle">{lab[0]}</text><text class="cx-t" x="{X((CX1+PW)/2)}" y="{Y(f0+2.35)}" text-anchor="middle">{lab[1]}</text>')
+    a(f'<g class="cx-mark"><path d="M-36 {Y(f0)-8}h12l-6 8z"/><text class="cx-lv" x="-18" y="{Y(f0)-12}">Piso {i+1}</text><text class="cx-n" x="-18" y="{Y(f0)-1}">N +{es(f0)}</text></g>')
     a('</g>')
 # cubierta
-top = NF * FH
 a(f'<g class="cx-floor cx-roof" data-l="t" data-i="{NF}" tabindex="0" role="button" aria-label="Terraza en la cubierta">')
-a(f'<rect class="cx-hit" x="{X(0)}" y="{Y(top+3.4)}" width="{PW*S:.1f}" height="{3.4*S:.1f}"/>')
-a(f'<path class="cx-rail" d="M{X(0)} {Y(top)}V{Y(top+1.1)}M{X(PW)} {Y(top)}V{Y(top+1.1)}"/>')
-a(f'<rect class="cx-core" x="{X(CX0)}" y="{Y(top+2.9)}" width="{round((CX1-CX0)*S,1)}" height="{2.9*S:.1f}"/><rect class="cx-slab" x="{X(CX0-0.2)}" y="{Y(top+3.1)}" width="{round((CX1-CX0+0.4)*S,1)}" height="{0.2*S:.1f}"/>')
-a(f'<path class="cx-perg" d="M{X(1.2)} {Y(top)}V{Y(top+2.6)}M{X(8.2)} {Y(top)}V{Y(top+2.6)}M{X(0.7)} {Y(top+2.6)}H{X(8.7)}' + ''.join(f'M{X(1.0+k*0.62)} {Y(top+2.6)}v-5' for k in range(13)) + '"/>')
-a(f'<text class="cx-t" x="{X(4.7)}" y="{Y(top+1.0)}" text-anchor="middle">BBQ · café lounge</text><text class="cx-t" x="{X((CX1+PW)/2)}" y="{Y(top+1.0)}" text-anchor="middle">Gimnasio al aire libre</text>')
-a(f'<text class="cx-lv" x="12" y="{Y(top+1.1)}" text-anchor="end">Terraza</text><text class="cx-n" x="12" y="{Y(top+0.45)}" text-anchor="end">N +{es(top)}</text></g>')
+rect(0, top + SL, PW, top + 3.6, 'cx-hit')
+rect(-0.2, top, PW, top + SL, 'cx-poche')
+rect(0, top + SL, 0.25, top + 1.15, 'cx-poche'); rect(PW - 0.3, top + SL, PW, top + 1.15, 'cx-poche')
+rect(CX0, top + SL, CX0 + 0.2, top + 3.0, 'cx-poche'); rect(CX1 - 0.2, top + SL, CX1, top + 3.0, 'cx-poche'); rect(CX0 - 0.15, top + 3.0, CX1 + 0.15, top + 3.25, 'cx-poche')
+rect(CX0 + 0.2, top + SL, CX1 - 0.2, top + 3.0, 'cx-core')
+# pérgola: columnas y vigas cortadas
+rect(1.0, top + SL, 1.2, top + 2.75, 'cx-poche'); rect(8.0, top + SL, 8.2, top + 2.75, 'cx-poche')
+rect(0.6, top + 2.75, 8.6, top + 2.95, 'cx-perg')
+for k in range(12):
+    xx = 0.8 + k * 0.68
+    rect(xx, top + 2.95, xx + 0.12, top + 3.2, 'cx-poche')
+table(3.0, top + SL, 1.6); chair(2.4, top + SL); chair(4.75, top + SL, -1); person(2.55, top + SL, sit=True); person(5.6, top + SL, flip=-1)
+sofa(16.4, top + SL, 1.9); plant(19.0, top + SL, 1.2); person(21.0, top + SL); plant(23.2, top + SL, 1.4)
+a(f'<text class="cx-t" x="{X(4.7)}" y="{Y(top+3.65)}" text-anchor="middle">BBQ · café lounge</text><text class="cx-t" x="{X((CX1+PW)/2)}" y="{Y(top+2.35)}" text-anchor="middle">Gimnasio al aire libre</text>')
+a(f'<g class="cx-mark"><path d="M-36 {Y(top+SL)-8}h12l-6 8z"/><text class="cx-lv" x="-18" y="{Y(top+SL)-12}">Terraza</text><text class="cx-n" x="-18" y="{Y(top+SL)-1}">N +{es(top+SL)}</text></g></g>')
+# cimentación
+rect(-0.2, -0.6, PW, 0, 'cx-poche')
+for xx in (0.1, CX0, CX1 - 0.3, PW - 0.6):
+    rect(xx - 0.35, -1.5, xx + 0.65, -0.6, 'cx-poche')
 # cotas
-xd = X(PW) + 44
-a(f'<g class="cx-dim"><path class="cx-dl" d="M{xd} {Y(0)}V{Y(top)}"/>' + ''.join(f'<path class="cx-dt" d="M{xd-5} {Y(k*FH)}h10"/>' for k in range(NF + 1)))
+xd = X(PW + 7.4)
+a(f'<g class="cx-dim"><path class="cx-dl" d="M{xd} {Y(0)}V{Y(top+SL)}"/>' + ''.join(f'<path class="cx-dt" d="M{xd-5} {Y(k*FH+(SL if k else 0))+5}l10 -10"/>' for k in range(NF + 1)))
 for k in range(NF):
-    a(f'<text class="cx-n" x="{xd+10}" y="{Y(k*FH+FH/2-0.15)}">{es(FH)}</text>')
-a(f'<text class="cx-total" x="{xd+62}" y="{Y(top/2)}" transform="rotate(-90 {xd+62} {Y(top/2)})" text-anchor="middle">{es(top)} m en {NF} pisos</text>')
-a(f'<path class="cx-dl" d="M{X(0)} {Y(-1.6)}H{X(PW)}"/><path class="cx-dt" d="M{X(0)} {Y(-1.6)-5}v10M{X(CX0)} {Y(-1.6)-5}v10M{X(CX1)} {Y(-1.6)-5}v10M{X(PW)} {Y(-1.6)-5}v10"/>')
-a(f'<text class="cx-n" x="{X(CX0/2)}" y="{Y(-2.35)}" text-anchor="middle">{es(CX0)}</text><text class="cx-n" x="{X((CX0+CX1)/2)}" y="{Y(-2.35)}" text-anchor="middle">Punto fijo {es(CX1-CX0)}</text><text class="cx-n" x="{X((CX1+PW)/2)}" y="{Y(-2.35)}" text-anchor="middle">{es(PW-CX1)}</text></g>')
+    a(f'<text class="cx-n" x="{xd+8}" y="{Y(k*FH+FH/2)}">{es(FH)}</text>')
+a(f'<text class="cx-total" x="{xd+48}" y="{Y(top/2)}" transform="rotate(-90 {xd+48} {Y(top/2)})" text-anchor="middle">{es(top)} m · {NF} pisos</text>')
+yb = -2.6
+a(f'<path class="cx-dl" d="M{X(0)} {Y(yb)}H{X(PW)}"/>' + ''.join(f'<path class="cx-dt" d="M{X(v)-5} {Y(yb)+5}l10 -10"/>' for v in (0, CX0, CX1, PW)))
+a(f'<text class="cx-n" x="{X(CX0/2)}" y="{Y(yb)-6}" text-anchor="middle">{es(CX0)}</text><text class="cx-n" x="{X((CX0+CX1)/2)}" y="{Y(yb)-6}" text-anchor="middle">Punto fijo {es(CX1-CX0)}</text><text class="cx-n" x="{X((CX1+PW)/2)}" y="{Y(yb)-6}" text-anchor="middle">{es(PW-CX1)}</text>')
+a(f'<text class="cx-s" x="{X(-2.4)}" y="{Y(yb)-6}" text-anchor="middle">Antejardín 3,50</text></g>')
+# rótulo y escala gráfica
+yt = Y(-4.4)
+a(f'<g class="cx-title"><text class="cx-tt" x="-60" y="{yt}">Corte A–A′</text><text class="cx-n" x="-60" y="{yt+16}">Longitudinal, sobre la Calle 56 · medidas del modelo de Revit</text>')
+sx = X(PW - 5.2)
+a(f'<rect class="cx-poche" x="{sx}" y="{yt-10}" width="{Wd(1)}" height="5"/><rect class="cx-sb" x="{sx+Wd(1)}" y="{yt-10}" width="{Wd(1)}" height="5"/><rect class="cx-poche" x="{sx+Wd(2)}" y="{yt-10}" width="{Wd(3)}" height="5"/>')
+a(f'<text class="cx-n" x="{sx}" y="{yt+6}" text-anchor="middle">0</text><text class="cx-n" x="{sx+Wd(2)}" y="{yt+6}" text-anchor="middle">2</text><text class="cx-n" x="{sx+Wd(5)}" y="{yt+6}" text-anchor="middle">5 m</text></g>')
 a('</svg>')
 corte_svg = ''.join(c)
 
@@ -187,7 +301,7 @@ blocks['corte'] = f'''
             <li><button type="button" data-l="p1"><b>Piso 1</b><span>Lobby con bicicletero en la esquina, restaurante con terraza sobre la Calle 56, sala de cine y gimnasio hacia el patio.</span></button></li>
           </ol>
         </div>
-        <figure class="corte-fig">{corte_svg}<figcaption>Corte esquemático con las medidas del modelo de Revit. El punto fijo tiene escalera y ascensor.</figcaption></figure>
+        <figure class="corte-fig">{corte_svg}<figcaption>Pasa por cada nivel para resaltarlo. Escalera y ascensor en el punto fijo; balcones con jardinera sobre la Carrera 18.</figcaption></figure>
       </div>
     </section>
 '''

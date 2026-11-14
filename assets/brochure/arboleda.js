@@ -24,19 +24,11 @@ const preloader = document.querySelector('.preloader');
 function intro() {
   if (!document.body.classList.contains('is-loading')) return;
   document.body.classList.remove('is-loading');
-  if (!motion) { preloader.remove(); return; }
+  if (!motion) return;
   g.timeline()
-    .from('.pl-small', { opacity: 0, letterSpacing: '0.9em', duration: 0.9, ease: 'power2.out' })
-    .from('.pl-big', { yPercent: 100, duration: 1.0, ease: 'expo.out' }, 0.1)
-    .to('.pl-line i', { scaleX: 1, duration: 0.9, ease: 'power2.inOut' }, 0.2)
-    .to('.pl-name, .pl-line', { yPercent: -40, opacity: 0, duration: 0.5, ease: 'power2.in' }, 1.25)
-    .to(preloader, { clipPath: 'inset(0 0 100% 0)', duration: 0.9, ease: 'expo.inOut', onComplete: () => preloader.remove() }, 1.45)
-    .fromTo('.hero-media img', { scale: 1.1 }, { scale: 1, duration: 2.4, ease: 'expo.out' }, 1.5)
-    // letra animada: cada letra sube girando levemente, con la segunda línea en cursiva un poco después
-    .from('.ht-word .ch', { yPercent: 120, rotate: 8, opacity: 0, duration: 1.2, stagger: 0.05, ease: 'expo.out' }, 1.75)
-    .from('.hero-kicker, .hero-fact, .hero .actions, .nav', { opacity: 0, y: 18, duration: 0.9, stagger: 0.08, ease: 'power3.out' }, 2.3)
-    // después, el render respira muy despacio (acercamiento suave y continuo)
-    .to('.hero-media img', { scale: 1.03, duration: 16, ease: 'sine.inOut', yoyo: true, repeat: -1 }, 3.9);
+    .fromTo('.hero-media img', { scale: 1.08, opacity: 0 }, { scale: 1, opacity: 1, duration: 2.2, ease: 'power2.out' }, 0)
+    .from('.ht-word .ch', { yPercent: 110, opacity: 0, duration: 1.1, stagger: 0.035, ease: 'expo.out' }, 0.35)
+    .from('.hero-kicker, .hero-fact, .hero .actions, .nav', { opacity: 0, y: 16, duration: 0.9, stagger: 0.08, ease: 'power3.out' }, 0.8);
 }
 if (document.readyState === 'complete') intro(); else addEventListener('load', intro);
 // si la portada tarda, la entrada no espera más de 3 s
@@ -103,7 +95,7 @@ if (motion) {
   // fotos: se descubren de abajo hacia arriba y se asientan desde un leve zoom; luego un parallax suave
   g.utils.toArray('.pic').forEach((pic) => {
     const img = pic.querySelector('img');
-    g.fromTo(pic, { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 1.3, ease: 'expo.inOut', scrollTrigger: { trigger: pic, start: 'top 85%' } });
+    g.from(pic, { opacity: 0, y: 30, duration: 1.2, ease: 'power3.out', scrollTrigger: { trigger: pic, start: 'top 88%' } });
     const amt = +(pic.dataset.parallax || 6);
     g.fromTo(img, { yPercent: -amt }, { yPercent: amt, ease: 'none', scrollTrigger: { trigger: pic, start: 'top bottom', end: 'bottom top', scrub: true } });
   });
@@ -124,10 +116,7 @@ if (motion) {
     g.fromTo(img, { scale: 1.15 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '.day', start: 'top top', end: () => `+=${dist() * 1.1}`, scrub: true } });
   });
 
-  // recorrido 3D: la ventana se abre a pantalla completa
-  g.to('.tour-window', { clipPath: 'inset(0% 0% 0% 0% round 0px)', ease: 'none', scrollTrigger: { trigger: '.tour', start: 'top 70%', end: 'center center', scrub: true } });
-  g.to('.tour-window img', { scale: 1, ease: 'none', scrollTrigger: { trigger: '.tour', start: 'top bottom', end: 'bottom bottom', scrub: true } });
-  g.from('.tour-copy > *', { y: 30, opacity: 0, stagger: 0.1, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: '.tour', start: 'center 70%' } });
+
 
   // botones magnéticos: siguen un poco al puntero
   if (matchMedia('(pointer: fine)').matches) {
@@ -191,27 +180,39 @@ if (lift) {
   }
 }
 
-// ------------------------------------------------------------------ recorrido 3D: el edificio navegable dentro del brochure
-// El 3D pesa varios MB: se carga solo cuando la persona entra. Mientras está activo la rueda del ratón
-// mueve la cámara (no la página); "Volver al brochure" lo deja quieto detrás de la foto.
-const tourSec = document.getElementById('recorrido');
-if (tourSec) {
-  const frame = tourSec.querySelector('.tour-frame');
-  const exit = () => {
-    tourSec.classList.remove('is-live');
-    document.body.classList.remove('tour-open');
-    frame.tabIndex = -1;
-    document.getElementById('tour-enter').focus();
+// ------------------------------------------------------------------ masterplan al final, a pantalla completa
+// El 3D pesa varios MB: se descarga cuando la persona se acerca al final. Se ve detrás del texto; con
+// "Explorar" se puede girar y entrar (la rueda mueve la cámara); "Volver al brochure" o Esc lo sueltan.
+const mpSec = document.getElementById('recorrido');
+if (mpSec) {
+  const frame = mpSec.querySelector('.mp-frame');
+  const load = () => {
+    if (frame.getAttribute('src')) return;
+    frame.src = frame.dataset.src;
+    frame.addEventListener('load', () => { preview(!mpSec.classList.contains('is-live')); setTimeout(() => mpSec.classList.add('is-ready'), 2500); }, { once: true });
   };
+  // vista previa: el masterplan sin paneles y girando despacio; al explorar vuelven los controles
+  const preview = (on) => {
+    try {
+      const d = frame.contentDocument, w = frame.contentWindow;
+      d?.body.classList.toggle('is-preview', on);
+      const c = w?.__masterplan?.controls;
+      if (c) { c.autoRotate = on; c.autoRotateSpeed = 0.35; }
+      if (on && !w?.__masterplan?.controls) setTimeout(() => preview(!mpSec.classList.contains('is-live')), 1500);
+    } catch (e) { /* otro origen */ }
+  };
+  new IntersectionObserver(([e]) => { if (e.isIntersecting) load(); }, { rootMargin: '150% 0px' }).observe(mpSec);
+  const exit = () => { preview(true); mpSec.classList.remove('is-live'); document.body.classList.remove('tour-open'); frame.tabIndex = -1; document.getElementById('tour-enter').focus(); };
   document.getElementById('tour-enter').addEventListener('click', () => {
-    if (!frame.getAttribute('src')) frame.src = `${frame.dataset.src}?embed=1`;   // sin la intro: ya se vio en el brochure
-    tourSec.classList.add('is-live');
-    document.body.classList.add('tour-open');
-    frame.tabIndex = 0;
-    setTimeout(() => frame.focus(), 400);
+    load();
+    mpSec.scrollIntoView({ block: 'start' });
+    preview(false);
+    mpSec.classList.add('is-live'); document.body.classList.add('tour-open'); frame.tabIndex = 0;
+    setTimeout(() => frame.focus(), 300);
   });
   document.getElementById('tour-exit').addEventListener('click', exit);
-  addEventListener('keydown', (e) => { if (e.key === 'Escape' && tourSec.classList.contains('is-live')) exit(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && mpSec.classList.contains('is-live')) exit(); });
+  if (motion) g.from('.mp-copy > *', { y: 30, opacity: 0, duration: 1.1, stagger: 0.1, ease: 'expo.out', scrollTrigger: { trigger: mpSec, start: 'top 55%' } });
 }
 
 // ------------------------------------------------------------------ tipologías: la pastilla azul se desliza a la pestaña elegida
@@ -288,7 +289,7 @@ if (window.L && document.getElementById('map')) {
     document.querySelectorAll('.map-modes button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
   }));
   // anillos de 400 m, 800 m y 1,2 km
-  [400, 800, 1200].forEach((r) => L.circle([LAT, LNG], { radius: r, color: '#1d5fc4', weight: 1.2, fill: r === 400, fillColor: '#1d5fc4', fillOpacity: 0.07, dashArray: '4 7', interactive: false }).addTo(map));
+  [400, 800, 1200].forEach((r) => L.circle([LAT, LNG], { radius: r, color: '#1b2c45', weight: 1.2, fill: r === 400, fillColor: '#1b2c45', fillOpacity: 0.07, dashArray: '4 7', interactive: false }).addTo(map));
   L.marker([LAT, LNG], { title: 'Distrito Arboleda', zIndexOffset: 1000, icon: L.divIcon({ className: '', html: '<div class="pin"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }) })
     .addTo(map).bindTooltip('Distrito Arboleda', { permanent: true, direction: 'top', offset: [0, -12], className: 'tip-me' });
   const C = window.CERCA || [];
@@ -297,7 +298,7 @@ if (window.L && document.getElementById('map')) {
     .addTo(map).bindTooltip(`<b>${c.n}</b><br>${dist(c)}`, { direction: 'top', offset: [0, -12] }));
   const home = () => L.latLngBounds(C.filter((c) => c.d < 1300).map((c) => c.ll)).extend([LAT, LNG]).pad(0.1);
   if (C.length) map.fitBounds(home());
-  const line = L.polyline([], { color: '#1d5fc4', weight: 3, dashArray: '2 9', lineCap: 'round', className: 'route' }).addTo(map);
+  const line = L.polyline([], { color: '#1b2c45', weight: 3, dashArray: '2 9', lineCap: 'round', className: 'route' }).addTo(map);
   window.__cercaMap = { map, marks, line, home, me: [LAT, LNG] };
 } else if (document.getElementById('map')) {
   document.getElementById('map').innerHTML = '<p style="padding:24px">Calle 56 con Carrera 18, Galerías, Bogotá.</p>';
@@ -465,7 +466,7 @@ if (motion && window.Lenis && matchMedia('(pointer: fine)').matches) {
   }));
   new MutationObserver(() => (document.body.classList.contains('tour-open') ? lenis.stop() : lenis.start()))
     .observe(document.body, { attributes: true, attributeFilter: ['class'] });
-  document.querySelectorAll('.map, .tour-frame, .corte-fig').forEach((el) => el.setAttribute('data-lenis-prevent', ''));
+  document.querySelectorAll('.map, .mp-frame, .corte-fig').forEach((el) => el.setAttribute('data-lenis-prevent', ''));
 }
 
 if (motion) {
@@ -475,22 +476,12 @@ if (motion) {
     h.dataset.words = '1';
     h.removeAttribute('data-reveal');
     h.innerHTML = h.textContent.trim().split(/\s+/).map((w) => `<span class="wm"><span class="wi">${w}</span></span>`).join(' ');
-    g.from(h.querySelectorAll('.wi'), { yPercent: 115, rotate: 4, duration: 1.1, stagger: 0.06, ease: 'expo.out', scrollTrigger: { trigger: h, start: 'top 88%' } });
+    g.from(h.querySelectorAll('.wi'), { yPercent: 115, duration: 1.1, stagger: 0.05, ease: 'expo.out', scrollTrigger: { trigger: h, start: 'top 88%' } });
   });
 
   // kickers: las letras se separan al entrar
   g.utils.toArray('.hero-kicker').forEach((k) => g.from(k, { letterSpacing: '0.6em', opacity: 0, duration: 1.3, ease: 'expo.out', scrollTrigger: { trigger: k, start: 'top 92%' } }));
 
-  // fotos: una cortina azul se recoge y descubre la imagen
-  g.utils.toArray('.inside-hero, .inside-pic, .day-card figure, .plan, .zone-stage').forEach((el) => {
-    el.classList.add('wipe');
-    ST.create({ trigger: el, start: 'top 82%', once: true, onEnter: () => el.classList.add('wiped') });
-  });
-
-  // las imágenes se inclinan un poco según la velocidad del scroll (sensación de movimiento)
-  const skewEls = g.utils.toArray('.pic img, .inside-pic img, .inside-hero img, .day-card img, .barrio-fig img');
-  const skewTo = skewEls.map((el) => g.quickTo(el, 'skewY', { duration: 0.5, ease: 'power3' }));
-  ST.create({ onUpdate: (st) => { const v = g.utils.clamp(-3.5, 3.5, st.getVelocity() / -320); skewTo.forEach((f) => f(v)); } });
 
   // cinta: corre sola y acelera / cambia de sentido con el scroll
   const mq = document.querySelector('.mq-track');
@@ -517,21 +508,5 @@ if (motion) {
   g.from('.zone-list li', { x: -40, opacity: 0, duration: 0.8, stagger: 0.06, ease: 'expo.out', scrollTrigger: { trigger: '.zone-list', start: 'top 85%' } });
   g.from('.areas tr', { y: 16, opacity: 0, duration: 0.6, stagger: 0.05, ease: 'power3.out', scrollTrigger: { trigger: '.apts-grid', start: 'top 80%' } });
 
-  // cursor: un círculo azul sigue al puntero y dice "Ver" sobre las fotos
-  const cur = document.querySelector('.cursor');
-  if (cur && matchMedia('(pointer: fine)').matches) {
-    const cx = g.quickTo(cur, 'x', { duration: 0.45, ease: 'power3' }), cy = g.quickTo(cur, 'y', { duration: 0.45, ease: 'power3' });
-    addEventListener('pointermove', (e) => { cx(e.clientX); cy(e.clientY); cur.classList.add('on'); });
-    document.addEventListener('pointerleave', () => cur.classList.remove('on'));
-    const big = 'img, .map, .cx-floor, .nr-list button, .zone-list button, .fcard';
-    const act = 'a, button, .tab, label';
-    addEventListener('pointerover', (e) => {
-      const t = e.target;
-      cur.classList.toggle('big', !!t.closest(big) && !t.closest(act + ', .map'));
-      cur.classList.toggle('link', !!t.closest(act));
-    });
-  }
-} else {
-  document.querySelector('.cursor')?.remove();
 }
-if (!matchMedia('(pointer: fine)').matches) document.querySelector('.cursor')?.remove();
+
