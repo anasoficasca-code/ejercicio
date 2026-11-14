@@ -1521,3 +1521,10 @@ body.has-room-photo .room-detail-card{background:rgba(14,22,34,.72);backdrop-fil
   body.has-room-photo .room-chips button{flex:none}
 }
 @media (max-width:760px){body.has-room-photo .room-detail-card{transform:none!important;margin:0!important}}
+
+/* pantalla de carga con el render aéreo del proyecto (en vez del fondo blanco) */
+.ls-wrap{background:linear-gradient(180deg,rgba(20,15,12,.55),rgba(20,15,12,.78)),url("../../assets/renders/hf-aerea.webp") center/cover no-repeat #1c1714!important;transition:opacity 1.1s ease,visibility 0s linear 1.1s}
+.ls-wrap .ls-word,.ls-wrap .ls-res,.ls-wrap .ls-msg{color:#fff!important}
+.ls-wrap .ls-bar{background:rgba(255,255,255,.25)}
+.ls-wrap .ls-bar i{background:#e2b58b}
+.ls-wrap .ls-logo{filter:brightness(0) invert(1);opacity:.85}

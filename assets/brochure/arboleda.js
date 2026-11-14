@@ -443,3 +443,10 @@ if (firma) {
 }
 // las secciones fijadas cambian el alto de la página: se recalculan los disparadores al terminar de cargar
 if (motion) addEventListener('load', () => ST.refresh());
+
+// el render aéreo del barrio se descubre al bajar y se mueve más lento que la página
+if (motion && document.querySelector('.barrio')) {
+  g.fromTo('.barrio-fig', { clipPath: 'inset(12% 8% 12% 8%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', scrollTrigger: { trigger: '.barrio', start: 'top 85%', end: 'top 15%', scrub: true } });
+  g.fromTo('.barrio-fig img', { yPercent: -6 }, { yPercent: 6, ease: 'none', scrollTrigger: { trigger: '.barrio', start: 'top bottom', end: 'bottom top', scrub: true } });
+  g.from('.barrio-copy > *', { y: 36, opacity: 0, duration: 1, stagger: 0.1, ease: 'expo.out', scrollTrigger: { trigger: '.barrio', start: 'top 40%' } });
+}

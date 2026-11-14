@@ -9,13 +9,13 @@
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Distrito Arboleda · Apartamentos en Galerías, Bogotá" />
   <meta property="og:description" content="20 apartamentos con balcón, desde $630.000.000, en la Calle 56 con Carrera 18." />
-  <meta property="og:image" content="./assets/renders/fachada-celosia.webp" />
+  <meta property="og:image" content="./assets/renders/hf-esquina-m.webp" />
   <link rel="icon" href="./assets/branding/jmc-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=mapa1" />
+  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=hf1" />
   <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script></head>
 <body class="is-loading">
   <div class="progress" aria-hidden="true"><i></i></div>
@@ -48,7 +48,7 @@
   <main id="main">
     <!-- Portada -->
     <section class="hero" id="inicio">
-      <div class="hero-media"><img src="./assets/renders/fachada-celosia.webp" alt="Distrito Arboleda: fachada blanca con la celosía de ladrillo al centro, balcones con jardineras, el lobby y el restaurante con terraza en el primer piso" fetchpriority="high" /></div>
+      <div class="hero-media"><picture><source media="(max-width: 700px)" srcset="./assets/renders/hf-esquina-m.webp" /><img src="./assets/renders/hf-esquina.webp" alt="Distrito Arboleda al atardecer en la esquina de la Calle 56 con Carrera 18: fachada blanca con franjas de ladrillo, balcones con jardineras encendidos y los cerros de Bogotá al fondo" fetchpriority="high" /></picture></div>
       <div class="hero-shade"></div>
       <div class="wrap hero-copy">
         <p class="hero-kicker">Galerías, Teusaquillo</p>
@@ -122,6 +122,16 @@
       </div>
     </section>
 
+    <!-- El edificio en su barrio: render aéreo a todo el ancho -->
+    <section class="barrio" aria-labelledby="barrio-h">
+      <figure class="barrio-fig"><img src="./assets/renders/hf-aerea.webp" alt="Vista aérea de Distrito Arboleda al atardecer en la esquina de la Calle 56 con Carrera 18, rodeado por las casas y edificios de ladrillo de Galerías" loading="lazy" /></figure>
+      <div class="wrap barrio-copy">
+        <p class="hero-kicker">En su barrio</p>
+        <h2 id="barrio-h">Una esquina de Galerías, entre árboles y ladrillo</h2>
+        <p>Seis pisos que siguen la altura de sus vecinos, con la terraza abierta hacia los cerros y los antejardines sembrados sobre las dos calles.</p>
+      </div>
+    </section>
+
     <!-- gen:corte -->
     <section class="sec corte" id="corte" aria-labelledby="corte-h">
       <div class="wrap corte-grid">
@@ -192,7 +202,7 @@
             <div class="dcopy"><p class="dtime">4:24 p. m.</p><h3>La tarde en la cocina</h3><p>La luz de la tarde entra por el ventanal del balcón hasta la isla de mármol, entre los muebles de nogal y el comedor.</p></div>
           </article>
           <article class="day-card">
-            <figure><img src="./assets/renders/aerea-noche-w.webp" alt="El edificio al anochecer con los balcones y la terraza encendidos" loading="lazy" /></figure>
+            <figure><img src="./assets/renders/hf-lateral.webp" alt="El edificio al anochecer con la fachada y la terraza del restaurante encendidas" loading="lazy" /></figure>
             <div class="dcopy"><p class="dtime">5:51 p. m.</p><h3>De vuelta a casa</h3><p>Bicicletero en el primer piso, la troncal NQS a pocas cuadras y rutas del SITP por las calles 53 y 57. Adentro, luz LED cálida.</p></div>
           </article>
         </div>
@@ -205,7 +215,7 @@
         <div class="facade-copy">
           <h2 data-reveal>Ladrillo, vidrio y plantas</h2>
           <p data-reveal>Pañete blanco con dos franjas de ladrillo calado que marcan la esquina. Los balcones salen sobre la calle con baranda de vidrio, para que desde afuera se vean las plantas y no los barrotes.</p>
-          <figure class="pic pic-side" data-parallax="-8"><img src="./assets/renders/aerea-noche.webp" alt="El edificio visto desde arriba al anochecer, con los balcones encendidos" loading="lazy" /></figure>
+          <figure class="pic pic-side" data-parallax="-8"><img src="./assets/renders/hf-lateral.webp" alt="El edificio al anochecer con los apliques de la fachada encendidos y la terraza del restaurante bajo los árboles" loading="lazy" /></figure>
         </div>
         <figure class="pic pic-tall" data-parallax="8"><img src="./assets/renders/fachada-celosia.webp" alt="La celosía de ladrillo al centro de la fachada, sobre el lobby" loading="lazy" /></figure>
       </div>
@@ -373,7 +383,7 @@
     <!-- Recorrido 3D: la foto se abre desde una ventana al bajar y adentro queda el edificio navegable -->
     <section class="tour" id="recorrido">
       <div class="tour-window">
-        <img src="./assets/renders/aerea-noche.webp" alt="Distrito Arboleda visto desde arriba al anochecer, con la terraza y la pérgola en la cubierta" loading="lazy" />
+        <img src="./assets/renders/hf-aerea.webp" alt="Distrito Arboleda visto desde arriba al atardecer, entre las casas de ladrillo y los árboles de Galerías" loading="lazy" />
         <iframe class="tour-frame" title="Recorrido 3D de Distrito Arboleda" data-src="./masterplan.html" allow="fullscreen" loading="lazy" tabindex="-1"></iframe>
       </div>
       <div class="wrap tour-copy">
@@ -425,7 +435,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="./assets/brochure/arboleda.js?v=mapa1"></script>
+  <script src="./assets/brochure/arboleda.js?v=hf1"></script>
   <script type="module">
     // maqueta 3D del modelo de Revit: se descarga solo cuando la sección del edificio se acerca
     const panel = document.querySelector('.lift-model');
@@ -434,7 +444,7 @@
       const io = new IntersectionObserver(([e]) => {
         if (!e.isIntersecting) return;
         io.disconnect();
-        import('./assets/brochure/section3d.js?v=mapa1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
+        import('./assets/brochure/section3d.js?v=hf1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
       }, { rootMargin: '120% 0px' });
       io.observe(document.querySelector('.lift'));
     } else panel?.remove();
@@ -446,7 +456,7 @@
       const io = new IntersectionObserver(([e]) => {
         if (!e.isIntersecting) return;
         io.disconnect();
-        import('./assets/brochure/section3d.js?v=mapa1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
+        import('./assets/brochure/section3d.js?v=hf1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
       }, { rootMargin: '120% 0px' });
       io.observe(document.querySelector('.lift'));
     } else panel?.remove();
