@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Distrito Arboleda · Apartamentos con balcón en Galerías, Bogotá</title>
   <meta name="description" content="Distrito Arboleda: 20 apartamentos de 70 y 78,75 m² con balcón en la Calle 56 con Carrera 18, Galerías, Teusaquillo. Desde $630.000.000. Terraza comunal, jardín, bicicletero y sala de cine." />
-  <meta name="theme-color" content="#1c1714" />
+  <meta name="theme-color" content="#07142a" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Distrito Arboleda · Apartamentos en Galerías, Bogotá" />
   <meta property="og:description" content="20 apartamentos con balcón, desde $630.000.000, en la Calle 56 con Carrera 18." />
@@ -15,9 +15,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=hf1" />
+  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=azul1" />
   <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script></head>
 <body class="is-loading">
+  <div class="cursor" aria-hidden="true"><span>Ver</span></div>
   <div class="progress" aria-hidden="true"><i></i></div>
   <a class="skip" href="#main">Saltar al contenido</a>
 
@@ -435,7 +436,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="./assets/brochure/arboleda.js?v=hf1"></script>
+  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script src="./assets/brochure/arboleda.js?v=azul1"></script>
   <script type="module">
     // maqueta 3D del modelo de Revit: se descarga solo cuando la sección del edificio se acerca
     const panel = document.querySelector('.lift-model');
@@ -444,7 +446,7 @@
       const io = new IntersectionObserver(([e]) => {
         if (!e.isIntersecting) return;
         io.disconnect();
-        import('./assets/brochure/section3d.js?v=hf1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
+        import('./assets/brochure/section3d.js?v=azul1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
       }, { rootMargin: '120% 0px' });
       io.observe(document.querySelector('.lift'));
     } else panel?.remove();
@@ -456,7 +458,7 @@
       const io = new IntersectionObserver(([e]) => {
         if (!e.isIntersecting) return;
         io.disconnect();
-        import('./assets/brochure/section3d.js?v=hf1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
+        import('./assets/brochure/section3d.js?v=azul1').then((m) => m.mountSection(panel)).catch((err) => { console.warn('maqueta 3D', err); panel.remove(); });
       }, { rootMargin: '120% 0px' });
       io.observe(document.querySelector('.lift'));
     } else panel?.remove();
