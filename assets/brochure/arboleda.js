@@ -100,20 +100,10 @@ if (motion) {
     g.fromTo(img, { yPercent: -amt }, { yPercent: amt, ease: 'none', scrollTrigger: { trigger: pic, start: 'top bottom', end: 'bottom top', scrub: true } });
   });
 
-  // un día en el edificio: la tira corre de lado mientras la sección queda fija; el reloj avanza
-  const track = document.querySelector('.day-track');
-  const times = ['8:24', '12:24', '4:24', '5:51'];
-  const clock = document.querySelector('.dc-time'), bar = document.querySelector('.dc-bar i');
-  const dist = () => track.scrollWidth - innerWidth;
-  g.to(track, {
-    x: () => -dist(), ease: 'none',
-    scrollTrigger: {
-      trigger: '.day', pin: '.day-pin', start: 'top top', end: () => `+=${dist() * 1.1}`, scrub: 0.6, invalidateOnRefresh: true,
-      onUpdate: (st) => { bar.style.transform = `scaleX(${st.progress})`; clock.textContent = times[Math.min(times.length - 1, Math.floor(st.progress * times.length))]; }
-    }
-  });
-  g.utils.toArray('.day-card img').forEach((img) => {
-    g.fromTo(img, { scale: 1.15 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '.day', start: 'top top', end: () => `+=${dist() * 1.1}`, scrub: true } });
+  // vivir aquí: las tarjetas entran escalonadas y la foto se asienta desde un leve zoom
+  g.utils.toArray('.vv').forEach((v, i) => {
+    g.from(v, { y: 50, opacity: 0, duration: 1.1, delay: (i % 2) * 0.12, ease: 'expo.out', scrollTrigger: { trigger: v, start: 'top 88%' } });
+    g.fromTo(v.querySelector('img'), { scale: 1.08 }, { scale: 1, duration: 1.8, ease: 'power3.out', scrollTrigger: { trigger: v, start: 'top 88%' } });
   });
 
 
@@ -227,6 +217,7 @@ function selectTab(t) {
     x.tabIndex = on ? 0 : -1;
     const panel = document.getElementById(x.getAttribute('aria-controls'));
     panel.hidden = !on;
+    if (on) document.querySelector('.plan-r')?.classList.toggle('show-b', x.id === 'tab-b');
     if (on && motion) {
       g.from(panel.querySelectorAll('.apt-where, .price, tr'), { y: 14, opacity: 0, duration: 0.6, stagger: 0.04, ease: 'power3.out' });
       // el precio cuenta hasta su valor

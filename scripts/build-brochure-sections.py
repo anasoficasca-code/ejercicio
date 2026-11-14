@@ -49,33 +49,15 @@ def counter(x, y, w=2.4):
 def plant(x, y, h=1.1):
     path(f'M{P(x-0.18, y)}L{P(x-0.22, y+0.35)}L{P(x+0.22, y+0.35)}L{P(x+0.18, y)}Z', 'cx-furn')
     path(f'M{P(x, y+0.35)}Q{P(x-0.45, y+h*0.7)} {P(x-0.3, y+h)}M{P(x, y+0.35)}Q{P(x+0.4, y+h*0.75)} {P(x+0.35, y+h*0.95)}M{P(x, y+0.35)}L{P(x+0.05, y+h*1.05)}', 'cx-leaf')
+TREE_AR = 0.6332
 def tree(cx, h, r, seed, cls=''):
-    rnd = random.Random(seed)
-    cy = h - r * 0.95
-    base = h - r * 1.7
-    a(f'<g class="cx-tree{cls}">')
-    path(f'M{P(cx-0.2, 0)}Q{P(cx-0.12, base*0.5)} {P(cx-0.07, base)}L{P(cx+0.07, base)}Q{P(cx+0.12, base*0.5)} {P(cx+0.2, 0)}Z', 'cx-trunk')
-    pts = []
-    N = 26
-    for k in range(N):
-        t = k / N * 6.2832
-        rr = 1 + 0.1 * __import__('math').sin(t * 3 + seed) + 0.07 * (rnd.random() - 0.5) * 2
-        pts.append((cx + r * rr * __import__('math').cos(t), cy + r * 0.82 * rr * __import__('math').sin(t)))
-    mids = [((pts[i][0] + pts[(i+1) % N][0]) / 2, (pts[i][1] + pts[(i+1) % N][1]) / 2) for i in range(N)]
-    d = f'M{P(*mids[-1])}' + ''.join(f'Q{P(*pts[i])} {P(*mids[i])}' for i in range(N)) + 'Z'
-    path(d, 'cx-crown')
-    br = ''
-    for k in range(5):
-        ang = -0.9 + k * 0.45 + (rnd.random() - 0.5) * 0.2
-        ex, ey = cx + r * 0.75 * __import__('math').sin(ang), cy + r * 0.55 * __import__('math').cos(ang) * (0.6 + rnd.random() * 0.4)
-        mx, my = cx + (ex - cx) * 0.4, base + (ey - base) * 0.5
-        br += f'M{P(cx, base - 0.2)}Q{P(mx, my)} {P(ex, ey)}'
-    path(br, 'cx-branch')
-    for k in range(9):
-        t = rnd.random() * 6.28; rr = rnd.random() ** 0.6 * r * 0.7
-        x, y = cx + rr * __import__('math').cos(t), cy + rr * 0.8 * __import__('math').sin(t)
-        path(f'M{P(x-0.3, y)}Q{P(x, y+0.28)} {P(x+0.3, y)}', 'cx-tex')
-    a('</g>')
+    w = h * TREE_AR * (0.95 + (seed % 5) * 0.03)
+    flip = ' transform="translate({0} 0) scale(-1 1)"' if seed % 2 else ''
+    x0 = X(cx - w / 2)
+    if seed % 2:
+        a(f'<g class="cx-tree{cls}" transform="translate({X(cx) * 2} 0) scale(-1 1)"><image href="./assets/brochure/arbol-corte.png" x="{x0}" y="{Y(h)}" width="{Wd(w)}" height="{Wd(h)}" preserveAspectRatio="none"/></g>')
+    else:
+        a(f'<g class="cx-tree{cls}"><image href="./assets/brochure/arbol-corte.png" x="{x0}" y="{Y(h)}" width="{Wd(w)}" height="{Wd(h)}" preserveAspectRatio="none"/></g>')
 
 top = NF * FH
 a('<svg class="cx-svg" viewBox="-70 0 1080 760" role="img" aria-labelledby="cx-t cx-d">')
@@ -88,15 +70,9 @@ for k in range(NF + 1):
     yy = k * FH + SL if k < NF else top + SL
     a(f'<line class="cx-lvl" x1="-30" x2="{X(PW)+8}" y1="{Y(yy)}" y2="{Y(yy)}"/>')
 # árboles del antejardín y del fondo, vecino
-tree(PW + 5.4, 10.5, 2.6, 7, ' cx-far')
-a('<g class="cx-site">')
-path(f'M{P(PW, 0)}L{P(PW, 6.6)}L{P(PW+3.2, 8.4)}L{P(PW+6.6, 6.6)}L{P(PW+6.6, 0)}', 'cx-nb')
-for yy in (1.0, 4.1):
-    for xx in (PW + 1.0, PW + 4.2):
-        rect(xx, yy, xx + 1.3, yy + 1.5, 'cx-nbw')
-a(f'<text x="{X(PW+3.3)}" y="{Y(7.3)}" class="cx-s" text-anchor="middle">Vecino</text></g>')
-tree(-3.0, 9.2, 2.5, 3)
-tree(-1.0, 6.6, 1.7, 11)
+tree(-3.1, 9.6, 2.5, 4)
+tree(-1.2, 7.2, 1.7, 11)
+tree(PW + 2.6, 8.8, 2.4, 6)
 # suelo
 a(f'<rect x="-70" y="{Y(0)}" width="1080" height="{Wd(2.4)}" fill="url(#cx-earth)"/>')
 a(f'<line class="cx-ground" x1="-70" x2="1010" y1="{Y(0)}" y2="{Y(0)}"/>')
