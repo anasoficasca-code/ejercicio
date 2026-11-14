@@ -11,6 +11,7 @@ import { Traffic } from './Traffic.js';
 import { PoiLayer } from './PoiLayer.js';
 import { store } from '../state/store.js';
 import { RoomPhoto } from '../ui/RoomPhoto.js';
+import { GoogleContext } from './GoogleContext.js';
 
 /**
  * MasterplanScene — motor Three.js del masterplan, con el mismo cielo (atmósfera + nubes volumétricas),
@@ -110,6 +111,7 @@ export class MasterplanScene {
     setNight(dusk);
     this.building?.setNight(dusk);
     this.city?.setNight(night);
+    this.google?.setNight(night, Math.max(0, (dusk - 0.35) / 0.65));
     this.traffic?.setNight(night);
     this._night = night;
     this._dusk = dusk;
@@ -158,6 +160,16 @@ export class MasterplanScene {
       onPick: (p) => this.onPick?.(p)
     });
     await this.building.ready;
+    // contexto real: la malla fotorrealista de Google reemplaza el barrio propio cuando termina de cargar
+    if (GoogleContext.enabled) {
+      this.google = new GoogleContext(this.scene, { camera: this.camera, renderer: this.renderer, mobile: this.mobile });
+      this.google.ready.then((ok) => {
+        if (!ok) return;
+        this.google.setLot(this.building.frame, this.building.poly);
+        this.google.setNight(this._night || 0, this._dusk || 0);
+        this.google.onShow = () => this._useGoogleContext();
+      });
+    }
     const c = this.building.center();
     this.home = { target: new THREE.Vector3(c.x, 7, c.z), pos: new THREE.Vector3(c.x - 44, 31, c.z - 47) };
     this.controls.target.copy(this.home.target);
@@ -324,6 +336,20 @@ export class MasterplanScene {
 
   hideRoomPhoto() { this.photo?.hide(); }
 
+  /** Con la malla de Google a la vista se apagan el barrio propio y el tráfico; quedan las capas de análisis. */
+  _useGoogleContext() {
+    const keep = new Set(['Lotes Catastro', 'Área de estudio', 'Predios evaluados']);
+    this._cityHidden = this.city.group.children.filter((c) => !keep.has(c.name));
+    this._keepCityHidden();
+    if (this.traffic?.group) this.traffic.group.visible = false;
+    let el = document.querySelector('.gctx-attr');
+    if (!el) { el = document.createElement('div'); el.className = 'gctx-attr'; document.getElementById('app').appendChild(el); }
+    const put = () => { el.textContent = this.google.attribution(); };
+    put(); clearInterval(this._attrT); this._attrT = setInterval(put, 4000);
+  }
+
+  _keepCityHidden() { if (this._cityHidden) for (const c of this._cityHidden) c.visible = false; }
+
   /** Al elegir una unidad se bajan sus 360 en segundo plano (abren al instante al entrar). */
   _preloadPanos(unit) {
     const keys = unit.typology === 'Apartamento' ? ['sala', 'habitacion', 'bano'] : unit.id === 'lobby' ? ['lobby'] : unit.id === 'salon' ? ['salon', 'lobby'] : [];
@@ -489,6 +515,7 @@ export class MasterplanScene {
     // con el 360 abierto tapando todo, la ciudad no se dibuja (el visor usa la GPU)
     if (this.photo?.covering) return;
     this._adapt(dt);
+    if (this.google?.update(dt)) this._keepCityHidden();
     this._updateSpots();
     // las sombras se recalculan un cuadro de cada dos (el sol y casi todo el barrio están quietos)
     this._frame = (this._frame || 0) + 1;

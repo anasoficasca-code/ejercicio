@@ -1528,3 +1528,4 @@ body.has-room-photo .room-detail-card{background:rgba(14,22,34,.72);backdrop-fil
 .ls-wrap .ls-bar{background:rgba(255,255,255,.25)}
 .ls-wrap .ls-bar i{background:#e2b58b}
 .ls-wrap .ls-logo{filter:brightness(0) invert(1);opacity:.85}
+.gctx-attr{position:fixed;left:10px;bottom:6px;z-index:6;font:500 10px var(--font-main);color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.7);pointer-events:none;text-transform:none;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
