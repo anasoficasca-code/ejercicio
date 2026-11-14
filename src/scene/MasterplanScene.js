@@ -102,15 +102,15 @@ export class MasterplanScene {
     this.sun.color.lerp(this._morningTint ||= new THREE.Color(1.0, 0.8, 0.62), morning * 0.4);
     this.sun.intensity *= 1 + golden * 0.45 + morning * 0.15;
     // luz de relleno del cielo un poco más alta: las sombras quedan algo más suaves
-    this._hemiBase = 0.46 * (1 - golden * 0.3) * (1 + morning * 0.1);
+    this._hemiBase = 0.62 * (1 - golden * 0.08) * (1 + morning * 0.1);   // más luz de cielo: sombras abiertas, no negras
     this.hemi.intensity = this._hemiBase * (this._cut ? 1.6 : 1);   // planta abierta: más luz de cielo adentro
     this._baseExposure ??= this.renderer.toneMappingExposure;
-    this.renderer.toneMappingExposure = this._baseExposure * (1 + golden * 0.08 + morning * 0.05 - noon * 0.05);
+    this.renderer.toneMappingExposure = this._baseExposure * (1.1 + golden * 0.14 + morning * 0.05 - noon * 0.05);
     // en la hora dorada los apartamentos y los bañadores de fachada se encienden antes que la calle
     const dusk = Math.max(night, ss(16.3, 17.2, hour) * 0.85);
     setNight(dusk);
     this.building?.setNight(dusk);
-    this.city?.setNight(night);
+    this.city?.setNight(Math.max(night, dusk * 0.8));   // las ventanas del barrio se encienden desde la hora dorada
     this.google?.setNight(night, Math.max(0, (dusk - 0.35) / 0.65));
     this.traffic?.setNight(night);
     this._night = night;

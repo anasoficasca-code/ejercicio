@@ -355,7 +355,7 @@ export class CityContext {
           // adoquín gris de concreto (espiga) para andenes, plazoletas y patios; asfalto donde la foto es oscura
           conc = mix(vec3(dot(conc, vec3(0.3, 0.59, 0.11))), conc, 0.22) * 1.15;
           vec3 paved = mix(asph, conc, smoothstep(0.055, 0.085, lum));
-          vec3 ground = asph; // calzadas en asfalto: andenes y manzanas van modelados encima (antes: máscara de la foto)
+          vec3 ground = mix(vec3(dot(asph, vec3(0.3, 0.59, 0.11))), asph, 0.5) * 2.5 + vec3(0.02, 0.019, 0.018); // asfalto gris medio, no negro (como en los renders) · calzadas en asfalto: andenes y manzanas van modelados encima (antes: máscara de la foto)
           // borde exterior: se funde con la ortofoto del nivel lejano (sin costura)
           vec2 eb = min(st, 1.0 - st) * uSatB.zw;
           float edge = 1.0 - smoothstep(20.0, 180.0, min(eb.x, eb.y));
@@ -533,7 +533,8 @@ export class CityContext {
             // local comercial en primer piso (vitrina corrida) en parte de los edificios
             float shop = step(fract(vSeed * 71.3 + 0.21), 0.42) * step(vFac.y, 3.0);
             if (shop > 0.5) win = step(0.05, fx) * step(fx, 0.95) * step(0.35, vFac.y) * step(vFac.y, 2.6);
-            vec2 cell = floor(vec2(vFac.x / cw, vFac.y / fh)) + vec2(vSeed * 91.7, vSeed * 17.3);
+            float sdQ = floor(vSeed * 512.0 + 0.5) / 512.0;   // semilla cuantizada: sin ruido por interpolación entre vértices
+            vec2 cell = floor(vec2(vFac.x / cw, vFac.y / fh)) + floor(vec2(sdQ * 91.7, sdQ * 17.3));
             float lit = step(0.95, hsh(cell));
             vec3 glass = mix(vec3(0.05, 0.065, 0.085), vec3(0.16, 0.2, 0.25), 0.4 * hsh(cell)) + lit * vec3(0.08, 0.07, 0.04);
             {
@@ -602,9 +603,9 @@ export class CityContext {
             glass = pow(glass, vec3(2.2));
             diffuseColor.rgb = mix(mix(base * (1.0 - band), glass, win), mix(base, pow(vec3(0.16, 0.18, 0.2), vec3(2.2)), 0.2), aa) * mix(ao, 1.0, aa * 0.6);
             {
-              float onN = step(0.7, hsh(cell + 21.3)) * uNight;
+              float onN = step(0.52, hsh(cell + 21.3)) * smoothstep(0.0, 0.85, uNight);
               vec3 warmN = mix(vec3(1.0, 0.66, 0.34), vec3(1.0, 0.85, 0.62), hsh(cell + 5.5));
-              totalEmissiveRadiance += warmN * warmN * onN * mix(win, 0.12, aa) * (shop > 0.5 ? 0.35 : 0.6);
+              totalEmissiveRadiance += warmN * warmN * onN * mix(win, 0.12, aa) * (shop > 0.5 ? 0.7 : 1.05);
             }
             facRough = mix(win, 0.25, aa);
           }`)
