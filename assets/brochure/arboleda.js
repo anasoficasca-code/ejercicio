@@ -501,3 +501,45 @@ if (motion) {
 
 }
 
+
+// ================================================================== v4
+// números de sección: cada rótulo lleva su número en orden (01, 02, …)
+(() => {
+  let n = 0;
+  document.querySelectorAll('main section .hero-kicker, footer.closing .hero-kicker, .mp .hero-kicker').forEach((k) => {
+    if (k.closest('.hero')) return;
+    n++;
+    const sp = document.createElement('span'); sp.className = 'kn'; sp.textContent = String(n).padStart(2, '0');
+    k.prepend(sp);
+  });
+})();
+
+if (motion) {
+  // portada: al bajar, la foto se enmarca y se aleja (pasa de pantalla completa a lámina)
+  g.fromTo('.hero-media', { clipPath: 'inset(0% 0% 0% 0%)' }, { clipPath: 'inset(7% 5% 12% 5%)', ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+  // galería horizontal: la sección queda fija y las fotos corren de lado
+  const gal = document.querySelector('.gal');
+  if (gal && matchMedia('(min-width: 901px)').matches) {
+    const track = gal.querySelector('.gal-track'), items = [...gal.querySelectorAll('.gal-item')];
+    const cnt = gal.querySelector('.gal-count b'), bar = gal.querySelector('.gal-bar i');
+    const dist = () => Math.max(0, track.scrollWidth - innerWidth);
+    g.to(track, { x: () => -dist(), ease: 'none', scrollTrigger: {
+      trigger: gal, pin: '.gal-pin', start: 'top top', end: () => `+=${dist() * 1.15}`, scrub: 0.7, invalidateOnRefresh: true,
+      onUpdate: (st) => { bar.style.transform = `scaleX(${st.progress})`; cnt.textContent = String(Math.min(items.length, 1 + Math.floor(st.progress * items.length))).padStart(2, '0'); }
+    } });
+    items.forEach((it) => g.fromTo(it.querySelector('img'), { scale: 1.18 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: gal, start: 'top top', end: () => `+=${dist() * 1.15}`, scrub: true } }));
+  } else if (gal) {
+    gal.querySelector('.gal-track').style.cssText = 'overflow-x:auto;scroll-snap-type:x mandatory;width:auto';
+    gal.querySelectorAll('.gal-item').forEach((it) => { it.style.scrollSnapAlign = 'start'; it.querySelector('img').style.transform = 'none'; });
+  }
+
+  // mosaico de interiores: las piezas entran escalonadas desde un leve zoom
+  g.utils.toArray('.bt').forEach((b, i) => {
+    g.from(b, { opacity: 0, y: 40, duration: 1.1, delay: i * 0.08, ease: 'expo.out', scrollTrigger: { trigger: '.bento-grid', start: 'top 82%' } });
+    g.fromTo(b.querySelector('img'), { scale: 1.14 }, { scale: 1, duration: 1.8, delay: i * 0.08, ease: 'power3.out', scrollTrigger: { trigger: '.bento-grid', start: 'top 82%' } });
+  });
+  // rótulos numerados: la línea crece al entrar
+  g.utils.toArray('.hero-kicker').forEach((k) => g.from(k, { opacity: 0, x: -20, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: k, start: 'top 92%' } }));
+  addEventListener('load', () => ST.refresh());
+}
