@@ -207,47 +207,13 @@ if (mpSec) {
 }
 
 // ------------------------------------------------------------------ tipologías: la pastilla azul se desliza a la pestaña elegida
-const tabs = [...document.querySelectorAll('.tab')];
-const ink = document.querySelector('.tab-ink');
-function placeInk(t) { ink.style.width = `${t.offsetWidth}px`; ink.style.transform = `translateX(${t.offsetLeft - 5}px)`; }
-function selectTab(t) {
-  tabs.forEach((x) => {
-    const on = x === t;
-    x.classList.toggle('is-on', on);
-    x.setAttribute('aria-selected', on);
-    x.tabIndex = on ? 0 : -1;
-    const panel = document.getElementById(x.getAttribute('aria-controls'));
-    panel.hidden = !on;
-    if (on) document.querySelector('.plan-r')?.classList.toggle('show-b', x.id === 'tab-b');
-    if (on && motion) {
-      g.from(panel.querySelectorAll('.apt-where, .price, tr'), { y: 14, opacity: 0, duration: 0.6, stagger: 0.04, ease: 'power3.out' });
-      // el precio cuenta hasta su valor
-      const p = panel.querySelector('[data-price]'), to = +p.dataset.price, n = { v: to * 0.7 };
-      g.to(n, { v: to, duration: 1, ease: 'power3.out', onUpdate: () => { p.textContent = '$' + (Math.round(n.v / 1e5) * 1e5).toLocaleString('es-CO'); }, onComplete: () => { p.textContent = '$' + to.toLocaleString('es-CO'); } });
-    }
-  });
-  placeInk(t);
-}
-tabs.forEach((t, i) => {
-  t.addEventListener('click', () => selectTab(t));
-  t.addEventListener('keydown', (e) => {
-    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-    const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
-    n.focus(); selectTab(n);
-  });
+// precios de los dos tipos: cuentan hasta su valor al aparecer
+if (motion) document.querySelectorAll('.tipo [data-price]').forEach((p) => {
+  const to = +p.dataset.price, n = { v: to * 0.6 };
+  g.to(n, { v: to, duration: 1.6, ease: 'power3.out', scrollTrigger: { trigger: p, start: 'top 90%' },
+    onUpdate: () => { p.textContent = '$' + (Math.round(n.v / 1e5) * 1e5).toLocaleString('es-CO'); }, onComplete: () => { p.textContent = '$' + to.toLocaleString('es-CO'); } });
 });
-placeInk(tabs[0]);
-addEventListener('resize', () => placeInk(tabs.find((t) => t.classList.contains('is-on'))));
-document.fonts?.ready.then(() => placeInk(tabs.find((t) => t.classList.contains('is-on'))));
-
-// planta: clic para acercar donde se señala, otro clic para alejar
-const plan = document.querySelector('[data-zoom]');
-plan.addEventListener('click', (e) => {
-  const r = plan.getBoundingClientRect();
-  plan.style.setProperty('--zx', `${((e.clientX - r.left) / r.width) * 100}%`);
-  plan.style.setProperty('--zy', `${((e.clientY - r.top) / r.height) * 100}%`);
-  plan.classList.toggle('zoomed');
-});
+if (motion) g.utils.toArray('.tipo').forEach((t, i) => g.from(t, { y: 60, opacity: 0, duration: 1.2, delay: i * 0.15, ease: 'expo.out', scrollTrigger: { trigger: '.tipos', start: 'top 82%' } }));
 
 // ------------------------------------------------------------------ zonas: al señalar un nombre cambia la foto
 const zoneBtns = [...document.querySelectorAll('.zone-list button')];

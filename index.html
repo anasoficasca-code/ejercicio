@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=v4b" />
+  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=tipos1" />
   <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script></head>
 <body class="is-loading">
     <div class="progress" aria-hidden="true"><i></i></div>
@@ -180,53 +180,39 @@
     <section class="sec apts" id="apartamentos">
       <div class="wrap">
         <div class="apts-top">
-          <h2 data-reveal>Dos tipos de apartamento</h2>
-          <div class="tabs" role="tablist" aria-label="Tipos de apartamento">
-            <span class="tab-ink" aria-hidden="true"></span>
-            <button role="tab" id="tab-a" aria-controls="tipo-a" aria-selected="true" class="tab is-on">Tipo A, 78,75 m²</button>
-            <button role="tab" id="tab-b" aria-controls="tipo-b" aria-selected="false" class="tab" tabindex="-1">Tipo B, 70 m²</button>
-          </div>
+          <p class="hero-kicker">Apartamentos</p>
+          <h2>Dos tipos de apartamento</h2>
+          <p class="apts-lead">Los dos tienen sala, comedor y cocina abiertos al balcón, dos alcobas y dos baños. Precios de lista en pesos colombianos.</p>
         </div>
-        <div class="apts-grid">
-          <div class="apt-panels">
-            <article class="apt" id="tipo-a" role="tabpanel" aria-labelledby="tab-a">
-              <p class="apt-where">Sobre la Calle 56, frente a la parroquia. Los esquineros tienen dos fachadas.</p>
-              <p class="price" data-price="708750000">$708.750.000</p>
-              <table class="areas">
-                <caption class="sr">Espacios del apartamento tipo A según el modelo del proyecto</caption>
-                <tbody>
-                  <tr><th scope="row">Sala, comedor y cocina</th><td>41,0 m²</td></tr>
-                  <tr><th scope="row">Alcoba principal con baño</th><td>16,1 m²</td></tr>
-                  <tr><th scope="row">Alcoba 2</th><td>10,5 m²</td></tr>
-                  <tr><th scope="row">Baño social</th><td>4,9 m²</td></tr>
-                  <tr><th scope="row">Ropas y depósito</th><td>6,7 m²</td></tr>
-                </tbody>
-                <tfoot><tr><th scope="row">Área total con muros y balcón</th><td>78,75 m²</td></tr></tfoot>
-              </table>
-            </article>
-            <article class="apt" id="tipo-b" role="tabpanel" aria-labelledby="tab-b" hidden>
-              <p class="apt-where">Hacia el jardín del patio, del lado más silencioso.</p>
-              <p class="price" data-price="630000000">$630.000.000</p>
-              <table class="areas">
-                <caption class="sr">Espacios del apartamento tipo B según el modelo del proyecto</caption>
-                <tbody>
-                  <tr><th scope="row">Sala, comedor y cocina</th><td>40,0 m²</td></tr>
-                  <tr><th scope="row">Alcoba principal con baño</th><td>10,8 m²</td></tr>
-                  <tr><th scope="row">Alcoba 2</th><td>7,9 m²</td></tr>
-                  <tr><th scope="row">Baño social</th><td>2,9 m²</td></tr>
-                  <tr><th scope="row">Ropas y depósito</th><td>3,9 m²</td></tr>
-                </tbody>
-                <tfoot><tr><th scope="row">Área total con muros y balcón</th><td>70,00 m²</td></tr></tfoot>
-              </table>
-            </article>
-            <a class="link-3d" href="./masterplan.html">Ver los apartamentos en el recorrido 3D</a>
-          </div>
-          <figure class="plan plan-r" data-zoom>
-            <img class="pl-a" src="./assets/renders/planta-a-render.webp" alt="Planta renderizada del apartamento tipo A, 78,75 m²: sala, comedor y cocina abiertos, dos alcobas, dos baños y balcón" loading="lazy" />
-            <img class="pl-b" src="./assets/renders/planta-b-render.webp" alt="Planta renderizada del apartamento tipo B, 70 m²: sala, comedor y cocina abiertos, dos alcobas, dos baños y balcón" loading="lazy" />
-            <figcaption><span class="pl-a">Planta tipo A · 78,75 m²</span><span class="pl-b">Planta tipo B · 70 m²</span></figcaption>
-          </figure>
+        <div class="tipos">
+          <article class="tipo">
+            <figure class="tipo-plan"><img src="./assets/renders/planta-a-render.webp" alt="Planta renderizada del apartamento tipo A, 78,75 m²" loading="lazy" /></figure>
+            <div class="tipo-body">
+              <p class="tipo-tag">Tipo A</p>
+              <div class="tipo-nums">
+                <div><span>Área</span><b>78,75 m²</b></div>
+                <div><span>Precio</span><b class="price" data-price="708750000">$708.750.000</b></div>
+              </div>
+              <p class="tipo-where">Sobre la Calle 56, frente a la parroquia. Los esquineros tienen dos fachadas.</p>
+              <p class="tipo-units">10 unidades · 2 por piso, pisos 2 a 6</p>
+              <table class="areas"><caption class="sr">Espacios del apartamento tipo A</caption><tbody><tr><th scope="row">Sala, comedor y cocina</th><td>41,0 m²</td></tr><tr><th scope="row">Alcoba principal con baño</th><td>16,1 m²</td></tr><tr><th scope="row">Alcoba 2</th><td>10,5 m²</td></tr><tr><th scope="row">Baño social</th><td>4,9 m²</td></tr><tr><th scope="row">Ropas y depósito</th><td>6,7 m²</td></tr></tbody></table>
+            </div>
+          </article>
+          <article class="tipo">
+            <figure class="tipo-plan"><img src="./assets/renders/planta-b-render.webp" alt="Planta renderizada del apartamento tipo B, 70,00 m²" loading="lazy" /></figure>
+            <div class="tipo-body">
+              <p class="tipo-tag">Tipo B</p>
+              <div class="tipo-nums">
+                <div><span>Área</span><b>70,00 m²</b></div>
+                <div><span>Precio</span><b class="price" data-price="630000000">$630.000.000</b></div>
+              </div>
+              <p class="tipo-where">Hacia el jardín del patio, del lado más silencioso.</p>
+              <p class="tipo-units">10 unidades · 2 por piso, pisos 2 a 6</p>
+              <table class="areas"><caption class="sr">Espacios del apartamento tipo B</caption><tbody><tr><th scope="row">Sala, comedor y cocina</th><td>40,0 m²</td></tr><tr><th scope="row">Alcoba principal con baño</th><td>10,8 m²</td></tr><tr><th scope="row">Alcoba 2</th><td>7,9 m²</td></tr><tr><th scope="row">Baño social</th><td>2,9 m²</td></tr><tr><th scope="row">Ropas y depósito</th><td>3,9 m²</td></tr></tbody></table>
+            </div>
+          </article>
         </div>
+        <a class="link-3d" href="#recorrido">Ver los apartamentos en el masterplan 3D</a>
         <div class="finishes">
           <figure class="pic" data-parallax="-6"><img src="./assets/renders/cocina-final.webp" alt="Cocina abierta con isla de piedra gris, campana de acero, muebles de nogal y listones de madera, con el comedor y la sala al fondo frente al balcón" loading="lazy" /></figure>
           <div>
@@ -407,5 +393,5 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="./assets/brochure/arboleda.js?v=v4b"></script></body>
+  <script src="./assets/brochure/arboleda.js?v=tipos1"></script></body>
 </html>
