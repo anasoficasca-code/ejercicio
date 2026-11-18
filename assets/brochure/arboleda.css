@@ -900,3 +900,18 @@ h2 { font-size: clamp(30px, 4.2vw, 64px) !important; line-height: 1.08 !importan
 .gal-pin { grid-template-columns: minmax(0, 1fr); }
 .gal-head { width: min(100% - 2 * var(--gutter), var(--maxw)); }
 @media (max-width: 900px) { .bt figcaption { padding: 26px 10px 8px; } .bt figcaption b { font-size: 10px; letter-spacing: .1em; } .bt-b figcaption span, .bt-c figcaption span, .bt-d figcaption span { display: none; } }
+
+/* ---- indicador de pisos (reemplaza la maqueta 3D) */
+.lift-model { display: none !important; }
+.lift:has(.lift-floors) .lift-rail { display: none; }
+.lift-floors { position: absolute; z-index: 3; right: var(--gutter); top: 50%; transform: translateY(-50%); width: clamp(200px, 19vw, 280px); padding: 22px 18px 14px 6px;
+  background: linear-gradient(155deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .03)), rgba(10, 18, 30, .3); border: 1px solid rgba(255, 255, 255, .2);
+  backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); }
+.lift-floors svg { width: 100%; height: auto; display: block; overflow: visible; }
+.lf-f rect { fill: rgba(255, 255, 255, .06); stroke: rgba(255, 255, 255, .45); stroke-width: 1; transition: fill .5s, stroke .5s; }
+.lf-f text { font: 500 10.5px var(--display); letter-spacing: .18em; text-transform: uppercase; fill: rgba(255, 255, 255, .5); transition: fill .5s; }
+.lf-f.on rect { fill: rgba(214, 194, 155, .85); stroke: #d6c29b; }
+.lf-f.on text { fill: #fff; }
+.lf-ground { stroke: rgba(255, 255, 255, .6); stroke-width: 1.5; }
+.lift:has(.lift-floors) .lift-level { right: auto; left: var(--gutter); top: 13svh; bottom: auto; align-items: flex-start; }
+@media (max-width: 760px) { .lift-floors { top: calc(env(safe-area-inset-top) + 80px); transform: none; right: 12px; width: 150px; padding: 12px 8px 8px 0; } .lf-f text { font-size: 13px; } }

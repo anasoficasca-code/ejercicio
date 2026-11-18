@@ -135,6 +135,7 @@ if (lift) {
   const setLevel = (l) => {
     label.textContent = l === 'T' ? 'Cubierta' : 'Piso';
     rail.forEach((li) => li.classList.toggle('on', li.dataset.l === l));
+    document.querySelectorAll('.lf-f').forEach((f) => f.classList.toggle('on', f.dataset.l === l));
     const to = numOf(l), o = { v: shown };
     // el contador sube piso a piso y en la cubierta termina en una T
     const write = (v) => { num.textContent = Math.round(v) >= 7 ? 'T' : String(Math.round(v)).padStart(2, '0'); };
@@ -525,7 +526,7 @@ if (motion) {
     const cnt = gal.querySelector('.gal-count b'), bar = gal.querySelector('.gal-bar i');
     const dist = () => Math.max(0, track.scrollWidth - innerWidth);
     g.to(track, { x: () => -dist(), ease: 'none', scrollTrigger: {
-      trigger: gal, pin: '.gal-pin', start: 'top top', end: () => `+=${dist() * 1.15}`, scrub: 0.7, invalidateOnRefresh: true,
+      trigger: gal, pin: '.gal-pin', refreshPriority: 2, start: 'top top', end: () => `+=${dist() * 1.15}`, scrub: 0.7, invalidateOnRefresh: true,
       onUpdate: (st) => { bar.style.transform = `scaleX(${st.progress})`; cnt.textContent = String(Math.min(items.length, 1 + Math.floor(st.progress * items.length))).padStart(2, '0'); }
     } });
     items.forEach((it) => g.fromTo(it.querySelector('img'), { scale: 1.18 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: gal, start: 'top top', end: () => `+=${dist() * 1.15}`, scrub: true } }));
