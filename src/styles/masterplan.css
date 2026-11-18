@@ -1532,3 +1532,25 @@ body.has-room-photo .room-detail-card{background:rgba(14,22,34,.72);backdrop-fil
 
 /* vista previa dentro del brochure: solo la escena, sin paneles */
 body.is-preview .left-sidebar-wrapper,body.is-preview .bottom-dock-container,body.is-preview .top-right-bar,body.is-preview .sky-time-control,body.is-preview .room-detail-card,body.is-preview .labels-layer,body.is-preview .gctx-attr{opacity:0!important;pointer-events:none!important;transition:opacity .5s}
+
+/* ================================================================== interfaz de vidrio (moderna) */
+:root { --glass: rgba(18, 26, 38, .38); --glass-strong: rgba(18, 26, 38, .52); --glass-line: rgba(255, 255, 255, .22); --glass-hi: rgba(255, 255, 255, .14); }
+.left-sidebar, .bottom-dock, .mode-switch-group, .sky-time-control, .room-detail-card, .top-left-brand, .hover-room-tooltip, .umbra-modal-box, .location-info-sidebar {
+  background: linear-gradient(155deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, .04) 38%, rgba(10, 16, 26, .18) 100%), var(--glass) !important;
+  backdrop-filter: blur(22px) saturate(1.6) brightness(1.04) !important; -webkit-backdrop-filter: blur(22px) saturate(1.6) brightness(1.04) !important;
+  border: 1px solid var(--glass-line) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 -1px 0 rgba(255, 255, 255, .05), 0 18px 50px rgba(5, 10, 20, .32) !important;
+}
+.left-sidebar, .room-detail-card, .umbra-modal-box, .location-info-sidebar { border-radius: 22px !important; }
+.bottom-dock { border-radius: 24px !important; }
+.mode-switch-group, .sky-time-control { border-radius: 999px !important; }
+.room-detail-card { background: linear-gradient(155deg, rgba(255, 255, 255, .18) 0%, rgba(255, 255, 255, .05) 40%, rgba(10, 16, 26, .25) 100%), var(--glass-strong) !important; }
+.contact-pill-btn, .jmc-pill-btn { background: rgba(255, 255, 255, .14) !important; border: 1px solid var(--glass-line) !important; backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 8px 24px rgba(5, 10, 20, .25) !important; color: #fff !important; }
+.contact-pill-btn:hover, .jmc-pill-btn:hover { background: rgba(255, 255, 255, .26) !important; }
+.mode-pill-btn.active, .dock-tab-btn.active, .view-seg button[aria-pressed="true"], .room-chips button[aria-pressed="true"] { background: rgba(255, 255, 255, .92) !important; color: #0f1c2e !important; box-shadow: 0 4px 14px rgba(5, 10, 20, .25); }
+.dock-tab-btn { background: rgba(255, 255, 255, .07) !important; border: 1px solid rgba(255, 255, 255, .12) !important; border-radius: 16px !important; }
+.dock-tab-btn:hover { background: rgba(255, 255, 255, .16) !important; }
+.arb-stats > div, .arb-level, .jmc-room-card, .room-chips button, .view-seg { background: rgba(255, 255, 255, .07) !important; border-color: rgba(255, 255, 255, .14) !important; }
+.detail-close-btn { background: rgba(255, 255, 255, .14) !important; border: 1px solid var(--glass-line); backdrop-filter: blur(10px); }
+.detail-close-btn:hover { background: rgba(255, 255, 255, .3) !important; }
+.left-sidebar *::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .25); border-radius: 6px; }

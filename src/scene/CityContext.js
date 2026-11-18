@@ -355,7 +355,7 @@ export class CityContext {
           // adoquín gris de concreto (espiga) para andenes, plazoletas y patios; asfalto donde la foto es oscura
           conc = mix(vec3(dot(conc, vec3(0.3, 0.59, 0.11))), conc, 0.22) * 1.15;
           vec3 paved = mix(asph, conc, smoothstep(0.055, 0.085, lum));
-          vec3 ground = mix(vec3(dot(asph, vec3(0.3, 0.59, 0.11))), asph, 0.5) * 2.5 + vec3(0.02, 0.019, 0.018); // asfalto gris medio, no negro (como en los renders) · calzadas en asfalto: andenes y manzanas van modelados encima (antes: máscara de la foto)
+          vec3 ground = mix(vec3(dot(asph, vec3(0.3, 0.59, 0.11))), asph, 0.35) * 1.15 + vec3(0.006, 0.008, 0.012); // asfalto gris carbón: se distingue del andén claro // asfalto gris medio, no negro (como en los renders) · calzadas en asfalto: andenes y manzanas van modelados encima (antes: máscara de la foto)
           // borde exterior: se funde con la ortofoto del nivel lejano (sin costura)
           vec2 eb = min(st, 1.0 - st) * uSatB.zw;
           float edge = 1.0 - smoothstep(20.0, 180.0, min(eb.x, eb.y));
@@ -857,7 +857,7 @@ export class CityContext {
     g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     const map = loadPBR('concrete_pavement', 'diff', true);
     const normalMap = loadPBR('concrete_pavement', 'nor_gl', false); // capa de relieve real (Poly Haven)
-    this.andenes = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map, normalMap, color: 0xe9e5dd, roughness: 0.9, metalness: 0 }));
+    this.andenes = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map, normalMap, color: 0xfff6e8, emissive: 0x4a4540, emissiveIntensity: 0.55, roughness: 0.85, metalness: 0 })); // andén claro (concreto) que se lee contra el asfalto
     this._withGroundAO(this.andenes.material, 'andenes');
     this.andenes.receiveShadow = true;
     this.andenes.name = 'Andenes';

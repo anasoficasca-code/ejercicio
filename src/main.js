@@ -49,11 +49,13 @@ class App {
       this.tour.onStop = syncPins;
       this.tour.onChange = syncPins;
       this.loading.set(0.8, 'Descargando la ortofoto…');
-      await Promise.race([this.scene.city.ready, new Promise((r) => setTimeout(r, 7000))]);
+      // la ortofoto y el relieve terminan de llegar con la escena ya a la vista (antes se esperaban hasta 7 s)
+      await Promise.race([this.scene.city.ready, new Promise((r) => setTimeout(r, 900))]);
       const hour = document.getElementById('sky-hour');
       this.scene.setHour(parseFloat(hour.value));
       this.loading.set(0.95, 'Preparando el recorrido…');
-      await this.scene.precompile();
+      // los sombreados se preparan a lo sumo 1,2 s; el resto se compila mientras corre la intro
+      await Promise.race([this.scene.precompile(), new Promise((r) => setTimeout(r, 1200))]);
       this.loading.done();
       // llegada: la cámara baja sobre Galerías hasta la esquina mientras se encienden las luces de la tarde
       this.intro = new Intro({
