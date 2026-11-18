@@ -100,7 +100,7 @@ export class PostFX {
     this.grade = new ShaderPass(GradeShader);
     const u = this.grade.uniforms;
     // cámara real: color neutro, contraste suave, viñeta de lente leve
-    u.uContrast.value = 1.04; u.uSaturation.value = 0.92; u.uVignette.value = 0.16;
+    u.uContrast.value = 1.08; u.uSaturation.value = 1.04; u.uVignette.value = 0.16;
     u.uWarm.value.set(1.0, 1.0, 0.99); u.uGrain.value = 0.004; u.uLift.value = 0.004;
     this.composer.addPass(this.grade);
     this.composer.addPass(new OutputPass());
@@ -114,7 +114,7 @@ export class PostFX {
       u.uWarm.value.set(1.04, 1.0, 0.93); u.uLift.value = 0.006; u.uGrain.value = 0.006;
       this.bokeh.enabled = !this.low;
     } else {
-      u.uContrast.value = 1.04; u.uSaturation.value = 0.92; u.uVignette.value = 0.16;
+      u.uContrast.value = 1.08; u.uSaturation.value = 1.04; u.uVignette.value = 0.16;
       u.uWarm.value.set(1.0, 1.0, 0.99); u.uLift.value = 0.004; u.uGrain.value = 0.004;
       this.bokeh.enabled = false;
     }

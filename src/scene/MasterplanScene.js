@@ -127,8 +127,8 @@ export class MasterplanScene {
     const near = THREE.MathUtils.clamp(dist * 0.012, 0.06, 30);   // adentro de un apartamento la cámara queda cerca
     if (Math.abs(near - cam.near) > 0.02 * cam.near) { cam.near = near; cam.updateProjectionMatrix(); }
     // bruma de altura (perspectiva aérea): los Cerros y el fondo se aclaran como en las fotos de dron
-    this.scene.fog.near = 120 + dist * 0.6;
-    this.scene.fog.far = 3200 + dist * 4;
+    this.scene.fog.near = 260 + dist * 0.8;
+    this.scene.fog.far = 6200 + dist * 5;   // aire de la sabana más limpio: los cerros se leen
     this.skyEnv.sky?.position.copy(cam.position);
     this.skyEnv.clouds?.position.copy(cam.position);
   }

@@ -36,8 +36,8 @@ const CLOUD_FRAG = /* glsl */`
   uniform vec2  uWind;
   uniform float uSteps;
 
-  const float CLOUD_BOTTOM = 1600.0;
-  const float CLOUD_TOP    = 3200.0;
+  const float CLOUD_BOTTOM = 1150.0;
+  const float CLOUD_TOP    = 2700.0;
 
   float hash13(vec3 p3) {
     p3 = fract(p3 * 0.1031);
@@ -72,17 +72,18 @@ const CLOUD_FRAG = /* glsl */`
   float cloudDensity(vec3 p, int oct) {
     float h = clamp((p.y - CLOUD_BOTTOM) / (CLOUD_TOP - CLOUD_BOTTOM), 0.0, 1.0);
     // perfil vertical cúmulo: base plana, cima redondeada
-    float profile = smoothstep(0.0, 0.12, h) * smoothstep(1.0, 0.45, h);
-    vec3 q = p * 0.00042;
+    float profile = smoothstep(0.0, 0.08, h) * smoothstep(1.0, 0.35, h);
+    vec3 q = p * 0.00031;
     q.xz += uWind * uTime;
     // forma base a gran escala (cobertura)
     float base = fbm(q * 0.55 + vec3(0.0, uTime * 0.004, 0.0), 3);
+    base = mix(base, 1.0 - abs(base * 2.0 - 1.0), 0.35);           // bordes redondeados (cúmulo)
     float shape = base - (1.0 - uCoverage);
     shape = shape * profile;
     if (shape <= 0.0) return 0.0;
     // erosión de detalle (bordes de algodón)
     float detail = fbm(q * 2.6 - vec3(uTime * 0.02, 0.0, 0.0), oct);
-    float d = shape - detail * 0.22 * (1.0 - h * 0.5);
+    float d = shape - detail * 0.26 * (1.0 - h * 0.6);
     return max(d, 0.0) * uDensity;
   }
 
@@ -95,7 +96,7 @@ const CLOUD_FRAG = /* glsl */`
     vec3 ro = vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z);
     vec3 rd = normalize(vWorldPos - cameraPosition);
 
-    float horizonFade = smoothstep(0.015, 0.16, rd.y);
+    float horizonFade = smoothstep(0.01, 0.09, rd.y);
     if (rd.y <= 0.012) { gl_FragColor = vec4(0.0); return; }
 
     float t0 = (CLOUD_BOTTOM - ro.y) / rd.y;
@@ -108,7 +109,7 @@ const CLOUD_FRAG = /* glsl */`
     float t = t0 + dt * jitter;
 
     float cosT = dot(rd, uSunDir);
-    float phase = mix(hg(cosT, 0.6), hg(cosT, -0.25), 0.3) * 4.0 + 0.35;
+    float phase = mix(hg(cosT, 0.72), hg(cosT, -0.2), 0.35) * 4.2 + 0.45;   // borde plateado a contraluz
 
     float trans = 1.0;
     vec3  col = vec3(0.0);
@@ -123,7 +124,7 @@ const CLOUD_FRAG = /* glsl */`
           vec3 lp = p + uSunDir * (float(j * j) * 70.0);
           ld += cloudDensity(lp, 2);
         }
-        float lightT = exp(-ld * 1.15);
+        float lightT = max(exp(-ld * 1.1), exp(-ld * 0.28) * 0.32);   // varias dispersiones: nube clara por dentro
         float powder = 1.0 - exp(-d * 4.0);
         float h = clamp((p.y - CLOUD_BOTTOM) / (CLOUD_TOP - CLOUD_BOTTOM), 0.0, 1.0);
         vec3 ambient = mix(uAmbientBottom, uAmbientTop, h);
@@ -136,6 +137,16 @@ const CLOUD_FRAG = /* glsl */`
       t += dt;
     }
 
+    {
+      float tc = (7200.0 - ro.y) / rd.y;
+      vec2 cp = (ro.xz + rd.xz * tc) * 0.00011 + uWind * uTime * 1.6;
+      cp.x *= 0.45;                                                     // fibras alargadas
+      float ci = fbm(vec3(cp, uTime * 0.002), 4);
+      ci = smoothstep(0.6, 0.9, ci) * 0.38 * smoothstep(0.03, 0.25, rd.y);
+      vec3 cc = uSunColor * 0.32 * (0.6 + phase * 0.25) + uAmbientTop * 1.1;
+      col += trans * cc * ci;
+      trans *= 1.0 - ci;
+    }
     float alpha = (1.0 - trans) * horizonFade;
     // perspectiva aérea: nubes lejanas se funden con la atmósfera
     float distFade = exp(-t0 * 0.000045);
@@ -170,8 +181,8 @@ export class SkyEnvironment {
         uAmbientTop: { value: new THREE.Color(0.5, 0.6, 0.75) },
         uAmbientBottom: { value: new THREE.Color(0.35, 0.38, 0.45) },
         uTime: { value: 0 },
-        uCoverage: { value: 0.46 },
-        uDensity: { value: 1.0 },
+        uCoverage: { value: 0.4 },
+        uDensity: { value: 1.25 },
         uWind: { value: new THREE.Vector2(0.006, 0.0025) },
         uSteps: { value: 32 }
       },
@@ -208,7 +219,7 @@ export class SkyEnvironment {
 
     // Perfil de calidad: menos pasos en móviles
     const mobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    this.cloudMaterial.uniforms.uSteps.value = mobile ? 20 : 32;
+    this.cloudMaterial.uniforms.uSteps.value = mobile ? 22 : 40;
 
     this.setHour(this.hour);
   }
@@ -219,15 +230,15 @@ export class SkyEnvironment {
     sky.frustumCulled = false;
     const m = sky.material;
     // Intensidad ajustable (equivalente a la exposición del Sky Atmosphere)
-    m.uniforms.uSkyIntensity = { value: 0.19 };
+    m.uniforms.uSkyIntensity = { value: 0.25 };
     m.fragmentShader = m.fragmentShader
       .replace('uniform vec3 up;', 'uniform vec3 up;\nuniform float uSkyIntensity;')
-      .replace('gl_FragColor = vec4( retColor, 1.0 );', 'gl_FragColor = vec4( retColor * uSkyIntensity, 1.0 );');
+      .replace('gl_FragColor = vec4( retColor, 1.0 );', 'retColor = max(mix(vec3(dot(retColor, vec3(0.2126, 0.7152, 0.0722))), retColor, 1.45), 0.0);\ngl_FragColor = vec4( retColor * uSkyIntensity, 1.0 );');   // cielo más saturado: azul profundo arriba, naranja al ocaso
     const u = m.uniforms;
-    u.turbidity.value = 2.0;      // aire de sabana relativamente limpio
-    u.rayleigh.value = 1.7;
-    u.mieCoefficient.value = 0.0042;
-    u.mieDirectionalG.value = 0.82;
+    u.turbidity.value = 1.5;      // aire de sabana relativamente limpio
+    u.rayleigh.value = 2.5;
+    u.mieCoefficient.value = 0.0032;
+    u.mieDirectionalG.value = 0.88;   // halo del sol más concentrado
     return sky;
   }
 
@@ -247,6 +258,15 @@ export class SkyEnvironment {
     const elev = Math.asin(dir.y);
 
     for (const s of [this.sky, this.envSky]) s.material.uniforms.sunPosition.value.copy(dir);
+    // ocaso: el aire se carga cerca del horizonte (más turbidez y Mie) y el cielo hacia el sol se pone naranja
+    const low = 1 - THREE.MathUtils.smoothstep(elev, 0.02, 0.3);
+    for (const s of [this.sky, this.envSky]) {
+      const u = s.material.uniforms;
+      u.turbidity.value = 1.5 + low * 5.5;
+      u.rayleigh.value = 2.5 + low * 1.2;
+      u.mieCoefficient.value = 0.0032 + low * 0.005;
+      u.uSkyIntensity.value = 0.25 + low * 0.12;
+    }
 
     // Color e intensidad del sol según elevación (enrojece en rasante)
     const k = THREE.MathUtils.clamp(elev / THREE.MathUtils.degToRad(35), 0, 1);
@@ -259,7 +279,7 @@ export class SkyEnvironment {
 
     const cu = this.cloudMaterial.uniforms;
     cu.uSunDir.value.copy(dir);
-    cu.uSunColor.value.copy(sunCol).multiplyScalar(3.4 * Math.max(sunI, 0.12));
+    cu.uSunColor.value.copy(sunCol).multiplyScalar(5.2 * Math.max(sunI, 0.12));   // cúmulos blancos y luminosos
 
     this._updateEnvironment();
   }
@@ -282,8 +302,8 @@ export class SkyEnvironment {
         this.hemiLight.groundColor.setHex(0x8d8172);
       }
       const cu = this.cloudMaterial.uniforms;
-      cu.uAmbientTop.value.copy(zenith || horizon).multiplyScalar(1.15).lerp(horizon, 0.35);
-      cu.uAmbientBottom.value.copy(horizon).multiplyScalar(0.62);
+      cu.uAmbientTop.value.copy(zenith || horizon).multiplyScalar(1.6).lerp(horizon, 0.3);
+      cu.uAmbientBottom.value.copy(horizon).multiplyScalar(0.85);
     }
   }
 
