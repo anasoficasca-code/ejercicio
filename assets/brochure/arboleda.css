@@ -946,3 +946,48 @@ h2 { font-size: clamp(30px, 4.2vw, 64px) !important; line-height: 1.08 !importan
 .tipo-plan { display: block !important; position: relative; }
 .tipo-plan img { position: absolute !important; inset: clamp(16px, 2.4vw, 32px); width: calc(100% - 2 * clamp(16px, 2.4vw, 32px)) !important; height: calc(100% - 2 * clamp(16px, 2.4vw, 32px)) !important; max-width: none !important; object-fit: contain !important; transform: none !important; }
 @media (max-width: 860px) { .tipo-nums b { white-space: nowrap; font-size: 22px; } .tipo .areas th { font-size: 10px; letter-spacing: .12em; } .tipo .areas td { white-space: nowrap; } }
+
+/* ---- sostenibilidad */
+.eco { background: var(--paper); }
+.eco-head { display: grid; grid-template-columns: 1fr 1fr; gap: 14px clamp(30px, 6vw, 90px); align-items: end; margin-bottom: clamp(40px, 6vw, 80px); }
+.eco-head .hero-kicker { grid-column: 1 / -1; }
+.eco-lead { color: var(--ink-2); max-width: 48ch; font-size: clamp(16px, 1.2vw, 18px); }
+.eco-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--ink); }
+.eco-i { padding: clamp(24px, 2.6vw, 38px) clamp(18px, 2vw, 30px) clamp(30px, 3vw, 44px) 0; border-bottom: 1px solid var(--hair); display: grid; gap: 12px; align-content: start; position: relative; }
+.eco-i:not(:nth-child(3n)) { border-right: 1px solid var(--hair); }
+.eco-i:not(:nth-child(3n+1)) { padding-left: clamp(18px, 2vw, 30px); }
+.eco-n { font: 200 clamp(38px, 3.6vw, 56px)/1 var(--display); color: var(--sand); letter-spacing: .02em; }
+.eco-i b { font: 500 14px var(--display); letter-spacing: .16em; text-transform: uppercase; }
+.eco-i p { margin: 0; color: var(--ink-2); font-size: 15px; line-height: 1.65; max-width: 36ch; }
+.eco-i::before { content: ''; position: absolute; left: 0; top: -1px; height: 2px; width: 0; background: var(--sand); transition: width .8s var(--ease); }
+.eco-i:hover::before { width: 60%; }
+
+/* ---- para quién */
+.quien-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(36px, 6vw, 100px); align-items: start; }
+.quien-copy h2 { margin: 12px 0 20px; color: #fff; }
+.quien-copy p:last-child { color: var(--on-night-2); max-width: 44ch; }
+.quien-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid rgba(255, 255, 255, .2); }
+.quien-list li { display: grid; grid-template-columns: 130px 1fr; gap: 4px 24px; padding: 22px 0; border-bottom: 1px solid rgba(255, 255, 255, .14); }
+.quien-list span { grid-row: span 2; font: 300 15px var(--display); letter-spacing: .08em; color: var(--sky); padding-top: 2px; }
+.quien-list b { font: 500 14px var(--display); letter-spacing: .16em; text-transform: uppercase; color: #fff; }
+.quien-list p { margin: 0; color: var(--on-night-2); font-size: 15px; }
+
+/* ---- misión y visión */
+.firma .firma-cards { display: none; }
+.mv { display: grid; grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr); gap: clamp(28px, 5vw, 80px); margin: clamp(44px, 7vw, 100px) 0; padding: clamp(36px, 5vw, 64px) 0; border-block: 1px solid rgba(255, 255, 255, .18); }
+.mv-rule { background: linear-gradient(180deg, transparent, rgba(214, 194, 155, .7), transparent); }
+.mv-k { margin: 0 0 18px; font: 500 12px var(--display); letter-spacing: .34em; text-transform: uppercase; color: var(--sky); display: flex; align-items: center; gap: 14px; }
+.mv-k::after { content: ''; width: 40px; height: 1px; background: currentColor; opacity: .6; }
+.mv-t { margin: 0; font: 300 clamp(20px, 2vw, 30px)/1.45 var(--display); letter-spacing: .01em; color: #fff; max-width: 30ch; }
+.firma-vals b { color: var(--sky); }
+@media (max-width: 860px) {
+  .eco-head, .quien-grid { grid-template-columns: 1fr; }
+  .eco-grid { grid-template-columns: 1fr; }
+  .eco-i { border-right: 0 !important; padding-left: 0 !important; }
+  .mv { grid-template-columns: 1fr; }
+  .mv-rule { height: 1px; background: linear-gradient(90deg, rgba(214, 194, 155, .7), transparent); }
+  .quien-list li { grid-template-columns: 1fr; }
+  .quien-list span { grid-row: auto; }
+}
+.nav-links { gap: 22px !important; white-space: nowrap; }
+.brand-word { white-space: nowrap; }

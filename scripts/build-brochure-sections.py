@@ -323,23 +323,22 @@ blocks['firma'] = f'''
       <div class="wrap">
         <p class="hero-kicker" data-reveal>La firma</p>
         <h2 class="firma-name" id="firma-h" aria-label="JMC Arquitectura"><span aria-hidden="true" data-split>JMC</span> <span aria-hidden="true" data-split>Arquitectura</span></h2>
-        <p class="firma-lead wh2" data-wh2>Somos un estudio de Bogotá que diseña vivienda en barrios que ya existen. Tomamos lotes subutilizados, como un parqueadero en Galerías, y los convertimos en edificios de escala media que le devuelven árboles, vecinos y vida de primer piso a la calle.</p>
-        <div class="firma-cards">
-          <article class="fcard" data-tilt>
-            <span class="fcard-n" aria-hidden="true">01</span>
-            <h3>Misión</h3>
-            <p>Diseñar vivienda que mejore la calle donde se construye: apartamentos con buena luz y ventilación, materiales que duran décadas y primeros pisos abiertos al barrio.</p>
+        <p class="firma-lead wh2" data-wh2>Somos un estudio de Bogotá que diseña vivienda sostenible para jóvenes en barrios que ya existen. Tomamos lotes subutilizados, como un parqueadero en Galerías, y los convertimos en edificios que consumen menos, siembran más y acercan a la gente a la ciudad.</p>
+        <div class="mv">
+          <article class="mv-col">
+            <p class="mv-k">Misión</p>
+            <p class="mv-t">Diseñar vivienda sostenible y asequible para jóvenes en barrios consolidados de Bogotá: con luz y ventilación naturales, materiales locales, más árboles en la calle y a pocos minutos del transporte público.</p>
           </article>
-          <article class="fcard" data-tilt>
-            <span class="fcard-n" aria-hidden="true">02</span>
-            <h3>Visión</h3>
-            <p>Ser en 2035 el estudio de referencia en Bogotá para vivienda de escala media en barrios tradicionales, con proyectos que sumen árboles, comercio de barrio y nuevos vecinos a cada cuadra.</p>
+          <div class="mv-rule" aria-hidden="true"></div>
+          <article class="mv-col">
+            <p class="mv-k">Visión</p>
+            <p class="mv-t">Ser en 2035 el estudio de referencia en Bogotá para vivienda joven y sostenible, demostrando que densificar con cuidado un barrio tradicional lo hace más verde, más caminable y más vivo.</p>
           </article>
         </div>
         <ul class="firma-vals">
-          <li><b>El barrio primero</b><span>Cada proyecto empieza por la calle: antejardines sembrados, andenes amplios y un primer piso que se puede usar.</span></li>
-          <li><b>Materiales honestos</b><span>Ladrillo de la sabana, pañete, madera y vidrio. Lo que se ve es lo que hay, y envejece bien.</span></li>
-          <li><b>Números claros</b><span>Norma, cabida y mercado verificados antes de dibujar: cada metro cuadrado tiene una razón.</span></li>
+          <li><b>Sostenibilidad</b><span>Primero lo pasivo: sombra, luz y ventilación natural antes que máquinas. Menos energía, menos costo para quien vive.</span></li>
+          <li><b>Para jóvenes</b><span>Apartamentos compactos y flexibles, con espacios comunes que reemplazan lo que no cabe en casa: terraza, cine, gimnasio.</span></li>
+          <li><b>El barrio primero</b><span>Antejardines sembrados, primeros pisos abiertos y bicicletas antes que carros.</span></li>
         </ul>
         <p class="firma-team"><span>Equipo</span>{' · '.join(autores)}</p>
       </div>

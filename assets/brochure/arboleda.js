@@ -510,3 +510,11 @@ if (motion) {
   g.utils.toArray('.hero-kicker').forEach((k) => g.from(k, { opacity: 0, x: -20, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: k, start: 'top 92%' } }));
   addEventListener('load', () => ST.refresh());
 }
+
+// sostenibilidad, para quién y misión/visión: entradas escalonadas
+if (motion) {
+  g.from('.eco-i', { y: 40, opacity: 0, duration: 1, stagger: 0.09, ease: 'expo.out', scrollTrigger: { trigger: '.eco-grid', start: 'top 82%' } });
+  g.from('.quien-list li', { x: 40, opacity: 0, duration: 1, stagger: 0.1, ease: 'expo.out', scrollTrigger: { trigger: '.quien-list', start: 'top 82%' } });
+  g.from('.mv-col', { y: 50, opacity: 0, duration: 1.3, stagger: 0.18, ease: 'expo.out', scrollTrigger: { trigger: '.mv', start: 'top 80%' } });
+  g.from('.mv-rule', { scaleY: 0, transformOrigin: '50% 0', duration: 1.4, ease: 'power3.inOut', scrollTrigger: { trigger: '.mv', start: 'top 80%' } });
+}
