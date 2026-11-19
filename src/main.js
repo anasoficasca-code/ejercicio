@@ -125,6 +125,12 @@ class App {
   }
 
   openUnitGallery(u) {
+    // sala de cine y gimnasio: sus renders (cuatro vistas de cada uno)
+    const fotos = { cine: ['Sala de cine', 'cine'], gym: ['Gimnasio', 'gym'] }[u.id];
+    if (fotos) {
+      this.gallery.open(`Galería · ${fotos[0]}`, [1, 2, 3, 4].map((k) => ({ src: `./assets/renders/${fotos[1]}-${k}.webp`, title: `${fotos[0]} · vista ${k}`, type: 'Render' })));
+      return;
+    }
     const pick = u.typology === 'Apartamento' ? [u.lamina, 26, 25, u.tipo === 'A' ? 28 : 27, 35] : [30, 31, 32, 33, 34, 22, 29];
     this.gallery.open(`Galería · ${u.title}`, pick.map((n) => this.laminas.find((l) => l.n === n)));
   }
