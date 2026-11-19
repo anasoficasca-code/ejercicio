@@ -1132,3 +1132,7 @@ h2 { font-size: clamp(30px, 4.2vw, 64px) !important; line-height: 1.08 !importan
 }
 .nav .btn-sm { white-space: nowrap; }
 .stc-img { background: var(--paper); }
+
+/* corte del inicio más grande */
+@media (min-width: 900px) { .statement .st-grid { grid-template-columns: minmax(0, .82fr) minmax(0, 1.35fr); gap: clamp(24px, 3vw, 48px); } .st-corte { margin-right: clamp(-60px, -3vw, 0px); } }
+.statement .st-grid { max-width: min(1500px, 100%); }
