@@ -6,6 +6,8 @@ const dots = (n) => '●'.repeat(n) + '○'.repeat(5 - n);
 export class PrediosModal {
   constructor({ project, onShow, onLamina }) {
     const { predios, matriz, normaPredio: n, cabida: c, proyectoActual: pa } = project;
+    const f = pa.finanzas;
+    const pct = (x) => `${fmtNum(x * 100, 1)} %`;
     const rows = [['Comercio', 'comercio'], ['Educación', 'educacion'], ['Salud', 'salud'], ['Transporte', 'transporte'], ['Recreación y cultura', 'recreacion']];
     this.modal = document.createElement('div');
     this.modal.className = 'umbra-modal-backdrop';
@@ -81,6 +83,15 @@ export class PrediosModal {
               <div><span>Unidades</span><strong>${pa.unidades} apartamentos</strong><em>${pa.tipologias.map((t) => `Tipo ${t.tipo}: ${fmtNum(t.area)} m² · ${fmtCOP(t.precio)}`).join(' · ')}</em></div>
             </div>
             <p class="side-text">${pa.nota}</p>
+            <h4>Presupuesto y utilidad <small>Estrato ${pa.estrato} · ${fmtNum(f.areaVendibleM2)} m² vendibles a ${fmtCOP(f.precioM2)}/m²</small></h4>
+            <div class="norm-grid">
+              <div><span>Ventas</span><strong>${fmtCOP(f.ventas)}</strong><em>${fmtNum(f.areaConstruidaM2)} m² construidos</em></div>
+              <div><span>Costos directos</span><strong>${fmtCOP(f.costosDirectos)}</strong><em>${pct(f.costosDirectos / f.ventas)} de las ventas</em></div>
+              <div><span>Pre-inversión</span><strong>${fmtCOP(f.preinversion)}</strong><em>Incluye el lote: ${fmtCOP(f.lote)} (18 % de las ventas)</em></div>
+              <div><span>Costos indirectos</span><strong>${fmtCOP(f.indirectos)}</strong><em>Preventa, construcción y cierre</em></div>
+            </div>
+            <div class="kv"><span>Costo total del proyecto</span><strong>${fmtCOP(f.costoTotal)}</strong></div>
+            <div class="kv"><span>Utilidad</span><strong>${fmtCOP(f.utilidad)} · ${pct(f.utilidadSobreInversion)} sobre la inversión (${pct(f.utilidadSobreVentas)} sobre ventas)</strong></div>
             <div class="market-actions"><button class="mode-pill-btn" data-lamina="26">Ver planta de apartamentos</button><button class="mode-pill-btn" data-lamina="27">Tipología A</button><button class="mode-pill-btn" data-lamina="28">Tipología B</button></div>
           </section>
 

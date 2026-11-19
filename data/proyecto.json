@@ -638,7 +638,7 @@
       {
         "tipo": "A",
         "area": 78.75,
-        "precio": 708750000,
+        "precio": 1106327517,
         "ubicacion": "Sobre la Calle 56",
         "espacios": "Sala, comedor y cocina 41,0 · alcoba principal 12,7 · baño privado 3,4 · alcoba 2 10,5 · baño social 4,9 · ropas 3,1 · depósito 3,6 m² (áreas del modelo de Revit)",
         "lamina": 27
@@ -646,7 +646,7 @@
       {
         "tipo": "B",
         "area": 70.0,
-        "precio": 630000000,
+        "precio": 983402238,
         "ubicacion": "Hacia el patio posterior",
         "espacios": "Sala, comedor y cocina 40,0 · alcoba principal 8,4 · baño privado 2,4 · alcoba 2 7,9 · baño social 2,9 · ropas 2,0 · depósito 1,9 m² (áreas del modelo de Revit)",
         "lamina": 28
@@ -669,6 +669,24 @@
       "Zonas verdes"
     ],
     "nota": "Edificio modelado en Revit (ejercicio2.rvt): planta de 24,84 × 14,00 m, 6 pisos de 3,10 m y punto fijo central de 27,08 m². Piso 1: lobby y zonas sociales; pisos 2 a 6: 4 apartamentos por piso (20 en total), 2 tipo A sobre la Calle 56 y 2 tipo B hacia el patio, cada uno con sala-comedor-cocina, 2 alcobas, 2 baños, ropas y depósito; cubierta: terraza comunal. Antejardín de 3,50 m sobre la Calle 56 y la Carrera 18 y aislamiento posterior de 3,00 m (POT, Decreto 555 de 2021).",
-    "nombre": "Distrito Arboleda"
+    "nombre": "Distrito Arboleda",
+    "estrato": 4,
+    "sotanos": 2,
+    "parqueaderos": 46,
+    "finanzas": {
+      "fuente": "EJERCICIO_PROFESIONAL_TERCER_CORTE_CORREGIDO.xlsx (hojas DATOS PROYECTO y PRESUPUESTO)",
+      "areaConstruidaM2": 2832.5,
+      "areaVendibleM2": 1487.5,
+      "precioM2": 14048603,
+      "ventas": 20897297548,
+      "costosDirectos": 10557250000,
+      "preinversion": 4660097353,
+      "lote": 3761513559,
+      "indirectos": 3414618419,
+      "costoTotal": 18631965772,
+      "utilidad": 2265331775,
+      "utilidadSobreInversion": 0.1216,
+      "utilidadSobreVentas": 0.1084
+    }
   }
 }
