@@ -208,14 +208,61 @@ b(f'<g class="cb-north" transform="translate({W2-44:.0f} {H2-44:.0f}) rotate({an
 b('</svg>')
 cabida_svg = ''.join(k)
 
+# ------------------------------------------------------------------ cabida en axonometría (isométrica)
+SA = 11.5
+def ISO(x, z, y=0.0):
+    return ((x - z) * 0.8660 * SA, -(x + z) * 0.5 * SA - y * SA)
+axp = []
+def poly_ax(pts3, cls, extra=''):
+    q = [ISO(*p) for p in pts3]; axp.extend(q)
+    return f'<path class="{cls}" d="M' + 'L'.join(f'{a:.1f} {b:.1f}' for a, b in q) + f'Z"{extra}/>'
+ax = []
+ax.append('<g class="ax-lot">' + poly_ax([(x, z, 0) for x, z in poly], 'ax-ground') + '</g>')
+# antejardines (franja de 3,50 m sobre las dos calles), dentro del lote
+x0, x1, z0, z1 = min(xs), max(xs), min(zs), max(zs)
+ax.append('<g class="ax-ant">' + poly_ax([(x0, z0, 0), (x1, z0, 0), (x1, oz, 0), (ox, oz, 0), (ox, z1, 0), (x0, z1, 0)], 'ax-green') + '</g>')
+TOP = NF * FH
+for i in range(NF):
+    y0, y1 = i * FH, (i + 1) * FH
+    g = ['<g class="ax-f">']
+    # cara sobre la Carrera 18 (x = ox) y cara sobre la Calle 56 (z = oz)
+    g.append(poly_ax([(ox, oz + PD, y0), (ox, oz, y0), (ox, oz, y1), (ox, oz + PD, y1)], 'ax-w'))
+    g.append(poly_ax([(ox, oz, y0), (ox + PW, oz, y0), (ox + PW, oz, y1), (ox, oz, y1)], 'ax-s'))
+    gh0, gh1 = (y0 + 0.35, y1 - 0.45) if i == 0 else (y0 + 0.95, y1 - 0.35)
+    for a0, a1 in ((0.8, 6.2), (7.0, 12.2), (13.2, 18.4), (19.3, 24.0)):
+        g.append(poly_ax([(ox + a0, oz, gh0), (ox + a1, oz, gh0), (ox + a1, oz, gh1), (ox + a0, oz, gh1)], 'ax-glass'))
+    for a0, a1 in ((0.8, 6.4), (7.4, 13.2)):
+        g.append(poly_ax([(ox, oz + a1, gh0), (ox, oz + a0, gh0), (ox, oz + a0, gh1), (ox, oz + a1, gh1)], 'ax-glass'))
+    # franjas de ladrillo
+    for a0, a1 in ((6.2, 7.0), (18.4, 19.3)):
+        g.append(poly_ax([(ox + a0, oz, y0), (ox + a1, oz, y0), (ox + a1, oz, y1), (ox + a0, oz, y1)], 'ax-brick'))
+    g.append(poly_ax([(ox, oz + PD, y1), (ox, oz, y1), (ox + PW, oz, y1), (ox + PW, oz + 0.25, y1), (ox + 0.25, oz + 0.25, y1), (ox + 0.25, oz + PD, y1)], 'ax-slab'))
+    g.append('</g>'); ax.append(''.join(g))
+r = ['<g class="ax-roof">', poly_ax([(ox, oz, TOP), (ox + PW, oz, TOP), (ox + PW, oz + PD, TOP), (ox, oz + PD, TOP)], 'ax-top')]
+r.append(poly_ax([(ox + CX0, oz + 9.52, TOP), (ox + CX0, oz + 4.44, TOP), (ox + CX0, oz + 4.44, TOP + 2.9), (ox + CX0, oz + 9.52, TOP + 2.9)], 'ax-w'))
+r.append(poly_ax([(ox + CX0, oz + 4.44, TOP), (ox + CX1, oz + 4.44, TOP), (ox + CX1, oz + 4.44, TOP + 2.9), (ox + CX0, oz + 4.44, TOP + 2.9)], 'ax-s'))
+r.append(poly_ax([(ox + CX0, oz + 4.44, TOP + 2.9), (ox + CX1, oz + 4.44, TOP + 2.9), (ox + CX1, oz + 9.52, TOP + 2.9), (ox + CX0, oz + 9.52, TOP + 2.9)], 'ax-top'))
+r.append(poly_ax([(ox + 0.8, oz + 0.8, TOP + 2.6), (ox + 8.4, oz + 0.8, TOP + 2.6), (ox + 8.4, oz + 6.0, TOP + 2.6), (ox + 0.8, oz + 6.0, TOP + 2.6)], 'ax-perg'))
+r.append('</g>'); ax.append(''.join(r))
+# cotas y rótulos
+hx, hy = ISO(ox, oz + PD + 2.6, 0); tx, ty = ISO(ox, oz + PD + 2.6, TOP)
+ax.append(f'<g class="ax-dim"><path d="M{hx:.1f} {hy:.1f}V{ty:.1f}M{hx-5:.1f} {hy:.1f}h10M{tx-5:.1f} {ty:.1f}h10"/>'
+          f'<text x="{hx-10:.1f}" y="{(hy+ty)/2:.1f}" text-anchor="end">{es(TOP)} m</text><text x="{hx-10:.1f}" y="{(hy+ty)/2+15:.1f}" text-anchor="end" class="ax-sm">{NF} pisos</text>')
+cx_, cy_ = ISO((x0 + x1) / 2, z0 - 2.4, 0)
+ax.append(f'<text class="ax-st" transform="translate({cx_:.1f} {cy_:.1f}) rotate(-30)" text-anchor="middle">Calle 56</text>')
+cx_, cy_ = ISO(x0 - 2.4, (z0 + z1) / 2, 0)
+ax.append(f'<text class="ax-st" transform="translate({cx_:.1f} {cy_:.1f}) rotate(30)" text-anchor="middle">Carrera 18</text></g>')
+X0 = min(a for a, b in axp) - 90; X1 = max(a for a, b in axp) + 40; Y0 = min(b for a, b in axp) - 30; Y1 = max(b for a, b in axp) + 40
+axo_svg = (f'<svg class="ax-svg" viewBox="{X0:.0f} {Y0:.0f} {X1-X0:.0f} {Y1-Y0:.0f}" role="img" aria-label="Axonometría de la cabida: lote esquinero con antejardines y el volumen de {NF} pisos">' + ''.join(ax) + '</svg>')
+
 lote, huella = pa['loteM2'], pa['plantaM2']
 constr = huella * NF
 vend = sum(t['area'] for t in pa['tipologias']) * (pa['unidades'] / len(pa['tipologias']))
-ventas = sum(t['precio'] for t in pa['tipologias']) * (pa['unidades'] / len(pa['tipologias']))
+ventas = sum(2 * t['area'] * (pa['precioM2Base'] + (f - 2) * pa['diferencialPiso']) for f in range(2, NF + 1) for t in pa['tipologias'])
 comunal = constr / 80 * 10
 num = lambda v, d, suf='', pre='': f'<dt data-num="{v:.4f}" data-dec="{d}" data-pre="{pre}" data-suf="{suf}">{pre}{es(v, d)}{suf}</dt>'
 cab_rows = [
-    (num(lote, 2, ' m²'), 'Lote', 'Englobe de cinco predios del parqueadero Divino Salvador (Catastro Bogotá)'),
+    (num(lote, 2, ' m²'), 'Lote', 'Lote esquinero, englobe de cinco predios (Catastro Bogotá)'),
     (num(huella, 2, ' m²'), 'Huella del edificio', f'{es(PW)} × {es(PD)} m, con punto fijo de {es(pa["puntoFijoM2"])} m²'),
     (num(huella / lote, 2), 'Índice de ocupación', f'El {round(huella/lote*100)} % del lote; el resto es antejardín y jardín'),
     (num(constr, 2, ' m²'), 'Área construida', f'{NF} pisos de {es(huella)} m²'),
@@ -223,7 +270,7 @@ cab_rows = [
     (num(NF * FH, 2, ' m'), 'Altura', f'{NF} pisos de {es(FH)} m, más la terraza'),
     (num(pa['unidades'], 0), 'Apartamentos', '4 por piso en los pisos 2 a 6: 10 tipo A y 10 tipo B'),
     (num(vend, 2, ' m²'), 'Área vendible', f'10 × {es(pa["tipologias"][0]["area"])} m² + 10 × {es(pa["tipologias"][1]["area"])} m²'),
-    (num(ventas / 1e6, 0, ' M', '$'), 'Ventas estimadas', 'Suma de los 20 apartamentos a precio de lista, en millones de pesos'),
+    (num(ventas / 1e6, 0, ' M', '$'), 'Ventas estimadas', 'Los 20 apartamentos a precio de lista por piso, en millones de pesos'),
     (num(comunal, 1, ' m²'), 'Equipamiento comunal exigido', '10 m² por cada 80 m² construidos (POT, Decreto 555 de 2021)'),
 ]
 cab_dl = ''.join(f'<div class="cb-row">{n}<dd><b>{t}</b><span>{d}</span></dd></div>' for n, t, d in cab_rows)
@@ -287,13 +334,15 @@ blocks['cabida'] = f'''
         <div class="cabida-head">
           <p class="hero-kicker" data-reveal>Cabida arquitectónica</p>
           <h2 id="cabida-h" data-reveal>Cuánto cabe en el lote</h2>
+          <p class="cabida-lead">Lote esquinero de {es(lote)} m² en la Calle 56 con Carrera 18. El volumen se retira {es(ant)} m de las dos calles para los antejardines y deja un jardín en el patio.</p>
         </div>
-        <div class="cabida-grid">
+        <div class="cabida-vis">
+          <figure class="cabida-axo">{axo_svg}<figcaption>Axonometría · volumen de {NF} pisos sobre el lote</figcaption></figure>
           <figure class="cabida-fig">{cabida_svg}
             <figcaption><span><i class="k-foot"></i>Huella del edificio</span><span><i class="k-ant"></i>Antejardín de {es(ant)} m</span><span><i class="k-lot"></i>Lindero del lote</span></figcaption>
           </figure>
-          <dl class="cabida-dl">{cab_dl}</dl>
         </div>
+        <dl class="cabida-dl">{cab_dl}</dl>
         <p class="cabida-src">Fuentes: Catastro Bogotá (lote), POT de Bogotá, Decreto 555 de 2021 (antejardín, aislamiento posterior de {es(pa["aislamientoPosteriorM"])} m y equipamiento comunal) y modelo de Revit del proyecto (huella, alturas y áreas).</p>
       </div>
     </section>
@@ -323,7 +372,7 @@ blocks['firma'] = f'''
       <div class="wrap">
         <p class="hero-kicker" data-reveal>La firma</p>
         <h2 class="firma-name" id="firma-h" aria-label="JMC Arquitectura"><span aria-hidden="true" data-split>JMC</span> <span aria-hidden="true" data-split>Arquitectura</span></h2>
-        <p class="firma-lead wh2" data-wh2>Somos un estudio de Bogotá que diseña vivienda sostenible para jóvenes en barrios que ya existen. Tomamos lotes subutilizados, como un parqueadero en Galerías, y los convertimos en edificios que consumen menos, siembran más y acercan a la gente a la ciudad.</p>
+        <p class="firma-lead wh2" data-wh2>Somos un estudio de Bogotá que diseña vivienda sostenible para jóvenes en barrios que ya existen. Diseñamos edificios con luz y aire naturales, más verde en la calle y todo a pocos minutos a pie o en bicicleta.</p>
         <div class="mv">
           <article class="mv-col">
             <p class="mv-k">Misión</p>
@@ -340,7 +389,33 @@ blocks['firma'] = f'''
           <li><b>Para jóvenes</b><span>Apartamentos compactos y flexibles, con espacios comunes que reemplazan lo que no cabe en casa: terraza, cine, gimnasio.</span></li>
           <li><b>El barrio primero</b><span>Antejardines sembrados, primeros pisos abiertos y bicicletas antes que carros.</span></li>
         </ul>
-        <p class="firma-team"><span>Equipo</span>{' · '.join(autores)}</p>
+        <div class="ficha">
+          <div class="ficha-head"><p class="mv-k">Ficha técnica</p><h3>JMC Arquitectura S.A.S.</h3></div>
+          <dl class="ficha-kpi">
+            <div><dt>S.A.S.</dt><dd>Forma jurídica</dd></div>
+            <div><dt data-count="3">3</dt><dd>Socios fundadores</dd></div>
+            <div><dt>4111</dt><dd>Código CIIU principal</dd></div>
+            <div><dt>Bogotá D.C.</dt><dd>Domicilio</dd></div>
+          </dl>
+          <dl class="ficha-rows">
+            <div><dt>Razón social</dt><dd>JMC Arquitectura S.A.S.</dd></div>
+            <div><dt>Representante legal</dt><dd>Jorge Andrés Mojica Bestene</dd></div>
+            <div><dt>Actividad principal</dt><dd>Construcción de edificios residenciales (CIIU 4111)</dd></div>
+          </dl>
+        </div>
+        <div class="org" aria-labelledby="org-h">
+          <p class="mv-k" id="org-h">Estructura organizacional</p>
+          <div class="org-chart">
+            <div class="org-top"><span>Junta de Socios</span></div>
+            <div class="org-mid"><span>Gerencia General</span></div>
+            <ul class="org-areas">
+              <li><b>Área Comercial</b><span>Ventas y mercadeo de los proyectos</span><em>Ana Sofía Casas</em></li>
+              <li><b>Área Técnica</b><span>Diseño y construcción</span><em>Martín Jaramillo V.</em></li>
+              <li><b>Área Administrativa y Financiera</b><span>Contabilidad, finanzas y recursos humanos</span><em>Jorge Andrés Mojica</em></li>
+            </ul>
+          </div>
+          <p class="org-note">Cada socio lidera un área según su perfil profesional.</p>
+        </div>
       </div>
     </section>
 '''

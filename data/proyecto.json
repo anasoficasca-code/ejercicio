@@ -638,7 +638,7 @@
       {
         "tipo": "A",
         "area": 78.75,
-        "precio": 1106327517,
+        "precio": 1011780000,
         "ubicacion": "Sobre la Calle 56",
         "espacios": "Sala, comedor y cocina 41,0 · alcoba principal 12,7 · baño privado 3,4 · alcoba 2 10,5 · baño social 4,9 · ropas 3,1 · depósito 3,6 m² (áreas del modelo de Revit)",
         "lamina": 27
@@ -646,7 +646,7 @@
       {
         "tipo": "B",
         "area": 70.0,
-        "precio": 983402238,
+        "precio": 899360000,
         "ubicacion": "Hacia el patio posterior",
         "espacios": "Sala, comedor y cocina 40,0 · alcoba principal 8,4 · baño privado 2,4 · alcoba 2 7,9 · baño social 2,9 · ropas 2,0 · depósito 1,9 m² (áreas del modelo de Revit)",
         "lamina": 28
@@ -687,6 +687,8 @@
       "utilidad": 2265331775,
       "utilidadSobreInversion": 0.1216,
       "utilidadSobreVentas": 0.1084
-    }
+    },
+    "precioM2Base": 12848000,
+    "diferencialPiso": 100000
   }
 }

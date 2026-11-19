@@ -207,12 +207,6 @@ if (mpSec) {
 }
 
 // ------------------------------------------------------------------ tipologías: la pastilla azul se desliza a la pestaña elegida
-// precios de los dos tipos: cuentan hasta su valor al aparecer
-if (motion) document.querySelectorAll('.tipo [data-price]').forEach((p) => {
-  const to = +p.dataset.price, n = { v: to * 0.6 };
-  g.to(n, { v: to, duration: 1.6, ease: 'power3.out', scrollTrigger: { trigger: p, start: 'top 90%' },
-    onUpdate: () => { p.textContent = '$' + (Math.round(n.v / 1e5) * 1e5).toLocaleString('es-CO'); }, onComplete: () => { p.textContent = '$' + to.toLocaleString('es-CO'); } });
-});
 if (motion) g.utils.toArray('.tipo').forEach((t, i) => g.from(t, { y: 60, opacity: 0, duration: 1.2, delay: i * 0.15, ease: 'expo.out', scrollTrigger: { trigger: '.tipos', start: 'top 82%' } }));
 
 // ------------------------------------------------------------------ zonas: al señalar un nombre cambia la foto
@@ -517,4 +511,122 @@ if (motion) {
   g.from('.quien-list li', { x: 40, opacity: 0, duration: 1, stagger: 0.1, ease: 'expo.out', scrollTrigger: { trigger: '.quien-list', start: 'top 82%' } });
   g.from('.mv-col', { y: 50, opacity: 0, duration: 1.3, stagger: 0.18, ease: 'expo.out', scrollTrigger: { trigger: '.mv', start: 'top 80%' } });
   g.from('.mv-rule', { scaleY: 0, transformOrigin: '50% 0', duration: 1.4, ease: 'power3.inOut', scrollTrigger: { trigger: '.mv', start: 'top 80%' } });
+}
+
+// ================================================================== presentación
+const fmtP = (v) => '$' + Math.round(v).toLocaleString('es-CO');
+
+// corte del proyecto: aparece de abajo hacia arriba y una banda recorre los pisos
+(() => {
+  const fig = document.querySelector('.st-corte');
+  if (!fig) return;
+  const band = fig.querySelector('.stc-band'), cap = fig.querySelector('.stc-cap');
+  const F = [
+    [75.9, 85.3, 'Sótano', 'Parqueaderos y depósitos'],
+    [66.5, 75.9, 'Piso 1', 'Lobby, restaurante, cine y gimnasio'],
+    [56.8, 66.5, 'Piso 2', '4 apartamentos: 2 tipo A y 2 tipo B'],
+    [47.3, 56.8, 'Piso 3', '4 apartamentos con balcón'],
+    [37.6, 47.3, 'Piso 4', '4 apartamentos con balcón'],
+    [28.2, 37.6, 'Piso 5', '4 apartamentos con balcón'],
+    [18.4, 28.2, 'Piso 6', '4 apartamentos con balcón'],
+    [7.0, 18.4, 'Terraza', 'BBQ, café lounge y gimnasio al aire libre']
+  ];
+  const set = (k) => {
+    const [t, b, n, d] = F[k];
+    band.style.top = t + '%'; band.style.height = (b - t) + '%';
+    cap.querySelector('b').textContent = n; cap.querySelector('span').textContent = d;
+  };
+  set(1);
+  if (!motion) return;
+  g.set(band, { opacity: 0 }); g.set(cap, { opacity: 0 });
+  const tl = g.timeline({ scrollTrigger: { trigger: fig, start: 'top 78%' } });
+  tl.fromTo(fig.querySelector('img'), { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 2.2, ease: 'power2.inOut' })
+    .to([band, cap], { opacity: 1, duration: 0.5 })
+    .add(() => {
+      let k = 0;
+      const step = () => {
+        set(k);
+        g.fromTo(band, { scaleX: 0.92, opacity: 0.4 }, { scaleX: 1, opacity: 1, duration: 0.6, ease: 'power3.out' });
+        g.fromTo(cap, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+        k = (k + 1) % F.length;
+      };
+      step();
+      setInterval(() => { if (document.visibilityState === 'visible') step(); }, 1900);
+    });
+  g.to(fig, { yPercent: -6, ease: 'none', scrollTrigger: { trigger: '.statement', start: 'top bottom', end: 'bottom top', scrub: true } });
+})();
+
+// cabida en axonometría: el lote se dibuja y el edificio se arma piso por piso
+if (motion && document.querySelector('.ax-svg')) {
+  const tl = g.timeline({ scrollTrigger: { trigger: '.cabida-axo', start: 'top 75%' } });
+  tl.from('.ax-lot, .ax-ant', { opacity: 0, duration: 0.8, stagger: 0.2 })
+    .from('.ax-f', { y: -60, opacity: 0, duration: 0.7, stagger: 0.16, ease: 'back.out(1.4)' }, 0.5)
+    .from('.ax-roof', { y: -40, opacity: 0, duration: 0.7, ease: 'back.out(1.4)' }, '-=0.3')
+    .from('.ax-dim, .ax-st', { opacity: 0, duration: 0.6, stagger: 0.1 });
+  g.utils.toArray('.cabida .cb-row').forEach((r, i) => g.from(r, { y: 24, opacity: 0, duration: 0.7, delay: (i % 2) * 0.08, ease: 'expo.out', scrollTrigger: { trigger: r, start: 'top 92%' } }));
+}
+
+// íconos: se dibujan al entrar su sección
+document.querySelectorAll('.eco-grid, .bike, .quien-list').forEach((el) => {
+  if (!motion) { el.classList.add('drawn'); return; }
+  ST.create({ trigger: el, start: 'top 80%', once: true, onEnter: () => el.classList.add('drawn') });
+});
+if (motion) {
+  g.from('.bike-copy > *', { y: 30, opacity: 0, duration: 1, stagger: 0.1, ease: 'expo.out', scrollTrigger: { trigger: '.bike', start: 'top 78%' } });
+  g.from('.quien-pic', { clipPath: 'inset(0 0 100% 0)', duration: 1.4, ease: 'expo.inOut', scrollTrigger: { trigger: '.quien-pic', start: 'top 85%' } });
+}
+
+// mapa de ciclorrutas (OpenStreetMap) con el edificio
+(() => {
+  const el = document.getElementById('bike-map');
+  if (!el || !window.L) return;
+  const LAT = 4.6438909, LNG = -74.0692778;
+  const map = L.map(el, { scrollWheelZoom: false, zoomControl: true }).setView([LAT, LNG], 15);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, className: 'tiles-soft',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+  [500, 1000].forEach((r) => L.circle([LAT, LNG], { radius: r, color: '#1b2c45', weight: 1, fill: false, dashArray: '3 6', interactive: false }).addTo(map));
+  fetch('./data/ciclorrutas.json').then((r) => r.json()).then((d) => {
+    const lines = d.lineas.map((l) => L.polyline(l, { color: '#c2622d', weight: 3.2, opacity: 0.9, lineCap: 'round', className: 'cyc' }).addTo(map));
+    if (motion) ST.create({ trigger: el, start: 'top 80%', once: true, onEnter: () => {
+      lines.forEach((pl, i) => { const p = pl.getElement(); if (!p) return; const n = p.getTotalLength(); p.style.strokeDasharray = n; p.style.strokeDashoffset = n; p.style.transition = `stroke-dashoffset 1.6s ease ${Math.min(1.4, i * 0.004)}s`; requestAnimationFrame(() => { p.style.strokeDashoffset = 0; }); });
+    } });
+  }).catch(() => {});
+  L.marker([LAT, LNG], { zIndexOffset: 1000, icon: L.divIcon({ className: '', html: '<div class="pin"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }) })
+    .addTo(map).bindTooltip('Distrito Arboleda', { permanent: true, direction: 'top', offset: [0, -12], className: 'tip-me' });
+  L.marker([4.6465, -74.0661], { icon: L.divIcon({ className: '', html: '<div class="pin-n">TM</div>', iconSize: [26, 26], iconAnchor: [13, 13] }) }).addTo(map).bindTooltip('TransMilenio · Calle 57');
+})();
+
+// apartamentos: el piso elegido cambia los números de apto y el precio
+(() => {
+  const BASE = 12848000, DIF = 100000;
+  const btns = [...document.querySelectorAll('.floor-pick button')], cards = [...document.querySelectorAll('.tipo')];
+  if (!btns.length) return;
+  const show = (f, animate) => {
+    btns.forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.f === f)));
+    const m2 = BASE + (f - 2) * DIF;
+    cards.forEach((c) => {
+      const area = +c.dataset.area, price = Math.round(area * m2);
+      c.querySelector('[data-apto]').textContent = c.dataset.units.split(',').map((u) => `${f}${u}`).join(' · ');
+      c.querySelector('[data-m2]').textContent = fmtP(m2);
+      const el = c.querySelector('[data-price]'), from = +(el.dataset.v || price * 0.8);
+      el.dataset.v = price;
+      if (motion && animate !== false) {
+        const n = { v: from };
+        g.to(n, { v: price, duration: 0.9, ease: 'power3.out', onUpdate: () => { el.textContent = fmtP(Math.round(n.v / 1e4) * 1e4); }, onComplete: () => { el.textContent = fmtP(price); } });
+        g.fromTo(c.querySelector('.tipo-apto b'), { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+      } else el.textContent = fmtP(price);
+    });
+  };
+  btns.forEach((b) => b.addEventListener('click', () => show(+b.dataset.f)));
+  show(2, false);
+  if (motion) ST.create({ trigger: '.tipos', start: 'top 85%', once: true, onEnter: () => { cards.forEach((c) => { c.querySelector('[data-price]').dataset.v = 0; }); show(2); } });
+})();
+
+// ficha y organigrama
+if (motion && document.querySelector('.org')) {
+  g.from('.ficha-kpi > div', { y: 30, opacity: 0, duration: 0.9, stagger: 0.1, ease: 'expo.out', scrollTrigger: { trigger: '.ficha', start: 'top 82%' } });
+  g.from('.ficha-rows > div', { x: -24, opacity: 0, duration: 0.8, stagger: 0.08, ease: 'expo.out', scrollTrigger: { trigger: '.ficha-rows', start: 'top 88%' } });
+  const tl = g.timeline({ scrollTrigger: { trigger: '.org-chart', start: 'top 80%' } });
+  tl.from('.org-top', { y: -20, opacity: 0, duration: 0.6 }).from('.org-mid', { y: -20, opacity: 0, duration: 0.6 }, '-=0.2')
+    .from('.org-areas', { '--line': 0, duration: 0.6 }, '-=0.1').from('.org-areas li', { y: 30, opacity: 0, duration: 0.8, stagger: 0.14, ease: 'expo.out' }, '-=0.2');
 }
