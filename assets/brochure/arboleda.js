@@ -49,6 +49,7 @@ addEventListener('scroll', () => {
 const wh = document.querySelector('[data-wh]');
 const words = [];
 (function split(node) {
+  if (!node) return;
   [...node.childNodes].forEach((n) => {
     if (n.nodeType === 3) {
       const frag = document.createDocumentFragment();
@@ -67,7 +68,7 @@ const words = [];
 })(wh);
 
 if (motion) {
-  ST.create({
+  if (wh) ST.create({
     trigger: wh, start: 'top 80%', end: 'bottom 45%', scrub: true,
     onUpdate: (st) => { const k = Math.round(st.progress * words.length); words.forEach((w, i) => w.classList.toggle('on', i < k)); }
   });
@@ -520,44 +521,59 @@ if (motion) {
 // ================================================================== presentación
 const fmtP = (v) => '$' + Math.round(v).toLocaleString('es-CO');
 
-// corte del proyecto: aparece de abajo hacia arriba y una banda recorre los pisos
+// corte del proyecto: aparece de abajo hacia arriba, los datos se dibujan alrededor y una banda recorre los niveles
 (() => {
   const fig = document.querySelector('.st-corte');
   if (!fig) return;
-  const band = fig.querySelector('.stc-band'), cap = fig.querySelector('.stc-cap');
-  const F = [
-    [75.2, 94.8, 'Sótanos 1 y 2', '46 parqueaderos, 23 por sótano'],
-    [65.3, 75.2, 'Piso 1', 'Lobby, restaurante, cine y gimnasio'],
-    [55.5, 65.3, 'Piso 2', '4 apartamentos: 2 tipo A y 2 tipo B'],
-    [45.7, 55.5, 'Piso 3', '4 apartamentos con balcón'],
-    [35.8, 45.7, 'Piso 4', '4 apartamentos con balcón'],
-    [26.0, 35.8, 'Piso 5', '4 apartamentos con balcón'],
-    [16.2, 26.0, 'Piso 6', '4 apartamentos con balcón'],
-    [6.6, 16.2, 'Terraza', 'BBQ, café lounge y gimnasio al aire libre']
-  ];
-  const set = (k) => {
-    const [t, b, n, d] = F[k];
+  const band = fig.querySelector('.stc-band'), calls = [...fig.querySelectorAll('.stc-call')];
+  const F = [[74.71, 91.61, "s"], [66.25, 74.71, "p1"], [57.79, 66.25, "apt"], [49.33, 57.79, "apt"], [40.88, 49.33, "apt"], [32.42, 40.88, "apt"], [23.96, 32.42, "apt"], [15.78, 23.96, "t"]];
+  const set = (i) => {
+    const [t, b, k] = F[i];
     band.style.top = t + '%'; band.style.height = (b - t) + '%';
-    cap.querySelector('b').textContent = n; cap.querySelector('span').textContent = d;
+    calls.forEach((c) => c.classList.toggle('on', c.dataset.k === k));
   };
   set(1);
   if (!motion) return;
-  g.set(band, { opacity: 0 }); g.set(cap, { opacity: 0 });
-  const tl = g.timeline({ scrollTrigger: { trigger: fig, start: 'top 78%' } });
-  tl.fromTo(fig.querySelector('img'), { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 2.2, ease: 'power2.inOut' })
-    .to([band, cap], { opacity: 1, duration: 0.5 })
+  g.set(band, { opacity: 0 });
+  const tl = g.timeline({ scrollTrigger: { trigger: fig, start: 'top 80%' } });
+  tl.fromTo(fig.querySelector('img'), { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 2, ease: 'power2.inOut' })
+    .from(calls, { '--line': 0, opacity: 0, duration: 0.7, stagger: 0.12, ease: 'power3.out' }, 1.2)
+    .to(band, { opacity: 1, duration: 0.5 })
     .add(() => {
-      let k = 0;
-      const step = () => {
-        set(k);
-        g.fromTo(band, { scaleX: 0.92, opacity: 0.4 }, { scaleX: 1, opacity: 1, duration: 0.6, ease: 'power3.out' });
-        g.fromTo(cap, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
-        k = (k + 1) % F.length;
-      };
+      let i = 0;
+      const step = () => { set(i); g.fromTo(band, { scaleX: 0.94, opacity: 0.4 }, { scaleX: 1, opacity: 1, duration: 0.6, ease: 'power3.out' }); i = (i + 1) % F.length; };
       step();
       setInterval(() => { if (document.visibilityState === 'visible') step(); }, 1900);
     });
-  g.to(fig, { yPercent: -6, ease: 'none', scrollTrigger: { trigger: '.statement', start: 'top bottom', end: 'bottom top', scrub: true } });
+})();
+
+// el texto de arriba se va escribiendo letra por letra
+(() => {
+  const el = document.querySelector('[data-type]');
+  if (!el) return;
+  const txt = el.textContent.trim();
+  el.setAttribute('aria-label', txt);
+  el.innerHTML = '<span aria-hidden="true">' + txt.split('').map((c) => `<i>${c}</i>`).join('') + '</span><b class="caret" aria-hidden="true"></b>';
+  const chars = el.querySelectorAll('i');
+  if (!motion) return;
+  g.set(chars, { opacity: 0 });
+  g.to(chars, { opacity: 1, duration: 0.01, stagger: 0.024, ease: 'none', scrollTrigger: { trigger: el, start: 'top 80%' } });
+})();
+
+// cabida: pestañas de planta piso 1 / piso tipo
+(() => {
+  const fig = document.querySelector('.cabida-fig');
+  if (!fig) return;
+  const tabs = [...fig.querySelectorAll('.cb-tabs button')];
+  tabs.forEach((b) => b.addEventListener('click', () => {
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t === b)));
+    fig.dataset.p = b.dataset.p;
+    fig.querySelectorAll('.cb-plan').forEach((pl) => {
+      const on = pl.dataset.p === b.dataset.p; pl.classList.toggle('on', on);
+      if (on && motion) g.fromTo(pl.querySelectorAll('.pl, .lbl'), { opacity: 0 }, { opacity: 1, duration: 0.5, stagger: 0.04 });
+    });
+  }));
+  fig.dataset.p = 'p1';
 })();
 
 // cabida en axonometría: el lote se dibuja y el edificio se arma piso por piso
