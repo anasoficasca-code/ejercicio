@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=v17" />
+  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=v18" />
   <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script></head>
 <body class="is-loading">
     <div class="progress" aria-hidden="true"><i></i></div>
@@ -82,6 +82,29 @@
         <div class="stc-side r"><div class="stc-d" data-k="t"><b data-count="8">8</b><span>Zonas sociales</span><small>En el piso 1 y en la terraza</small></div><div class="stc-d" data-k="s"><b data-count="2">2</b><span>Sótanos</span><small>46 parqueaderos</small></div></div>
       </figure>
     </section>
+
+
+    <!-- gen:cerca -->
+    <section class="sec cerca" id="ubicacion" aria-labelledby="cerca-h">
+      <div class="wrap">
+        <div class="cerca-head">
+          <p class="hero-kicker" data-reveal>Galerías, Teusaquillo</p>
+          <h2 id="cerca-h" data-reveal>Qué hay cerca</h2>
+          <p data-reveal>Calle 56 con Carrera 18, frente a la Parroquia Divino Salvador. Toca un lugar de la lista para verlo en el mapa, con la línea desde el edificio.</p>
+        </div>
+        <div class="cerca-grid">
+          <div class="cerca-map">
+            <div class="map" id="map" role="region" aria-label="Mapa de Galerías con Distrito Arboleda y los lugares cercanos"></div>
+            <div class="map-modes" role="group" aria-label="Tipo de mapa"><button type="button" data-base="calles" aria-pressed="true">Calles</button><button type="button" data-base="satelite" aria-pressed="false">Satélite</button></div>
+          </div>
+          <ol class="nr-list"><li><button type="button" data-i="0"><i>1</i><span class="nr-name"><b>TransMilenio Estación Calle 57</b><small>Transporte · Corredor Avenida Caracas</small></span><span class="nr-dist"><b>410 m</b><small>7 min a pie</small></span></button></li><li><button type="button" data-i="1"><i>2</i><span class="nr-name"><b>Centro Comercial Galerías</b><small>Comercio · Avenida Carrera 24 con Calle 53</small></span><span class="nr-dist"><b>580 m</b><small>9 min a pie</small></span></button></li><li><button type="button" data-i="2"><i>3</i><span class="nr-name"><b>Universidad ECCI</b><small>Educación · Carrera 19 # 49-20</small></span><span class="nr-dist"><b>750 m</b><small>12 min a pie</small></span></button></li><li><button type="button" data-i="3"><i>4</i><span class="nr-name"><b>Movistar Arena</b><small>Recreación · Diagonal 61C # 26-36</small></span><span class="nr-dist"><b>830 m</b><small>14 min a pie</small></span></button></li><li><button type="button" data-i="4"><i>5</i><span class="nr-name"><b>Clínica de Marly</b><small>Salud · Calle 50 # 9-67</small></span><span class="nr-dist"><b>890 m</b><small>15 min a pie</small></span></button></li><li><button type="button" data-i="5"><i>6</i><span class="nr-name"><b>Fundación Universitaria Los Libertadores</b><small>Educación · Carrera 16 # 63A-68</small></span><span class="nr-dist"><b>900 m</b><small>15 min a pie</small></span></button></li><li><button type="button" data-i="6"><i>7</i><span class="nr-name"><b>Estadio El Campín</b><small>Recreación · Carrera 30 con Calle 57</small></span><span class="nr-dist"><b>910 m</b><small>15 min a pie</small></span></button></li><li><button type="button" data-i="7"><i>8</i><span class="nr-name"><b>Clínica Palermo</b><small>Salud · Calle 45C # 22-02</small></span><span class="nr-dist"><b>1,0 km</b><small>17 min a pie</small></span></button></li><li><button type="button" data-i="8"><i>9</i><span class="nr-name"><b>TransMilenio Estación Movistar Arena / El Campín</b><small>Transporte · Corredor Avenida NQS (Carrera 30)</small></span><span class="nr-dist"><b>1,1 km</b><small>17 min a pie</small></span></button></li><li><button type="button" data-i="9"><i>10</i><span class="nr-name"><b>Universidad Nacional</b><small>Educación · Carrera 45 # 26-85</small></span><span class="nr-dist"><b>2,3 km</b><small>12 min en bici</small></span></button></li></ol>
+        </div>
+        <p class="cerca-note">Distancias en línea recta desde el lote. Los minutos son aproximados: recorrido 30 % más largo que la línea recta, a 80 m por minuto a pie y 250 m por minuto en bicicleta. Además pasan rutas del SITP por las calles 53, 57 y 63 y las carreras 13 y 24.</p>
+      </div>
+      <script>window.CERCA = [{"n": "TransMilenio Estación Calle 57", "ll": [4.64425, -74.06555], "d": 414}, {"n": "Centro Comercial Galerías", "ll": [4.642411, -74.074227], "d": 576}, {"n": "Universidad ECCI", "ll": [4.6374434, -74.0712273], "d": 750}, {"n": "Movistar Arena", "ll": [4.648681, -74.0750777], "d": 831}, {"n": "Clínica de Marly", "ll": [4.6370064, -74.0651061], "d": 894}, {"n": "Fundación Universitaria Los Libertadores", "ll": [4.6515614, -74.0663684], "d": 902}, {"n": "Estadio El Campín", "ll": [4.6459, -74.0772], "d": 907}, {"n": "Clínica Palermo", "ll": [4.6356406, -74.0736627], "d": 1039}, {"n": "TransMilenio Estación Movistar Arena / El Campín", "ll": [4.6457929, -74.0786874], "d": 1065}, {"n": "Universidad Nacional", "ll": [4.6394208, -74.0898158], "d": 2334}];</script>
+    </section>
+    <!-- /gen:cerca -->
+
 
     <!-- gen:cabida -->
     <section class="sec cabida dark" id="cabida" aria-labelledby="cabida-h">
@@ -173,27 +196,6 @@
         <p>Seis pisos que siguen la altura de sus vecinos, con la terraza abierta hacia los cerros y los antejardines sembrados sobre las dos calles.</p>
       </div>
     </section>
-
-    <!-- gen:cerca -->
-    <section class="sec cerca" id="ubicacion" aria-labelledby="cerca-h">
-      <div class="wrap">
-        <div class="cerca-head">
-          <p class="hero-kicker" data-reveal>Galerías, Teusaquillo</p>
-          <h2 id="cerca-h" data-reveal>Qué hay cerca</h2>
-          <p data-reveal>Calle 56 con Carrera 18, frente a la Parroquia Divino Salvador. Toca un lugar de la lista para verlo en el mapa, con la línea desde el edificio.</p>
-        </div>
-        <div class="cerca-grid">
-          <div class="cerca-map">
-            <div class="map" id="map" role="region" aria-label="Mapa de Galerías con Distrito Arboleda y los lugares cercanos"></div>
-            <div class="map-modes" role="group" aria-label="Tipo de mapa"><button type="button" data-base="calles" aria-pressed="true">Calles</button><button type="button" data-base="satelite" aria-pressed="false">Satélite</button></div>
-          </div>
-          <ol class="nr-list"><li><button type="button" data-i="0"><i>1</i><span class="nr-name"><b>TransMilenio Estación Calle 57</b><small>Transporte · Corredor Avenida Caracas</small></span><span class="nr-dist"><b>410 m</b><small>7 min a pie</small></span></button></li><li><button type="button" data-i="1"><i>2</i><span class="nr-name"><b>Centro Comercial Galerías</b><small>Comercio · Avenida Carrera 24 con Calle 53</small></span><span class="nr-dist"><b>580 m</b><small>9 min a pie</small></span></button></li><li><button type="button" data-i="2"><i>3</i><span class="nr-name"><b>Universidad ECCI</b><small>Educación · Carrera 19 # 49-20</small></span><span class="nr-dist"><b>750 m</b><small>12 min a pie</small></span></button></li><li><button type="button" data-i="3"><i>4</i><span class="nr-name"><b>Movistar Arena</b><small>Recreación · Diagonal 61C # 26-36</small></span><span class="nr-dist"><b>830 m</b><small>14 min a pie</small></span></button></li><li><button type="button" data-i="4"><i>5</i><span class="nr-name"><b>Clínica de Marly</b><small>Salud · Calle 50 # 9-67</small></span><span class="nr-dist"><b>890 m</b><small>15 min a pie</small></span></button></li><li><button type="button" data-i="5"><i>6</i><span class="nr-name"><b>Fundación Universitaria Los Libertadores</b><small>Educación · Carrera 16 # 63A-68</small></span><span class="nr-dist"><b>900 m</b><small>15 min a pie</small></span></button></li><li><button type="button" data-i="6"><i>7</i><span class="nr-name"><b>Estadio El Campín</b><small>Recreación · Carrera 30 con Calle 57</small></span><span class="nr-dist"><b>910 m</b><small>15 min a pie</small></span></button></li><li><button type="button" data-i="7"><i>8</i><span class="nr-name"><b>Clínica Palermo</b><small>Salud · Calle 45C # 22-02</small></span><span class="nr-dist"><b>1,0 km</b><small>17 min a pie</small></span></button></li><li><button type="button" data-i="8"><i>9</i><span class="nr-name"><b>TransMilenio Estación Movistar Arena / El Campín</b><small>Transporte · Corredor Avenida NQS (Carrera 30)</small></span><span class="nr-dist"><b>1,1 km</b><small>17 min a pie</small></span></button></li><li><button type="button" data-i="9"><i>10</i><span class="nr-name"><b>Universidad Nacional</b><small>Educación · Carrera 45 # 26-85</small></span><span class="nr-dist"><b>2,3 km</b><small>12 min en bici</small></span></button></li></ol>
-        </div>
-        <p class="cerca-note">Distancias en línea recta desde el lote. Los minutos son aproximados: recorrido 30 % más largo que la línea recta, a 80 m por minuto a pie y 250 m por minuto en bicicleta. Además pasan rutas del SITP por las calles 53, 57 y 63 y las carreras 13 y 24.</p>
-      </div>
-      <script>window.CERCA = [{"n": "TransMilenio Estación Calle 57", "ll": [4.64425, -74.06555], "d": 414}, {"n": "Centro Comercial Galerías", "ll": [4.642411, -74.074227], "d": 576}, {"n": "Universidad ECCI", "ll": [4.6374434, -74.0712273], "d": 750}, {"n": "Movistar Arena", "ll": [4.648681, -74.0750777], "d": 831}, {"n": "Clínica de Marly", "ll": [4.6370064, -74.0651061], "d": 894}, {"n": "Fundación Universitaria Los Libertadores", "ll": [4.6515614, -74.0663684], "d": 902}, {"n": "Estadio El Campín", "ll": [4.6459, -74.0772], "d": 907}, {"n": "Clínica Palermo", "ll": [4.6356406, -74.0736627], "d": 1039}, {"n": "TransMilenio Estación Movistar Arena / El Campín", "ll": [4.6457929, -74.0786874], "d": 1065}, {"n": "Universidad Nacional", "ll": [4.6394208, -74.0898158], "d": 2334}];</script>
-    </section>
-    <!-- /gen:cerca -->
 
     <!-- Sube por el edificio: la sección queda fija y al bajar se recorre del lobby a la terraza, piso por piso -->
     <section class="lift" id="edificio" aria-labelledby="lift-h">
@@ -514,6 +516,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="./assets/brochure/arboleda.js?v=v17"></script>  <a class="jmc-badge" href="#firma" aria-label="JMC Arquitectura"><img src="./assets/branding/jmc-logo.png" alt="" width="28" height="28" /><span>JMC Arquitectura</span></a>
+  <script src="./assets/brochure/arboleda.js?v=v18"></script>  <a class="jmc-badge" href="#firma" aria-label="JMC Arquitectura"><img src="./assets/branding/jmc-logo.png" alt="" width="28" height="28" /><span>JMC Arquitectura</span></a>
 </body>
 </html>
