@@ -1348,14 +1348,6 @@ html { scrollbar-color: var(--ink) var(--bg); scrollbar-width: thin; }
 .cx-ov .cx-floor.on { fill: rgba(43, 99, 173, .16) !important; stroke: var(--hl) !important; stroke-width: 2.5 !important; }
 .cx-list button::before { background: var(--hl) !important; }
 .cx-list button.on b { color: var(--hl) !important; }
-/* el edificio por dentro en escritorio: la foto en un marco, sin estirarla a toda la pantalla */
-@media (min-width: 861px) {
-  .lift-stage { position: absolute; bottom: auto !important; top: 50% !important; left: 38vw !important; right: calc(var(--gutter) + clamp(200px, 19vw, 280px) + 30px) !important; transform: translateY(-50%); aspect-ratio: 16 / 10; border-radius: 6px; overflow: hidden; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .6); }
-  .lift-pin { background: var(--night); }
-  .lift-shade { background: none !important; }
-  .lift-copy { right: auto !important; width: 32vw; bottom: 50% !important; transform: translateY(50%); }
-  .lift-step { max-width: 30vw !important; }
-}
 @media (max-width: 860px) {
   .st-type { text-align: left; font-size: 20px; min-height: 0; }
   .statement .st-corte { padding: 0; }
@@ -1368,7 +1360,7 @@ html { scrollbar-color: var(--ink) var(--bg); scrollbar-width: thin; }
   .stc-band { display: none; }
 }
 
-@media (min-width: 861px) { .lift-copy { left: calc(var(--gutter) + 20px) !important; width: calc(36vw - var(--gutter) - 40px) !important; } .lift-stage { left: 38vw !important; } }
+
 
 /* ===================== v9: inicio más sobrio ===================== */
 .st-type { font: 300 clamp(15px, 1.35vw, 20px)/1.7 var(--display) !important; letter-spacing: .08em !important; max-width: 62ch !important; min-height: 0 !important; color: var(--ink-2) !important; }
