@@ -500,6 +500,15 @@ export class MasterplanScene {
     this.flyTo(c.clone().addScaledVector(back, 30).setY(y + 26), c.clone().setY(y), 1.4);
   }
 
+  /** Terraza comunal en la cubierta (18,60 m): la cámara sube en diagonal sobre el edificio completo. */
+  focusTerrace() {
+    if (!this.building) return;
+    const c = this.building.center(), y = this.building.floors * 3.1;
+    const back = this.camera.position.clone().sub(this.controls.target).setY(0).normalize();
+    if (back.lengthSq() < 0.1) back.set(-0.7, 0, -0.7);
+    this.flyTo(c.clone().addScaledVector(back, 26).setY(y + 17), c.clone().setY(y), 1.4);
+  }
+
   focusPoint(x, z, dist = 260) {
     this.flyTo(new THREE.Vector3(x - dist * 0.55, dist * 0.75, z - dist * 0.55), new THREE.Vector3(x, 0, z), 1.6);
   }

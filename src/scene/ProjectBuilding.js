@@ -700,6 +700,24 @@ export class ProjectBuilding {
     return tl;
   }
 
+  /**
+   * Vista explotada (al final de la intro, con la cámara ya quieta): los pisos se separan hacia arriba en
+   * abanico, se sostienen un momento para leer cada nivel y vuelven a su sitio.
+   */
+  explode({ delay = 0, gap = 1.1, hold = 1.3 } = {}) {
+    const g = window.gsap;
+    if (!g || matchMedia('(prefers-reduced-motion: reduce)').matches) return null;
+    const layers = [...this.floorGroups, this.roof];
+    this._assembling = true;
+    layers.forEach((l) => { l.visible = true; l.position.y = 0; });
+    const tl = g.timeline({ delay, onComplete: () => { this._assembling = false; this.setCut(this.cut ?? null); } });
+    layers.forEach((l, i) => {
+      tl.to(l.position, { y: i * gap, duration: 1.3, ease: 'power3.inOut' }, 0.04 * i)
+        .to(l.position, { y: 0, duration: 1.1, ease: 'power3.inOut' }, 1.3 + hold + 0.04 * (layers.length - i));
+    });
+    return tl;
+  }
+
   setHighlight({ show, selectedId, hoveredId, filter }) {
     for (const v of this.unitVolumes) {
       const id = v.userData.unitId;

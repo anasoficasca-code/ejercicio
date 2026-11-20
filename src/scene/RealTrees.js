@@ -28,9 +28,11 @@ const RECTS = {
 
 export const SPECIES = {
   // ramilletes pequeños y muchos (antes 1,3 m y ~160 por copa): hojas a escala y copa llena, sin huecos
-  ash: { kind: 'broad', leaf: 'ash', bark: 'ash', h: 9, trunkFrac: 0.42, crownR: 3.4, crownH: 5.8, branches: 9, cards: 460, card: 0.78 },
-  celtis: { kind: 'broad', leaf: 'celtis', bark: 'celtis', h: 7.5, trunkFrac: 0.38, crownR: 3.6, crownH: 4.8, branches: 8, cards: 440, card: 0.74 },
-  euc: { kind: 'broad', leaf: 'euc', bark: 'euc', h: 12, trunkFrac: 0.5, crownR: 2.8, crownH: 6.5, branches: 8, cards: 380, card: 0.9 },
+  // follaje en grupos al final de las ramas (ver broadleaf): fresno de copa ovalada, almez ancha y baja,
+  // eucalipto alto y abierto
+  ash: { kind: 'broad', leaf: 'ash', bark: 'ash', h: 9, trunkFrac: 0.42, crownR: 3.4, crownH: 5.8, branches: 10, cards: 760, card: 0.82 },
+  celtis: { kind: 'broad', leaf: 'celtis', bark: 'celtis', h: 7.5, trunkFrac: 0.36, crownR: 3.9, crownH: 4.6, branches: 9, cards: 740, card: 0.78 },
+  euc: { kind: 'broad', leaf: 'euc', bark: 'euc', h: 12, trunkFrac: 0.48, crownR: 2.7, crownH: 6.8, branches: 9, cards: 600, card: 0.92 },
   pine: { kind: 'conifer', leaf: 'pine', bark: 'pine', h: 10, crownR: 2.6, cards: 300, card: 0.85 },
   palm: { kind: 'palm', leaf: 'palm', bark: 'palm', h: 8.5, fronds: 15, card: 3.4 }
 };
@@ -113,70 +115,116 @@ function buildLeafGeo(pos, nor, uv, col, idx) {
   return g;
 }
 
-/** Árbol de hoja ancha (fresno/urapán, almez, eucalipto). */
+/**
+ * Ramillete dentro de un grupo de follaje (como crece de verdad: las hojas se agrupan en "nubes" al final de
+ * cada rama, no en una cáscara uniforme). Normal mezcla de la del grupo y la de la copa: cada grupo tiene su
+ * lado iluminado arriba y su sombra abajo, que es lo que le da volumen a un árbol real. Oclusión por vértice
+ * según la profundidad en el grupo, la cara de abajo del grupo y la profundidad en la copa.
+ */
+function clumpCard(p, cl, crown, size, rect, rnd, pos, nor, uv, col, idx) {
+  const asp = rect[4];
+  const w = size * Math.sqrt(asp), h = size / Math.sqrt(asp);
+  const o = new THREE.Vector3().subVectors(p, cl.c);
+  if (o.lengthSq() < 1e-4) o.set(rnd() - 0.5, 0.3, rnd() - 0.5);
+  o.normalize(); o.y = o.y * 0.6 + 0.3 + (rnd() - 0.5) * 0.5; o.normalize();
+  let side = new THREE.Vector3().crossVectors(o, _up);
+  if (side.lengthSq() < 1e-4) side.set(1, 0, 0);
+  side.normalize().applyAxisAngle(o, (rnd() - 0.5) * 2.6);
+  const base = p.clone().addScaledVector(o, -h * 0.2);
+  const corners = [
+    base.clone().addScaledVector(side, -w / 2), base.clone().addScaledVector(side, w / 2),
+    base.clone().addScaledVector(side, w / 2).addScaledVector(o, h), base.clone().addScaledVector(side, -w / 2).addScaledVector(o, h)
+  ];
+  const [u0, v0, uw, vh] = rect;
+  const uvs = [[u0, v0], [u0 + uw, v0], [u0 + uw, v0 + vh], [u0, v0 + vh]];
+  const v = pos.length / 3;
+  const warm = rnd(), sage = rnd(), lum = 0.94 + rnd() * 0.12;
+  corners.forEach((c, k) => {
+    pos.push(c.x, c.y, c.z);
+    const nc = new THREE.Vector3().subVectors(c, cl.c).divideScalar(cl.r);
+    const nw = new THREE.Vector3().subVectors(c, crown.c).divideScalar(crown.r);
+    const n = nc.multiplyScalar(0.62).addScaledVector(nw, 0.38);
+    n.y += 0.18; n.normalize();
+    nor.push(n.x, n.y, n.z);
+    uv.push(uvs[k][0], uvs[k][1]);
+    const dC = Math.min(1, c.distanceTo(cl.c) / cl.r);                       // 0 centro del grupo · 1 borde
+    const under = Math.min(1, Math.max(0, (c.y - cl.c.y) / cl.r * 0.5 + 0.5)); // 0 cara de abajo · 1 arriba
+    const dW = Math.min(1, nw.length());                                     // profundidad en la copa
+    const g = Math.max(0.34, (0.5 + 0.5 * dC) * (0.68 + 0.32 * under) * (0.7 + 0.3 * dW)) * lum * cl.tone * 0.9;
+    col.push(g * (0.84 + warm * 0.12), g * (0.9 + rnd() * 0.06), g * (0.7 + sage * 0.14 - warm * 0.05));
+  });
+  idx.push(v, v + 1, v + 2, v, v + 2, v + 3);
+}
+
+/**
+ * Árbol de hoja ancha (fresno/urapán, almez, eucalipto): tronco con base ensanchada y leve curva, ramas
+ * principales que salen del tronco hacia grupos de follaje repartidos en la envolvente de la copa (con
+ * ramas secundarias hacia grupos menores), y entre los grupos quedan huecos por donde se ven las ramas y
+ * el cielo, como en un árbol real.
+ */
 function broadleaf(sp, seed) {
   const rnd = rand(seed);
   const H = sp.h * (0.88 + rnd() * 0.25);
   const trunkTop = H * sp.trunkFrac;
   const R = sp.crownR * (0.85 + rnd() * 0.3);
   const CH = sp.crownH * (0.85 + rnd() * 0.25);
-  const center = new THREE.Vector3(0, trunkTop + CH * 0.5, 0);
+  const lean = new THREE.Vector3((rnd() - 0.5) * 0.45, 0, (rnd() - 0.5) * 0.45);
+  const center = new THREE.Vector3(lean.x * 0.7, trunkTop + CH * 0.5, lean.z * 0.7);
+  const crown = { c: center, r: Math.max(R, CH * 0.5) };
   const wood = [];
-  const r0 = 0.13 + H * 0.012;
-  // tronco con leve inclinación y quiebres
-  const lean = new THREE.Vector3((rnd() - 0.5) * 0.35, 0, (rnd() - 0.5) * 0.35);
+  const r0 = 0.14 + H * 0.013;
+  // tronco: curva suave y conicidad; base con raíces ensanchadas
+  const at = (t) => new THREE.Vector3(lean.x * t * t + Math.sin(t * 5 + seed) * 0.05, H * 0.9 * t, lean.z * t * t + Math.cos(t * 4 + seed) * 0.05);
   let prev = new THREE.Vector3(0, 0, 0), pr = r0;
-  const leader = [];
-  for (let s = 1; s <= 5; s++) {
-    const t = s / 5;
-    const p = new THREE.Vector3(lean.x * t + (rnd() - 0.5) * 0.12, H * 0.92 * t, lean.z * t + (rnd() - 0.5) * 0.12);
-    const r = r0 * (1 - t * 0.82);
-    wood.push(limb(prev, p, pr, r));
-    leader.push(p.clone());
+  for (let s = 1; s <= 6; s++) {
+    const t = s / 6, p = at(t), r = r0 * (1 - t * 0.85);
+    wood.push(limb(prev, p, pr, r, 8));
     prev = p; pr = r;
   }
-  wood.push(limb(new THREE.Vector3(0, -0.05, 0), new THREE.Vector3(0, 0.4, 0), r0 * 1.5, r0)); // base ensanchada
+  wood.push(limb(new THREE.Vector3(0, -0.05, 0), new THREE.Vector3(0, 0.55, 0), r0 * 1.7, r0, 9));
+
+  const clumps = [];
+  const nB = sp.branches;
+  for (let b = 0; b < nB; b++) {
+    const t = (b + 0.5) / nB;
+    const y = trunkTop * 0.9 + (H * 0.85 - trunkTop * 0.9) * t * 0.8;
+    const p0 = at(y / (H * 0.9));
+    const az = b * 2.39996 + rnd() * 0.6;
+    // destino: un punto de la envolvente elipsoidal de la copa (más afuera abajo, más arriba al final)
+    const el = THREE.MathUtils.lerp(-0.15, 1.1, t) + (rnd() - 0.5) * 0.4;
+    const f = 0.62 + rnd() * 0.25;
+    const target = center.clone().add(new THREE.Vector3(Math.cos(az) * Math.cos(el) * R * f, Math.sin(el) * CH * 0.5 * f, Math.sin(az) * Math.cos(el) * R * f));
+    target.y = Math.max(target.y, p0.y + 0.4);
+    const mid = p0.clone().lerp(target, 0.5).add(new THREE.Vector3(0, 0.35 + rnd() * 0.3, 0));
+    const br = r0 * (0.5 - t * 0.22);
+    wood.push(limb(p0, mid, br, br * 0.62, 6), limb(mid, target, br * 0.62, br * 0.22, 5));
+    const tone = 0.92 + rnd() * 0.14;
+    clumps.push({ c: target, r: R * (0.36 + rnd() * 0.12), tone });
+    // una o dos ramas secundarias hacia grupos menores, hacia afuera y arriba
+    const nS = 1 + (rnd() < 0.55 ? 1 : 0);
+    for (let s = 0; s < nS; s++) {
+      const dir = new THREE.Vector3().subVectors(target, mid).normalize().applyAxisAngle(_up, (s ? 1 : -1) * (0.5 + rnd() * 0.6));
+      dir.y += 0.35; dir.normalize();
+      const sp0 = mid.clone().lerp(target, 0.3 + rnd() * 0.4);
+      const se = sp0.clone().addScaledVector(dir, R * (0.35 + rnd() * 0.25));
+      wood.push(limb(sp0, se, br * 0.4, br * 0.12, 4));
+      clumps.push({ c: se, r: R * (0.24 + rnd() * 0.1), tone: tone * (0.96 + rnd() * 0.08) });
+    }
+  }
+  // remate de la copa sobre el líder
+  clumps.push({ c: at(1).add(new THREE.Vector3(0, -0.2, 0)), r: R * 0.42, tone: 1.02 });
 
   const pos = [], nor = [], uv = [], col = [], idx = [];
   const rect = RECTS[sp.leaf];
-  const tips = [];
-  // ramas principales (ángulo áureo) con secundarias
-  for (let b = 0; b < sp.branches; b++) {
-    const t = 0.15 + 0.85 * (b / sp.branches);
-    const y = trunkTop * 0.85 + (H * 0.88 - trunkTop * 0.85) * t * 0.85;
-    const az = b * 2.39996 + rnd() * 0.5;
-    const elev = THREE.MathUtils.degToRad(30 + rnd() * 25 + t * 15);
-    const L = R * (1.05 - t * 0.35) * (0.8 + rnd() * 0.3);
-    const p0 = new THREE.Vector3(lean.x * (y / H), y, lean.z * (y / H));
-    const dir = new THREE.Vector3(Math.cos(az) * Math.cos(elev), Math.sin(elev), Math.sin(az) * Math.cos(elev));
-    const mid = p0.clone().addScaledVector(dir, L * 0.55);
-    const end = mid.clone().addScaledVector(dir.clone().add(new THREE.Vector3(0, 0.25, 0)).normalize(), L * 0.45);
-    const br = r0 * (0.42 - t * 0.2);
-    wood.push(limb(p0, mid, br, br * 0.6, 5), limb(mid, end, br * 0.6, br * 0.25, 5));
-    tips.push(end, mid.clone().lerp(end, 0.5));
-    for (let s = 0; s < 2; s++) {
-      const sd = dir.clone().applyAxisAngle(_up, (s ? 1 : -1) * (0.6 + rnd() * 0.5)); sd.y += 0.3; sd.normalize();
-      const sp0 = p0.clone().lerp(mid, 0.6 + rnd() * 0.4);
-      const se = sp0.clone().addScaledVector(sd, L * 0.45);
-      wood.push(limb(sp0, se, br * 0.45, br * 0.15, 4));
-      tips.push(se);
+  const wsum = clumps.reduce((s, c) => s + c.r * c.r, 0);
+  for (const cl of clumps) {
+    const n = Math.max(6, Math.round(sp.cards * (cl.r * cl.r) / wsum));
+    for (let i = 0; i < n; i++) {
+      const th = rnd() * Math.PI * 2, ph = Math.acos(2 * rnd() - 1), rr = Math.pow(rnd(), 0.45);
+      const p = cl.c.clone().add(new THREE.Vector3(Math.sin(ph) * Math.cos(th) * cl.r * rr, Math.cos(ph) * cl.r * 0.78 * rr, Math.sin(ph) * Math.sin(th) * cl.r * rr));
+      if (p.y < trunkTop * 0.85) p.y = trunkTop * 0.85 + rnd() * 0.4;
+      clumpCard(p, cl, crown, sp.card * (0.7 + rnd() * 0.55), rect, rnd, pos, nor, uv, col, idx);
     }
-  }
-  // follaje: ramilletes en puntas de ramas + relleno del volumen de la copa (más denso en la capa exterior)
-  const nTips = Math.min(tips.length * 3, Math.floor(sp.cards * 0.4));
-  for (let i = 0; i < nTips; i++) {
-    const tp = tips[i % tips.length].clone().add(new THREE.Vector3((rnd() - 0.5) * 0.9, (rnd() - 0.3) * 0.7, (rnd() - 0.5) * 0.9));
-    const out = new THREE.Vector3().subVectors(tp, center); out.y = out.y * 0.6 + 0.35;
-    leafCard(tp, out, sp.card * (0.75 + rnd() * 0.5), rect, rnd, center, 1, pos, nor, uv, col, idx);
-  }
-  for (let i = nTips; i < sp.cards; i++) {
-    const th = rnd() * Math.PI * 2, ph = Math.acos(2 * rnd() - 1);
-    const rr = Math.pow(rnd(), 0.35);           // sesgo hacia la superficie
-    const d = new THREE.Vector3(Math.sin(ph) * Math.cos(th), Math.cos(ph), Math.sin(ph) * Math.sin(th));
-    const p = center.clone().add(new THREE.Vector3(d.x * R * rr, d.y * CH * 0.5 * rr, d.z * R * rr));
-    if (p.y < trunkTop * 0.9) p.y = trunkTop * 0.9 + rnd() * 0.6;
-    const out = d.clone(); out.y = out.y * 0.7 + 0.25;
-    leafCard(p, out, sp.card * (0.7 + rnd() * 0.6), rect, rnd, center, 1, pos, nor, uv, col, idx);
   }
   return { wood: mergeGeometries(wood, false), leaves: buildLeafGeo(pos, nor, uv, col, idx), height: H };
 }

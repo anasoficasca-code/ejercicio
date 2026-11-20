@@ -40,7 +40,7 @@ export class SidebarFilters {
     const s = store.state;
     if (!s.project) return;
     const mode = s.activeTab === 'urbanismo' ? 'urbanismo' : 'inmuebles';
-    const key = JSON.stringify([mode, s.activeFloor, s.activeTypology, s.selectedUnitId, s.showUnitsOverlay, s.cityTheme, s.layers]);
+    const key = JSON.stringify([mode, s.activeFloor, s.activeTypology, s.selectedUnitId, s.showUnitsOverlay, s.cityTheme, s.layers, s.galleryKey]);
     if (key === this._key) return;
     this._key = key;
     const el = this.container.querySelector('#sidebar-content');
@@ -105,11 +105,14 @@ export class SidebarFilters {
         <div class="filter-section">
           <div class="filter-section-label">Elige un piso</div>
           <div class="arb-section" role="group" aria-label="Pisos del edificio">
-            <button class="arb-level roof ${!s.activeFloor ? 'all' : ''}" data-floor="" aria-pressed="${!s.activeFloor}">
-              <span class="arb-level-name">Edificio completo</span><span class="arb-level-meta">terraza comunal</span>
+            <button class="arb-level roof ${!s.activeFloor ? 'all' : ''} ${s.galleryKey === 'edificio' ? 'active' : ''}" data-floor="" data-gallery="edificio" aria-pressed="${s.galleryKey === 'edificio'}">
+              <span class="arb-level-name">Edificio completo</span><span class="arb-level-meta">fotos del proyecto</span>
+            </button>
+            <button class="arb-level ${!s.activeFloor ? 'all' : ''} ${s.galleryKey === 'terraza' ? 'active' : ''}" data-floor="" data-gallery="terraza" aria-pressed="${s.galleryKey === 'terraza'}">
+              <span class="arb-level-name">Terraza</span><span class="arb-level-meta">lounge, deck y BBQ</span>
             </button>
             ${floors.map((f) => `
-              <button class="arb-level ${s.activeFloor === f ? 'active' : ''} ${!s.activeFloor ? 'all' : ''}" data-floor="${f}" aria-pressed="${s.activeFloor === f}" style="--i:${f}">
+              <button class="arb-level ${s.activeFloor === f ? 'active' : ''} ${!s.activeFloor ? 'all' : ''}" data-floor="${f}" data-gallery="${f}" aria-pressed="${s.activeFloor === f}" style="--i:${f}">
                 <span class="arb-level-name">Piso ${f}</span>
                 <span class="arb-level-meta">${f === 1 ? 'lobby y zonas sociales' : `${perFloor(f)} apartamentos`}</span>
               </button>`).join('')}
@@ -196,7 +199,11 @@ export class SidebarFilters {
 
   bind(el) {
     el.querySelector('[data-action="toggle-units"]')?.addEventListener('click', () => store.setState({ showUnitsOverlay: !store.state.showUnitsOverlay }));
-    el.querySelectorAll('[data-floor]').forEach((b) => (b.onclick = () => store.setState({ activeFloor: b.dataset.floor ? +b.dataset.floor : null, selectedUnitId: null })));
+    // cada nivel abre su planta (corte del edificio) y la galería con las fotos de sus zonas
+    el.querySelectorAll('[data-floor]').forEach((b) => (b.onclick = () => {
+      const g = b.dataset.gallery;
+      store.setState({ activeFloor: b.dataset.floor ? +b.dataset.floor : null, selectedUnitId: null, viewMode: 'exterior', galleryKey: /^\d+$/.test(g) ? +g : g });
+    }));
     // "Zona común" abre el piso 1 (donde están); "Apartamento" o "Todas" vuelven al edificio completo
     el.querySelectorAll('[data-typo]').forEach((b) => (b.onclick = () => store.setState({
       activeTypology: b.dataset.typo || null,

@@ -10,6 +10,7 @@ export class MasterplanStore {
       showUnitsOverlay: false,       // "Mostrar apartaestudios 3D" (apagado: el edificio se ve limpio, como un render)
       activeFloor: null,             // filtro por piso (1..6)
       activeTypology: null,          // 'Apartamento' | 'Zona común'
+      galleryKey: null,              // galería de zonas abierta: null | 'edificio' | 'terraza' | 1..6
       selectedUnitId: null,
       hoveredUnitId: null,
       interiorView: null,            // null (planta abierta) | 'cocina' | 'habitacion'

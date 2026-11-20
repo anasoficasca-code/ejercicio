@@ -8,8 +8,7 @@ import { MarketModal } from './ui/MarketModal.js';
 import { PrediosModal } from './ui/PrediosModal.js';
 import { LoadingScreen } from './ui/LoadingScreen.js';
 import { Intro } from './ui/Intro.js';
-import { Tour, STOPS } from './ui/Tour.js';
-import { Hotspots } from './scene/Hotspots.js';
+import { FloorGallery } from './ui/FloorGallery.js';
 import { store } from './state/store.js';
 
 const lamina = (n) => `./assets/canva/lamina-${String(n).padStart(2, '0')}.jpg`;
@@ -38,22 +37,14 @@ class App {
       this.detail = new UnitDetailCard(document.getElementById('room-detail-container'), { onOpenGallery: (u) => this.openUnitGallery(u) });
       this.dock = new BottomDock(document.getElementById('bottom-dock-container'), { onTabClick: (t) => this.handleTabClick(t) });
       store.setState({ activeTab: 'inmuebles' });
-      // recorrido guiado y puntos de interés sobre el edificio
-      this.tour = new Tour({ scene: this.scene });
-      this.hotspots = new Hotspots(this.scene.building, STOPS, { onPick: (i) => this.tour.start(i) });
-      const syncPins = () => {
-        const s = store.state;
-        this.hotspots.setVisible(!document.body.classList.contains('is-intro') && !this.tour.active && s.viewMode === 'exterior' && !s.selectedUnitId && !s.activeFloor);
-      };
-      store.subscribe(syncPins);
-      this.tour.onStop = syncPins;
-      this.tour.onChange = syncPins;
+      // galería de cada nivel (edificio, terraza, pisos 6 a 1): se abre al elegir el piso en el panel
+      this.floorGallery = new FloorGallery({ scene: this.scene, onFullscreen: (title, items, i) => this.gallery.open(title, items, i) });
       this.loading.set(0.8, 'Descargando la ortofoto…');
       // la ortofoto y el relieve terminan de llegar con la escena ya a la vista (antes se esperaban hasta 7 s)
       await Promise.race([this.scene.city.ready, new Promise((r) => setTimeout(r, 900))]);
       const hour = document.getElementById('sky-hour');
       this.scene.setHour(parseFloat(hour.value));
-      this.loading.set(0.95, 'Preparando el recorrido…');
+      this.loading.set(0.95, 'Preparando el edificio…');
       // los sombreados se compilan en paralelo (sin congelar la página) antes de mostrar la escena: antes se
       // cortaba a 1,2 s y el resto se compilaba de golpe durante la intro (pausas de 2–3 s, "se choca")
       // (el barrio que llega después del relieve se compila igual en CityContext antes de agregarse)
@@ -61,16 +52,11 @@ class App {
       this.scene.live = true;   // desde aquí se dibuja (durante la carga dibujar compilaba todo de golpe)
       this.loading.done();
       // llegada: la cámara baja sobre Galerías hasta la esquina mientras se encienden las luces de la tarde
-      this.intro = new Intro({
-        scene: this.scene,
-        onTour: () => { syncPins(); this.tour.start(0); },
-        onExplore: () => syncPins()
-      });
-      syncPins();
+      this.intro = new Intro({ scene: this.scene });
       this.intro.play();
       // abierto desde el brochure (?embed=1): sin intro, directo a explorar el edificio
       if (new URLSearchParams(location.search).has('embed')) {
-        this.intro.finish(() => syncPins());
+        this.intro.finish();
         document.querySelector('a.contact-pill-btn[href="./index.html"]')?.remove();   // el brochure ya tiene "Volver"
       }
     }).catch((e) => {
@@ -85,7 +71,6 @@ class App {
     });
     store.subscribe((s) => document.querySelectorAll('.mode-pill-btn[data-mode]').forEach((b) => b.classList.toggle('active', b.dataset.mode === s.viewMode)));
     document.getElementById('btn-laminas').onclick = () => this.gallery.open('Láminas · Ejercicio Profesional 2', this.laminas || []);
-    document.getElementById('btn-tour').onclick = () => this.tour?.start(0);
 
     const hour = document.getElementById('sky-hour'), label = document.getElementById('sky-hour-label');
     const night = document.getElementById('btn-night');
@@ -104,7 +89,7 @@ class App {
     });
     // noche ↔ tarde: la luz cambia en 2,4 s y se van encendiendo apartamentos, bañadores y calle
     night.onclick = () => {
-      const g = window.gsap, from = parseFloat(hour.value), to = from >= 17.9 ? 16.9 : 18.15;
+      const g = window.gsap, from = parseFloat(hour.value), to = from >= 17.9 ? 15.5 : 18.15;
       const apply = (h) => { hour.value = h; show(h); this.scene.setHour(h); };
       if (!g || matchMedia('(prefers-reduced-motion: reduce)').matches) { apply(to); return; }
       const o = { h: from };
@@ -127,14 +112,10 @@ class App {
     this.gallery.open('Láminas · Ejercicio Profesional 2', this.laminas, this.laminas.findIndex((l) => l.n === n));
   }
 
-  openUnitGallery(u) {
-    // sala de cine y gimnasio: sus renders (cuatro vistas de cada uno)
-    const fotos = { cine: ['Sala de cine', 'cine'], gym: ['Gimnasio', 'gym'] }[u.id];
-    if (fotos) {
-      this.gallery.open(`Galería · ${fotos[0]}`, [1, 2, 3, 4].map((k) => ({ src: `./assets/renders/${fotos[1]}-${k}.webp`, title: `${fotos[0]} · vista ${k}`, type: 'Render' })));
-      return;
-    }
-    const pick = u.typology === 'Apartamento' ? [u.lamina, 26, 25, u.tipo === 'A' ? 28 : 27, 35] : [30, 31, 32, 33, 34, 22, 29];
+  openUnitGallery(u, photos = false) {
+    // fotos: la galería del piso, en la zona de esa unidad (lobby, bicicletero, restaurante, cine, gimnasio, apartamento)
+    if (photos || u.typology !== 'Apartamento') { this.floorGallery.openForUnit(u); return; }
+    const pick = [u.lamina, 26, 25, u.tipo === 'A' ? 28 : 27, 35];
     this.gallery.open(`Galería · ${u.title}`, pick.map((n) => this.laminas.find((l) => l.n === n)));
   }
 

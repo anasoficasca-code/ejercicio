@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+export const START_HOUR = 15.5;
+
 /** Lleva el control de la hora del día al valor que anima la intro. */
 function syncSlider(h) {
   const input = document.getElementById('sky-hour'), label = document.getElementById('sky-hour-label');
@@ -12,11 +14,11 @@ function syncSlider(h) {
 /**
  * Intro de llegada al masterplan: la cámara baja desde lo alto de Galerías hasta la esquina de la Calle 56
  * con Carrera 18 mientras cae la tarde y se encienden los apartamentos; sobre la escena aparece la marca
- * Distrito Arboleda letra por letra. Termina con dos caminos: el recorrido guiado o explorar libremente.
+ * Distrito Arboleda letra por letra. Termina con "Explorar el edificio" (cada piso se abre desde el panel).
  * Con "reducir movimiento" la cámara llega directo y el texto solo se funde.
  */
 export class Intro {
-  constructor({ scene, onTour, onExplore }) {
+  constructor({ scene, onExplore }) {
     this.scene = scene;
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const el = document.createElement('section');
@@ -29,8 +31,7 @@ export class Intro {
         <h1 class="ai-word" aria-label="Distrito Arboleda">${[...'Arboleda'].map((c) => `<span class="ai-ch" aria-hidden="true">${c}</span>`).join('')}</h1>
         <p class="ai-line">Veinte apartamentos con balcón en Galerías, frente a la Parroquia Divino Salvador.</p>
         <div class="ai-actions">
-          <button class="ai-btn primary" data-act="tour">Hacer el recorrido</button>
-          <button class="ai-btn" data-act="explore">Explorar el edificio</button>
+          <button class="ai-btn primary" data-act="explore">Explorar el edificio</button>
         </div>
       </div>
       <button class="ai-skip" data-act="explore">Saltar intro</button>`;
@@ -38,34 +39,35 @@ export class Intro {
     this.el = el;
     el.addEventListener('click', (e) => {
       const act = e.target.closest('[data-act]')?.dataset.act;
-      if (act) this.finish(act === 'tour' ? onTour : onExplore);
+      if (act) this.finish(onExplore);
     });
   }
 
   play() {
     const g = window.gsap, s = this.scene;
     document.body.classList.add('is-intro');
+    // la tarde arranca a las 15:30 (sol alto del occidente sobre la fachada de la Carrera 18)
+    s.setHour(START_HOUR);
+    syncSlider(START_HOUR);
     if (!g || this.reduced) {
       this.el.classList.add('static');
-      s.setHour(16.9);
-      syncSlider(16.9);
       return;
     }
     const c = s.building.center();
     const home = s.home;
-    // cámara: de una toma aérea alta sobre el barrio hasta la vista de la esquina
-    const from = new THREE.Vector3(c.x - 330, 300, c.z - 260);
+    // cámara: un acercamiento corto desde una toma aérea cercana (la ortofoto y el barrio llenan el cuadro)
+    // hasta la vista de la esquina; el edificio llega completo
+    const from = home.pos.clone().sub(home.target).multiplyScalar(2.3).add(new THREE.Vector3(c.x, 0, c.z));
+    from.y = Math.max(from.y, 85);
     s.camera.position.copy(from);
-    s.controls.target.set(c.x, 0, c.z);
+    s.controls.target.set(c.x, 4, c.z);
     s.controls.enabled = false;
-    const hour = { h: 15.6 };
-    // mientras la cámara baja, el edificio se arma piso por piso sobre el lote
-    const started = performance.now();
-    s.building.ready?.then(() => s.building.assemble({ delay: Math.max(0, 1.0 - (performance.now() - started) / 1000) }));
+    const fly = 4.6;
     this.tl = g.timeline({ onComplete: () => { s.controls.enabled = true; } })
-      .to(s.camera.position, { x: home.pos.x, y: home.pos.y, z: home.pos.z, duration: 7.6, ease: 'power3.inOut' }, 0)
-      .to(s.controls.target, { x: home.target.x, y: home.target.y, z: home.target.z, duration: 7.6, ease: 'power3.inOut' }, 0)
-      .to(hour, { h: 16.9, duration: 5.2, ease: 'sine.inOut', onUpdate: () => { s.setHour(hour.h); syncSlider(hour.h); } }, 0.6)
+      .to(s.camera.position, { x: home.pos.x, y: home.pos.y, z: home.pos.z, duration: fly, ease: 'power2.inOut' }, 0)
+      .to(s.controls.target, { x: home.target.x, y: home.target.y, z: home.target.z, duration: fly, ease: 'power2.inOut' }, 0)
+      // con la cámara ya quieta, la vista explotada: los pisos se separan y vuelven a su sitio
+      .call(() => { s.building.explode?.(); }, null, fly + 0.15)
       .fromTo(this.el.querySelectorAll('.ai-ch'), { yPercent: 110, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.1, stagger: 0.09, ease: 'expo.out' }, 0.5)
       .fromTo(this.el.querySelector('.ai-sub'), { opacity: 0, letterSpacing: '0.6em' }, { opacity: 1, letterSpacing: '0.32em', duration: 1.4, ease: 'power2.out' }, 1.2)
       .fromTo(this.el.querySelector('.ai-line'), { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }, 2.0)
