@@ -292,6 +292,8 @@ lote, huella = pa['loteM2'], pa['plantaM2']
 constr = huella * NF
 vend = sum(t['area'] for t in pa['tipologias']) * (pa['unidades'] / len(pa['tipologias']))
 ventas = sum(2 * t['area'] * (pa['precioM2Base'] + (f - 2) * pa['diferencialPiso']) for f in range(2, NF + 1) for t in pa['tipologias'])
+LOCAL_M2, LOCAL_PM2 = 88.9, 14000000
+ventas += LOCAL_M2 * LOCAL_PM2   # local comercial (restaurante) del piso 1
 comunal = constr / 80 * 10
 num = lambda v, d, suf='', pre='': f'<dt data-num="{v:.4f}" data-dec="{d}" data-pre="{pre}" data-suf="{suf}">{pre}{es(v, d)}{suf}</dt>'
 cab_rows = [
@@ -304,7 +306,7 @@ cab_rows = [
     (num(46, 0), 'Parqueaderos', '2 sótanos de 23 cupos bajo todo el lote, con rampa sobre la Calle 56'),
     (num(pa['unidades'], 0), 'Apartamentos', '4 por piso en los pisos 2 a 6: 10 tipo A y 10 tipo B'),
     (num(vend, 2, ' m²'), 'Área vendible', f'10 × {es(pa["tipologias"][0]["area"])} m² + 10 × {es(pa["tipologias"][1]["area"])} m²'),
-    (num(ventas / 1e6, 0, ' M', '$'), 'Ventas estimadas', 'Los 20 apartamentos a precio de lista por piso, en millones de pesos'),
+    (num(ventas / 1e6, 0, ' M', '$'), 'Ventas estimadas', 'Los 20 apartamentos a precio de lista por piso y el local del restaurante, en millones de pesos'),
     (num(comunal, 1, ' m²'), 'Equipamiento comunal exigido', '10 m² por cada 80 m² construidos (POT, Decreto 555 de 2021)'),
 ]
 cab_dl = ''.join(f'<div class="cb-row">{n}<dd><b>{t}</b><span>{d}</span></dd></div>' for n, t, d in cab_rows)
@@ -453,7 +455,7 @@ t3 = ''.join([
     row('Huella del edificio', f'{es(PW)} × {es(PD)} m', f'{es(huella)} m²'),
     row('Antejardines, jardín y patio', 'Lote libre: el 69 % queda verde y abierto', f'{es(lote - huella)} m²'),
     row('Área construida', f'{NF} pisos de {es(huella)} m²', f'{es(constr)} m²'),
-    row('Área vendible', f'10 × {es(A_["area"])} m² + 10 × {es(B_["area"])} m²', f'{es(vend)} m²', 'ar-total'),
+    row('Área vendible', f'10 × {es(A_["area"])} m² + 10 × {es(B_["area"])} m² + local de {es(LOCAL_M2, 1)} m²', f'{es(vend + LOCAL_M2)} m²', 'ar-total'),
 ])
 blocks['areas'] = f"""
     <section class="sec areas" id="areas" aria-labelledby="areas-h">
