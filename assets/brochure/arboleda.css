@@ -1388,3 +1388,5 @@ html { scrollbar-color: var(--ink) var(--bg); scrollbar-width: thin; }
   .stc-side.r { text-align: left; }
   .st-type { font-size: 15px !important; }
 }
+
+.st-type { max-width: min(1320px, 100%) !important; font-size: clamp(16px, 1.65vw, 25px) !important; line-height: 1.6 !important; }
