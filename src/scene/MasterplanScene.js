@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { SkyEnvironment } from './SkyEnvironment.js';
 import { PostFX } from './PostFX.js';
-import { applyWind, windUniforms } from './Wind.js';
+import { windUniforms } from './Wind.js';
 import { CityContext } from './CityContext.js';
 import { ProjectBuilding } from './ProjectBuilding.js';
 import { setNight } from './BuildingMaterials.js';
@@ -33,6 +33,9 @@ export class MasterplanScene {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.shadowMap.autoUpdate = false;   // ver render(): un cuadro de cada dos
+    // revisar los errores de cada sombreado hace 3–4 consultas sincrónicas a la GPU por programa (~120):
+    // eran la mayor parte de las pausas al cargar. Se dejan solo con ?debug en la URL.
+    this.renderer.debug.checkShaderErrors = new URLSearchParams(location.search).has('debug');
     container.appendChild(this.renderer.domElement);
 
     this.labels = new CSS2DRenderer();
@@ -65,6 +68,12 @@ export class MasterplanScene {
     store.subscribe((s) => this.onState(s));
     try { this.postfx = new PostFX(this.renderer, this.scene, this.camera, container); } catch (e) { console.warn('PostFX desactivado', e); }
     if (this.postfx) this.renderer.setPixelRatio(this.postfx.maxPixelRatio);
+    // GPU integrada: mapa de sombras de 2048 (el de 4096 ocupa 64 MB de memoria de video y la hace sufrir)
+    if (this.postfx?.low && this.sun.shadow.mapSize.x > 2048) this.sun.shadow.mapSize.set(2048, 2048);
+    // si el navegador le quita el contexto WebGL a la página (memoria de video llena, GPU reiniciada), se
+    // recarga sola al recuperarlo en vez de quedar en negro
+    this.renderer.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); this.live = false; }, false);
+    this.renderer.domElement.addEventListener('webglcontextrestored', () => location.reload(), false);
     if (this.postfx?.low && this.skyEnv?.cloudMaterial) this.skyEnv.cloudMaterial.uniforms.uSteps.value = 16;
     this.renderer.setAnimationLoop(() => this.render());
   }
@@ -124,7 +133,11 @@ export class MasterplanScene {
   /** Niebla y plano cercano según la distancia de la cámara; el cielo y las nubes la siguen. */
   _updateRange() {
     const cam = this.camera, dist = cam.position.distanceTo(this.controls.target);
-    const near = THREE.MathUtils.clamp(dist * 0.012, 0.06, 30);   // adentro de un apartamento la cámara queda cerca
+    // adentro de un apartamento la cámara queda cerca. Desde lo alto (vista de contexto, intro) el plano cercano
+    // sube con la altura sobre el suelo: con 13 m de near y 90 km de far la profundidad no distinguía el césped
+    // de las manzanas (+16 cm) del andén (+14 cm) y el verde parpadeaba al mover la cámara
+    const high = Math.max(0, cam.position.y - 70) * 0.3;
+    const near = THREE.MathUtils.clamp(Math.max(dist * 0.012, high), 0.06, 400);
     if (Math.abs(near - cam.near) > 0.02 * cam.near) { cam.near = near; cam.updateProjectionMatrix(); }
     // bruma de altura (perspectiva aérea): los Cerros y el fondo se aclaran como en las fotos de dron
     this.scene.fog.near = 260 + dist * 0.8;
@@ -149,7 +162,7 @@ export class MasterplanScene {
     this.data = { project, construcciones, manzanas, lotes, predios, puntos, andenes };
 
     const lot = predios.p.find((p) => p.id === 'englobe');
-    this.city = new CityContext(this.scene, { renderer: this.renderer, data: this.data, project, mobile: this.mobile });
+    this.city = new CityContext(this.scene, { renderer: this.renderer, data: this.data, project, mobile: this.mobile, compile: () => this.compileScene() });
     this.building = new ProjectBuilding(this.scene, { lot, project });
     this.building.setNight(this._dusk ?? 0);
     // tráfico sobre las calles reales: carros en movimiento, semáforos y cebras
@@ -175,17 +188,13 @@ export class MasterplanScene {
     this.controls.target.copy(this.home.target);
     this.camera.position.copy(this.home.pos);
     this.sun.target.position.copy(c);
-    this.city.ready.then(() => {
-      const target = new THREE.WebGLCubeRenderTarget(this.mobile ? 64 : 128, { type: THREE.HalfFloatType });
-      this.reflectionCamera = new THREE.CubeCamera(0.5, 5000, target);
+    // reflejos de fachada (vidrio y metal): cubo capturado en el edificio y pasado a PMREM (ver captureFacadeReflections)
+    this._reflectionCube = new THREE.CubeCamera(0.5, 5000, new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }));
+    this.city.ready.then(async () => {
+      // los carros (glTF) y lo último del barrio se compilan antes del cubo de reflejos (6 vistas de toda la escena)
+      await Promise.race([this.compileScene(), new Promise((r) => setTimeout(r, 6000))]);
+      this.reflectionCamera = this._reflectionCube;
       this.captureFacadeReflections();
-      this.building.group.traverse(mesh => {
-        const material = mesh.material;
-        if (material?.isMeshPhysicalMaterial || material?.metalness > 0.5) {
-          material.envMap = target.texture;
-          material.needsUpdate = true;
-        }
-      });
     }).catch(error => console.warn('Reflejos del entorno', error));
 
     this._mode = store.state.viewMode; // la cámara ya está en la vista inicial
@@ -194,16 +203,31 @@ export class MasterplanScene {
   }
 
   // Capture the surrounding blocks at window height for glass and anodized metal.
+  // El cubo se convierte a PMREM (el mismo formato y tamaño del reflejo del cielo, scene.environment): así el
+  // vidrio y el metal usan los sombreados ya compilados. Asignar el cubo crudo obligaba a recompilarlos de golpe
+  // y three lo convertía en medio de la compilación (errores de WebGL y pausas).
   captureFacadeReflections() {
-    const group = this.building.group;
-    const visible = group.visible;
-    group.visible = false;
+    // se ocultan solo las mallas del edificio: ocultar el grupo entero apagaba también su luz interior y,
+    // con una luz menos, three compilaba otra vez todos los sombreados del barrio solo para esta captura
+    const hidden = [];
+    this.building.group.traverse((o) => { if (!o.isLight && o.visible && (o.isMesh || o.isLine || o.isPoints || o.isSprite)) { o.visible = false; hidden.push(o); } });
     try {
       this.reflectionCamera.position.copy(this.building.center());
       this.reflectionCamera.update(this.renderer, this.scene);
     } finally {
-      group.visible = visible;
+      hidden.forEach((o) => { o.visible = true; });
     }
+    this._reflPMREM ??= new THREE.PMREMGenerator(this.renderer);
+    const first = !this._reflUV;
+    this._reflUV = this._reflPMREM.fromCubemap(this.reflectionCamera.renderTarget.texture, this._reflUV || null);
+    if (!first) return;
+    this.building.group.traverse((mesh) => {
+      const m = mesh.material;
+      if (m && !Array.isArray(m) && (m.isMeshPhysicalMaterial || m.metalness > 0.5)) {
+        m.envMap = this._reflUV.texture;
+        m.needsUpdate = true;
+      }
+    });
   }
 
   // ---------------------------------------------------------------- estado → escena
@@ -297,8 +321,48 @@ export class MasterplanScene {
     b.aptFurniture.forEach((m) => { m.visible = true; });
     b.floorGroups.forEach((g) => { g.visible = true; });
     b.roof.visible = true;
-    try { await (this.renderer.compileAsync ? this.renderer.compileAsync(this.scene, this.camera) : this.renderer.compile(this.scene, this.camera)); } catch (e) { console.warn('precompilación', e); }
+    await this.compileScene();
     b.aptFurniture.forEach((m) => { m.visible = false; });
+    // primer reflejo de fachada con lo que ya hay (cielo, suelo, manzanas); se repite con el barrio completo
+    if (this._reflectionCube && !this.reflectionCamera) {
+      this.reflectionCamera = this._reflectionCube;
+      try { this.captureFacadeReflections(); } catch (e) { /* sin reflejo inicial */ }
+    }
+  }
+
+  /**
+   * Compila en paralelo (KHR_parallel_shader_compile, sin congelar la página) los sombreados de todo lo que
+   * hay en la escena, incluso lo oculto. Se compila contra el render target del posproceso: sin eso three
+   * prepara la variante "a pantalla" (tone mapping + sRGB) y al dibujar compilaba otra vez, de golpe.
+   */
+  compileScene() {
+    const r = this.renderer, prev = r.getRenderTarget();
+    let p;
+    try {
+      r.setRenderTarget(this.postfx?.composer?.renderTarget1 ?? null);
+      p = r.compileAsync ? r.compileAsync(this.scene, this.camera) : (r.compile(this.scene, this.camera), Promise.resolve());
+    } catch (e) { console.warn('precompilación', e); p = Promise.resolve(); } finally { r.setRenderTarget(prev); }
+    return p.catch((e) => console.warn('precompilación', e)).then(() => this._warmPrograms());
+  }
+
+  /**
+   * El primer uso de cada programa lee sus uniformes con una consulta sincrónica a la GPU (~20–30 ms cada
+   * uno, ~110 programas): se hace aquí por tandas de ~10 ms en vez de todas juntas en el primer cuadro.
+   */
+  _warmPrograms() {
+    const list = (this.renderer.info.programs || []).filter((p) => !p.__warm && (!p.isReady || p.isReady()));
+    let i = 0;
+    return new Promise((resolve) => {
+      const step = () => {
+        const t = performance.now();
+        while (i < list.length && performance.now() - t < 10) {
+          try { list[i].getUniforms(); list[i].getAttributes(); } catch (e) { /* se resuelve al dibujar */ }
+          list[i++].__warm = true;
+        }
+        if (i < list.length) setTimeout(step, 0); else resolve();
+      };
+      step();
+    });
   }
 
   /**
@@ -512,6 +576,9 @@ export class MasterplanScene {
 
   render() {
     const dt = Math.min(this.clock.getDelta(), 0.1);
+    // detrás de la pantalla de carga no se dibuja: cada material nuevo se compilaba ahí, de forma
+    // sincrónica, y la página se congelaba segundos; ahora se compila en paralelo (compileScene)
+    if (!this.live) return;
     // con el 360 abierto tapando todo, la ciudad no se dibuja (el visor usa la GPU)
     if (this.photo?.covering) return;
     this._adapt(dt);
@@ -524,7 +591,8 @@ export class MasterplanScene {
     this.controls.update();
     this._updateRange();
     windUniforms.uWindTime.value += dt;
-    if (this.city?.trees && !this._cityWind) { applyWind(this.city.trees.material, { amp: 1.2, from: 2.0, to: 10 }); this._cityWind = true; }
+    // (los impostores de la arboleda lejana ya se mecen en su propio sombreado: antes se les agregaba
+    // aquí otro viento que no cambiaba nada pero obligaba a recompilarlos en plena intro)
     this.traffic?.update(dt);
     if (this.postfx) this.postfx.render(dt); else this.renderer.render(this.scene, this.camera);
     this.labels.render(this.scene, this.camera);

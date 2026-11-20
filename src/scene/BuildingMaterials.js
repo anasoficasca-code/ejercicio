@@ -37,15 +37,26 @@ function tex(c, srgb, repeat) {
 
 /** Ruido de valor suave y periódico (se repite sin costura en el tamaño del canvas). */
 function valueNoise(w, h, cells, rand) {
-  const g = Array.from({ length: cells * cells }, rand);
-  const at = (x, y) => g[((y % cells + cells) % cells) * cells + ((x % cells + cells) % cells)];
+  const g = new Float64Array(cells * cells);
+  for (let i = 0; i < g.length; i++) g[i] = rand();
+  // índices y pesos por columna y por fila precalculados (mismo resultado, ~5× más rápido: la carga se trababa aquí)
+  const axis = (n) => {
+    const i0 = new Int32Array(n), i1 = new Int32Array(n), t = new Float64Array(n);
+    for (let k = 0; k < n; k++) {
+      const f = (k / n) * cells, i = Math.floor(f), u = f - i;
+      i0[k] = i % cells; i1[k] = (i + 1) % cells; t[k] = u * u * (3 - 2 * u);
+    }
+    return { i0, i1, t };
+  };
+  const X = axis(w), Y = axis(h);
   const out = new Float32Array(w * h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const fx = (x / w) * cells, fy = (y / h) * cells, ix = Math.floor(fx), iy = Math.floor(fy);
-    let tx = fx - ix, ty = fy - iy;
-    tx = tx * tx * (3 - 2 * tx); ty = ty * ty * (3 - 2 * ty);
-    const a = at(ix, iy), b = at(ix + 1, iy), c = at(ix, iy + 1), d = at(ix + 1, iy + 1);
-    out[y * w + x] = (a + (b - a) * tx) * (1 - ty) + (c + (d - c) * tx) * ty;
+  for (let y = 0; y < h; y++) {
+    const r0 = Y.i0[y] * cells, r1 = Y.i1[y] * cells, ty = Y.t[y], o = y * w;
+    for (let x = 0; x < w; x++) {
+      const x0 = X.i0[x], x1 = X.i1[x], tx = X.t[x];
+      const a = g[r0 + x0], b = g[r0 + x1], c = g[r1 + x0], d = g[r1 + x1];
+      out[o + x] = (a + (b - a) * tx) * (1 - ty) + (c + (d - c) * tx) * ty;
+    }
   }
   return out;
 }

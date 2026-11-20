@@ -217,6 +217,17 @@ export class SkyEnvironment {
     this.horizonRT = new THREE.WebGLRenderTarget(16, 4, { type: THREE.FloatType });
     this.horizonCam = new THREE.PerspectiveCamera(60, 4, 0.1, 10);
 
+    // PMREMGenerator.fromScene crea y suelta un material de fondo en cada llamada: el programa quedaba sin
+    // uso, three lo borraba y lo compilaba otra vez en cada cambio de hora. Una copia idéntica que no se
+    // suelta lo mantiene vivo (mismos parámetros y el mismo tipo de destino: flotante, sin tone mapping).
+    try {
+      this._pmremKeep = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({ name: 'PMREM.Background', side: THREE.BackSide, depthWrite: false, depthTest: false }));
+      const prev = renderer.getRenderTarget();
+      renderer.setRenderTarget(this.horizonRT);
+      renderer.compile(this._pmremKeep, this.horizonCam);
+      renderer.setRenderTarget(prev);
+    } catch (e) { /* solo optimización */ }
+
     // Perfil de calidad: menos pasos en móviles
     const mobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     this.cloudMaterial.uniforms.uSteps.value = mobile ? 22 : 40;
@@ -281,7 +292,13 @@ export class SkyEnvironment {
     cu.uSunDir.value.copy(dir);
     cu.uSunColor.value.copy(sunCol).multiplyScalar(5.2 * Math.max(sunI, 0.12));   // cúmulos blancos y luminosos
 
-    this._updateEnvironment();
+    // el reflejo del cielo (PMREM) y el color del horizonte (lectura de píxeles, frena la GPU) se
+    // recalculan a lo sumo ~4 veces por segundo: la intro y el control de hora llaman setHour cada cuadro
+    // y rehacerlos cada vez trababa la animación
+    const now = performance.now();
+    clearTimeout(this._envTimer);
+    if (!this.envRT || now - (this._envAt || 0) > 260) { this._envAt = now; this._updateEnvironment(); }
+    else this._envTimer = setTimeout(() => { this._envAt = performance.now(); this._updateEnvironment(); }, 280);
   }
 
   _updateEnvironment() {
@@ -298,7 +315,10 @@ export class SkyEnvironment {
       this.scene.fog.color.copy(horizon);
       this.scene.background = null;
       if (this.hemiLight) {
-        this.hemiLight.color.copy(zenith || horizon).multiplyScalar(1.05);
+        // luz de cielo un poco menos saturada que el cenit: las sombras quedaban azul petróleo y el césped y
+        // los árboles a la sombra se veían turquesa
+        const sky = (zenith || horizon).clone(), l = sky.r * 0.2126 + sky.g * 0.7152 + sky.b * 0.0722;
+        this.hemiLight.color.copy(sky.lerp(new THREE.Color(l, l, l), 0.35)).multiplyScalar(1.05);
         this.hemiLight.groundColor.setHex(0x8d8172);
       }
       const cu = this.cloudMaterial.uniforms;

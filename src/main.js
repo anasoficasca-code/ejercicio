@@ -54,8 +54,11 @@ class App {
       const hour = document.getElementById('sky-hour');
       this.scene.setHour(parseFloat(hour.value));
       this.loading.set(0.95, 'Preparando el recorrido…');
-      // los sombreados se preparan a lo sumo 1,2 s; el resto se compila mientras corre la intro
-      await Promise.race([this.scene.precompile(), new Promise((r) => setTimeout(r, 1200))]);
+      // los sombreados se compilan en paralelo (sin congelar la página) antes de mostrar la escena: antes se
+      // cortaba a 1,2 s y el resto se compilaba de golpe durante la intro (pausas de 2–3 s, "se choca")
+      // (el barrio que llega después del relieve se compila igual en CityContext antes de agregarse)
+      await Promise.race([this.scene.precompile(), new Promise((r) => setTimeout(r, 6000))]);
+      this.scene.live = true;   // desde aquí se dibuja (durante la carga dibujar compilaba todo de golpe)
       this.loading.done();
       // llegada: la cámara baja sobre Galerías hasta la esquina mientras se encienden las luces de la tarde
       this.intro = new Intro({

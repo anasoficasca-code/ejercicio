@@ -20,6 +20,10 @@ import { ContextDetails } from './ContextDetails.js';
  */
 const CHURCH_LOT = '007208001002';
 const BASE_Y = 0.16;
+// La manzana (césped / concreto, tope a 16 cm) queda solo 2 cm sobre el andén (14 cm) que la rodea y también
+// pasa por debajo de ella. Lejos de la cámara el búfer de profundidad no distingue 2 cm y el verde "parpadeaba"
+// contra el gris del andén al moverse. El desplazamiento de polígono le da siempre la prioridad a la manzana.
+const MZ_OFFSET = { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4 };
 const DX = 0, DZ = 0; // el origen ya es el lote; no hace falta alinear con un modelo Revit
 const IMG = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/';
 const DEM = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/';
@@ -192,9 +196,10 @@ export function prismGeometry(pts, y0, y1, opts) {
 }
 
 export class CityContext {
-  constructor(scene, { renderer, data, project, mobile = false }) {
+  constructor(scene, { renderer, data, project, mobile = false, compile = null }) {
     this.scene = scene;
     this.renderer = renderer;
+    this.compile = compile;
     this.mobile = mobile;
     this.data = data;
     this.project = project;
@@ -405,15 +410,38 @@ export class CityContext {
     const far2 = near.then(() => this._fillLevel(L2));
     try { await this._loadDEM(); } catch (e) { console.warn('DEM no disponible', e); }
     [L3, L2, L1, L0].forEach((L) => L && this._applyHeights(L));
+    // lo que llega tarde se arma en un grupo oculto, se compila en paralelo y solo entonces se muestra:
+    // así no aparece de golpe compilando sombreados en medio de la intro (pausas de 1–3 s)
+    let stage = this._stage();
     this._buildBuildings(this.buildingList, L0 || L1, L1, L2);
     this.details = new ContextDetails(this.group, this.buildingList, (x, z) => this.heightAt(x, z), this.mobile);
     this.mzRealMat = this._manzanaRealMat(L1);
     this.setTheme(this.theme);
+    await this._unstage(stage);
     await near;
+    stage = this._stage();
     try { this._buildTileRoofs(L1); } catch (e) { console.warn('cubiertas de teja', e); }
     try { this._buildTrees(L1); } catch (e) { console.warn('árboles satelitales', e); }
+    await this._unstage(stage);
     await Promise.all([far2, far3]);
     this.levels.forEach((L) => { L.ctx = null; });
+  }
+
+  /** Desvía lo que se construya a un grupo oculto (en la escena, para que compile con sus luces). */
+  _stage() {
+    const real = this.group, stage = new THREE.Group();
+    stage.visible = false;
+    this.scene.add(stage);
+    this.group = stage;
+    return { real, stage };
+  }
+
+  /** Compila en paralelo lo del grupo oculto (a lo sumo 8 s) y lo pasa al grupo real. */
+  async _unstage({ real, stage }) {
+    this.group = real;
+    try { if (this.compile) await Promise.race([this.compile(), new Promise((r) => setTimeout(r, 8000))]); } catch (e) { /* se compila al dibujar */ }
+    this.scene.remove(stage);
+    real.add(...stage.children);
   }
 
   _buildBuildings(list, A, B, C) {
@@ -755,14 +783,17 @@ export class CityContext {
     const crowns = makeTreeImpostors(pts.length);
     const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion();
     const scale = new THREE.Vector3(), position = new THREE.Vector3(), color = new THREE.Color();
-    const white = new THREE.Color(1, 1, 1);
+    // tinte natural: base oliva grisácea contenida + un poco del color real de la copa en la ortofoto
+    // (antes: blanco con el color de la foto ×2,2, que daba copas pálidas color menta)
+    const base = new THREE.Color(0.86, 0.88, 0.8);
     pts.forEach(([x, z, r, g, b, variation, widthVariation, hueVariation], k) => {
       const groundY = this.heightAt(x, z);
       const h = 6.5 + variation * 6 + widthVariation * 2;
       matrix.compose(position.set(x, groundY - 0.1, z), rotation, scale.set(h * (0.9 + hueVariation * 0.3), h, 1));
       crowns.setMatrixAt(k, matrix);
-      color.setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace).multiplyScalar(2.2);
-      crowns.setColorAt(k, white.clone().lerp(color, 0.3));
+      color.setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace).multiplyScalar(1.6);
+      color.r = Math.min(color.r, 1.1); color.g = Math.min(color.g, 1.1); color.b = Math.min(color.b, 1.1);
+      crowns.setColorAt(k, base.clone().lerp(color, 0.22).multiplyScalar(0.88 + hueVariation * 0.2));
     });
     crowns.castShadow = false;
     crowns.receiveShadow = false;
@@ -912,6 +943,7 @@ export class CityContext {
         const r = hash(`${Math.round(x * 3)}_${Math.round(z * 3)}`), h = 7.5 + r * 4;
         m.compose(v.set(x, this.heightAt(x, z) - 0.1, z), q, s.set(h * (0.9 + r * 0.25), h, 1));
         crowns.setMatrixAt(k, m);
+        crowns.setColorAt(k, new THREE.Color(0.86, 0.88, 0.8).multiplyScalar(0.88 + r * 0.2));   // mismo tono que la arboleda de la ciudad
       });
       this.streetTrees.add(crowns);
     }
@@ -956,7 +988,7 @@ export class CityContext {
       tSat: { value: L.tex }, uSatB: { value: new THREE.Vector4(L.x0, L.zN, L.x1 - L.x0, L.zS - L.zN) },
       tGrass: { value: loadPBR('leafy_grass', 'diff', true) }, tConc: { value: loadPBR('concrete_floor_worn_001', 'diff', true) }
     };
-    const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, metalness: 0 });
+    const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, metalness: 0, ...MZ_OFFSET });
     mat.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, uni);
       sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vMW;\nattribute float aPark;\nvarying float vPark;')
@@ -971,7 +1003,9 @@ export class CityContext {
                   + texture2D(tSat, st + vec2(0.0, o.y)).rgb + texture2D(tSat, st - vec2(0.0, o.y)).rgb) / 6.0;
           float veg = smoothstep(0.06, 0.2, (s.g - max(s.r, s.b)) / max(s.g, 0.015));
           veg = max(veg, vPark);
-          vec3 grass = texture2D(tGrass, w / 2.4).rgb * mix(vec3(1.0), vec3(0.62, 0.9, 0.45), vPark);
+          // la foto de césped es más café que verde: se equilibra a un verde oliva apagado, el mismo del
+          // antejardín del proyecto (antes los parques salían amarillentos y el resto pasto seco)
+          vec3 grass = texture2D(tGrass, w / 2.4).rgb * vec3(0.62, 1.0, 0.72) * mix(1.0, 0.92, vPark);
           vec3 conc = texture2D(tConc, w / 3.0).rgb * vec3(1.03, 1.0, 0.95);
           diffuseColor.rgb *= mix(conc, grass, veg);`);
     };
@@ -994,7 +1028,7 @@ export class CityContext {
     g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(pos.length), 3));
     this.mzRanges = ranges;
-    this.mzColorMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
+    this.mzColorMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, ...MZ_OFFSET });
     this.manzanas = new THREE.Mesh(g, this.mzColorMat);
     this.manzanas.receiveShadow = true;
     this.manzanas.name = 'Manzanas';

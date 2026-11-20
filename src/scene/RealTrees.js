@@ -90,12 +90,14 @@ function leafCard(p, out, size, rect, rnd, center, shade, pos, nor, uv, col, idx
     n.y += 0.35; n.normalize();
     nor.push(n.x, n.y, n.z);
     uv.push(uvs[k][0], uvs[k][1]);
-    // más oscuro hacia adentro y hacia abajo de la copa (oclusión del follaje)
+    // más oscuro hacia adentro y hacia abajo de la copa (oclusión del follaje), sin llegar a negro: antes el
+    // interior caía al 30 % y la copa se leía como una mancha verde oscura
     const dist = c.distanceTo(center);
-    const g = shade * (0.42 + 0.58 * Math.min(1, dist / 3.2)) * (0.72 + 0.28 * Math.min(1, Math.max(0, (c.y - center.y + 3) / 6)));
-    // verde más profundo y saturado (la foto de hojas es pálida): cada ramillete con su tono
-    const warm = rnd();
-    col.push(g * (0.62 + warm * 0.14), g * (0.82 + rnd() * 0.1), g * (0.5 + rnd() * 0.08));
+    const g = shade * (0.6 + 0.4 * Math.min(1, dist / 3.2)) * (0.8 + 0.2 * Math.min(1, Math.max(0, (c.y - center.y + 3) / 6)));
+    // verdes naturales y contenidos: cada ramillete entre oliva, verde salvia y verde amarillento
+    // (antes se empujaba a un verde profundo y saturado, con el azul casi en cero)
+    const warm = rnd(), sage = rnd();
+    col.push(g * (0.84 + warm * 0.12), g * (0.9 + rnd() * 0.06), g * (0.7 + sage * 0.14 - warm * 0.05));
   });
   idx.push(v, v + 1, v + 2, v, v + 2, v + 3);
 }
@@ -264,10 +266,25 @@ export class RealTrees {
   constructor() {
     this.leafTex = tex('leaves.webp');
     this.leafTex.anisotropy = 8;
+    // alphaToCoverage (con el MSAA del posproceso): los bordes de las hojas se suavizan y las copas lejanas
+    // no titilan al mover la cámara, como pasaba con el recorte duro de alphaTest
     this.leafMat = new THREE.MeshStandardMaterial({
-      map: this.leafTex, alphaTest: 0.38, side: THREE.DoubleSide, vertexColors: true,
-      roughness: 0.88, metalness: 0, envMapIntensity: 0.3
+      map: this.leafTex, alphaTest: 0.3, alphaToCoverage: true, side: THREE.DoubleSide, vertexColors: true,
+      roughness: 0.82, metalness: 0, envMapIntensity: 0.35
     });
+    this.leafMat.onBeforeCompile = (sh) => {
+      sh.fragmentShader = sh.fragmentShader
+        // la foto de hojas trae el azul casi en cero: se le quita un poco de saturación (verde natural, no neón)
+        .replace('#include <color_fragment>', `#include <color_fragment>
+          diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722))), diffuseColor.rgb, 0.8);`)
+        // luz que atraviesa las hojas a contraluz (translucidez): la copa no queda negra del lado de la sombra
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+          #if NUM_DIR_LIGHTS > 0
+            { float back = max(0.0, dot(normalize(-vViewPosition), directionalLights[0].direction));
+              totalEmissiveRadiance += diffuseColor.rgb * directionalLights[0].color * (0.04 + 0.16 * back * back); }
+          #endif`);
+    };
+    this.leafMat.customProgramCacheKey = () => 'leaf-natural';
     applyWind(this.leafMat, { amp: 0.9, from: 1.5, to: 10 });
     this.barkMats = {};
     for (const k of ['ash', 'celtis', 'euc', 'pine', 'palm']) {
@@ -310,7 +327,16 @@ export class RealTrees {
       const v = this.variant(name, k);
       const wood = new THREE.InstancedMesh(v.wood, this.barkMats[SPECIES[name].bark], mats.length);
       const leaves = new THREE.InstancedMesh(v.leaves, this.leafMat, mats.length);
-      mats.forEach((mm, i) => { wood.setMatrixAt(i, mm); leaves.setMatrixAt(i, mm); });
+      // cada árbol con su propio tono (más amarillento, más gris salvia o más profundo), como en una calle real
+      const tint = new THREE.Color();
+      mats.forEach((mm, i) => {
+        wood.setMatrixAt(i, mm); leaves.setMatrixAt(i, mm);
+        const e = mm.elements, h = Math.abs(Math.sin(e[12] * 3.71 + e[14] * 5.13) * 9731.7) % 1, l = 0.9 + ((h * 17.3) % 1) * 0.2;
+        if (h < 0.3) tint.setRGB(1.06 * l, 1.03 * l, 0.86 * l);        // verde amarillento (urapán al sol)
+        else if (h < 0.6) tint.setRGB(0.93 * l, 0.98 * l, 0.97 * l);  // verde salvia grisáceo
+        else tint.setRGB(0.95 * l, 0.97 * l, 0.9 * l);
+        leaves.setColorAt(i, tint);
+      });
       wood.castShadow = leaves.castShadow = shadows;
       wood.receiveShadow = leaves.receiveShadow = true;
       wood.computeBoundingSphere(); leaves.computeBoundingSphere();
@@ -329,13 +355,15 @@ export function makeTreeImpostors(count, leafTex) {
   g.translate(0, 0.5, 0);
   const uv = g.attributes.uv;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, u0 + uv.getX(i) * uw, v0 + uv.getY(i) * vh);
-  const mat = new THREE.MeshStandardMaterial({ map: leafTex || tex('leaves.webp'), alphaTest: 0.45, roughness: 0.85, metalness: 0, side: THREE.DoubleSide });
+  const mat = new THREE.MeshStandardMaterial({ map: leafTex || tex('leaves.webp'), alphaTest: 0.3, alphaToCoverage: true, roughness: 0.9, metalness: 0, side: THREE.DoubleSide, envMapIntensity: 0.3 });
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uImpT = windUniforms.uWindTime;
     sh.uniforms.uImpA = windUniforms.uWindAmp;
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nuniform float uImpT; uniform float uImpA;')
-      .replace('#include <defaultnormal_vertex>', 'vec3 transformedNormal = normalize(vec3(0.0, 0.5, 1.0));')
+      // normal de copa redondeada (mitad hacia arriba en el mundo, mitad hacia la cámara): antes miraba
+      // siempre a la cámara y el sol la quemaba, con manchas verde menta flotando sobre el barrio
+      .replace('#include <defaultnormal_vertex>', 'vec3 transformedNormal = normalize(mat3(viewMatrix) * vec3(0.0, 1.0, 0.0) + vec3(0.0, 0.0, 0.75));')
       .replace('#include <project_vertex>', `
         vec4 cW = modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
         float sx = length(instanceMatrix[0].xyz), sy = length(instanceMatrix[1].xyz);
@@ -346,6 +374,8 @@ export function makeTreeImpostors(count, leafTex) {
         wp.xz += vec2(sin(uImpT * 1.25 + ph), 0.6 * cos(uImpT * 1.05 + ph * 1.3)) * uImpA * 1.6 * transformed.y * transformed.y;
         vec4 mvPosition = viewMatrix * vec4(wp, 1.0);
         gl_Position = projectionMatrix * mvPosition;`);
+    sh.fragmentShader = sh.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+      diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722))), diffuseColor.rgb, 0.78);`);
   };
   mat.customProgramCacheKey = () => 'tree-impostor';
   const mesh = new THREE.InstancedMesh(g, mat, count);
