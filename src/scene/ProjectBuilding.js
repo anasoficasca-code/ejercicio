@@ -41,7 +41,9 @@ const M = {
 };
 
 // suelos del lote con texturas fotogramétricas reales (Poly Haven, ya incluidas en assets/textures/pbr)
-applyPBR(M.grass, SURFACES.GRASS, { metersPerTile: 3, tint: 0xd8e6c8, macro: { strength: 0.3 } });
+applyPBR(M.grass, SURFACES.GRASS, { metersPerTile: 3, tint: 0xd8e6c8, macro: { strength: 0.18 } });
+// césped de antejardín soleado: más claro y oliva, menos saturado (la textura sola se veía casi negra)
+M.grass.color.setRGB(1.45, 1.42, 1.02);
 applyPBR(M.paving, SURFACES.CONCRETE_PAVEMENT, { metersPerTile: 2.4, tint: 0xf2eee6 });
 applyPBR(M.asphalt, SURFACES.ASPHALT, { metersPerTile: 4 });
 

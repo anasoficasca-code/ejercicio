@@ -355,12 +355,12 @@ function foliageMaps() {
   if (foliage) return foliage;
   const N = 256, mk = () => { const c = document.createElement('canvas'); c.width = c.height = N; return [c, c.getContext('2d')]; };
   const [c, ctx] = mk(), [hc, hctx] = mk();
-  ctx.fillStyle = '#1f3517'; ctx.fillRect(0, 0, N, N);
+  ctx.fillStyle = '#4f553b'; ctx.fillRect(0, 0, N, N);
   hctx.fillStyle = '#000'; hctx.fillRect(0, 0, N, N);
   let s = 99; const r = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
   for (let i = 0; i < 2600; i++) {
     const x = r() * N, y = r() * N, a = r() * Math.PI, l = 3 + r() * 4, w = 1.6 + r() * 1.8, k = r();
-    const g = (60 + k * 70) | 0, rr = (g * (0.45 + r() * 0.2)) | 0, bb = (g * (0.3 + r() * 0.15)) | 0;
+    const g = (105 + k * 80) | 0, rr = (g * (0.8 + r() * 0.1)) | 0, bb = (g * (0.56 + r() * 0.1)) | 0;
     for (const [dx, dy] of [[0, 0], [N, 0], [-N, 0], [0, N], [0, -N]]) {
       ctx.fillStyle = `rgb(${rr},${g},${bb})`; ctx.beginPath(); ctx.ellipse(x + dx, y + dy, l, w, a, 0, Math.PI * 2); ctx.fill();
       const v = (90 + k * 165) | 0; hctx.fillStyle = `rgb(${v},${v},${v})`; hctx.beginPath(); hctx.ellipse(x + dx, y + dy, l, w, a, 0, Math.PI * 2); hctx.fill();
