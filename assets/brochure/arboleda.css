@@ -1247,3 +1247,58 @@ html { scrollbar-color: var(--ink) var(--bg); scrollbar-width: thin; }
   .stc-img { overflow: hidden; }
   .stc-img img { width: 175% !important; max-width: none; margin-left: -48%; }
 }
+
+/* ===================== v7: nitidez de imágenes y cabida legible ===================== */
+/* zonas: recuadro horizontal (las fotos son horizontales) y sin ampliar la imagen */
+.zone-stage { aspect-ratio: 3 / 2 !important; }
+.zpic img, .zone-stage:hover .zpic.on img { transform: none !important; }
+.zpic.zmos { grid-template-columns: 1fr 1fr !important; grid-template-rows: 1fr 1fr !important; gap: 4px !important; }
+.zpic.zmos .zm-1 { grid-column: auto !important; }
+.zone-grid, .zonas .wrap > div:first-child { align-items: center; }
+/* el edificio por dentro: sin zoom; en celular la foto va arriba en su proporción y el texto abajo */
+.lift-shot img { transform: none !important; }
+@media (max-width: 760px) {
+  .lift-shot img { height: auto !important; aspect-ratio: 16 / 10; position: absolute; top: 72px; left: 0; }
+  .lift-shot { background: var(--night); }
+  .lift-shade { background: linear-gradient(0deg, var(--night) 0%, var(--night) 46%, rgba(15, 28, 46, 0) 62%) !important; }
+}
+/* portada en celular: encuadre sobre el edificio */
+@media (max-width: 700px) { .hero-media img { object-position: 62% 50%; } }
+
+/* cabida: pasos para leerla */
+.cb-steps { list-style: none; margin: clamp(26px, 4vw, 44px) 0 clamp(26px, 4vw, 40px); padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; counter-reset: s; border-top: 1px solid rgba(255, 255, 255, .18); }
+.cb-steps li { padding: 18px 20px 4px 0; position: relative; }
+.cb-steps li + li { padding-left: 20px; border-left: 1px solid rgba(255, 255, 255, .12); }
+.cb-steps b { display: block; font: 200 34px/1 var(--display); color: var(--sky); }
+.cb-steps span { display: block; margin: 10px 0 6px; font: 500 12px var(--display); letter-spacing: .2em; text-transform: uppercase; color: #fff; }
+.cb-steps p { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--on-night-2); }
+.cabida .cabida-vis { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) !important; gap: clamp(14px, 2vw, 26px) !important; align-items: stretch !important; }
+.cabida .cabida-axo, .cabida .cabida-fig { display: flex; flex-direction: column; justify-content: center; }
+.cabida-fig figcaption { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.cabida-fig figcaption span { display: inline-flex; align-items: center; gap: 8px; }
+.cabida-fig figcaption i { width: 12px; height: 12px; border-radius: 2px; }
+.lbl-g { color: #fff; background: #5f7448; padding: 4px 9px; border-radius: 3px; font-size: 10px; }
+.lbl-v { transform: translate(-50%, -50%) rotate(-90deg); }
+.cb-dimh, .cb-dimv { position: absolute; pointer-events: none; border-color: var(--ink); }
+.cb-dimh { height: 0; border-top: 1px solid; }
+.cb-dimv { width: 0; border-left: 1px solid; }
+.cb-dimh::before, .cb-dimh::after { content: ''; position: absolute; top: -5px; width: 1px; height: 10px; background: var(--ink); }
+.cb-dimh::before { left: 0; } .cb-dimh::after { right: 0; }
+.cb-dimv::before, .cb-dimv::after { content: ''; position: absolute; left: -5px; height: 1px; width: 10px; background: var(--ink); }
+.cb-dimv::before { top: 0; } .cb-dimv::after { bottom: 0; }
+.cb-dimh em, .cb-dimv em { position: absolute; font: 500 11px var(--display); letter-spacing: .12em; font-style: normal; color: var(--ink); background: #f4eee3; padding: 0 6px; white-space: nowrap; }
+.cb-dimh em { left: 50%; top: 0; transform: translate(-50%, -50%); }
+.cb-dimv em { top: 50%; left: 0; transform: translate(-50%, -50%) rotate(-90deg); }
+@media (max-width: 860px) {
+  .cb-steps { grid-template-columns: 1fr 1fr; }
+  .cb-steps li:nth-child(3) { padding-left: 0; border-left: 0; }
+  .cabida .cabida-vis { grid-template-columns: 1fr !important; }
+  .cb-dimh em, .cb-dimv em { font-size: 9px; }
+  .lbl-g { font-size: 8px; }
+}
+
+.cabida-fig .lbl-st:not(.lbl-v) + .lbl-st { }
+.lbl-r { transform: translate(-100%, -50%) !important; }
+.cb-dimh em { left: 22%; }
+
+@media (max-width: 760px) { .lift-copy { bottom: auto !important; top: calc(72px + 62.5vw + 28px) !important; } .lift-floors { display: none !important; } }

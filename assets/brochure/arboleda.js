@@ -324,8 +324,12 @@ if (corte) {
 // ------------------------------------------------------------------ cabida: se traza el lote y se asienta la huella
 if (motion && document.querySelector('.cabida')) {
   const tl = g.timeline({ scrollTrigger: { trigger: '.cabida-fig', start: 'top 75%' } });
-  tl.fromTo('.cabida .cb-img img', { clipPath: 'circle(0% at 50% 60%)' }, { clipPath: 'circle(75% at 50% 60%)', duration: 1.8, stagger: 0.3, ease: 'power3.inOut' })
-    .from('.cabida .lbl, .cabida .cb-h', { opacity: 0, y: 10, duration: 0.5, stagger: 0.06, ease: 'power3.out' }, 1.2);
+  document.querySelectorAll('.cabida .cb-img').forEach((box) => {
+    g.timeline({ scrollTrigger: { trigger: box, start: 'top 85%' } })
+      .fromTo(box.querySelector('img'), { clipPath: 'circle(0% at 50% 60%)' }, { clipPath: 'circle(75% at 50% 60%)', duration: 1.6, ease: 'power3.inOut' })
+      .from(box.querySelectorAll('.lbl, .cb-h, .cb-dimh, .cb-dimv'), { opacity: 0, y: 10, duration: 0.5, stagger: 0.06, ease: 'power3.out' }, 1.0);
+  });
+  g.from('.cb-steps li', { y: 30, opacity: 0, duration: 0.8, stagger: 0.12, ease: 'expo.out', scrollTrigger: { trigger: '.cb-steps', start: 'top 85%' } });
   g.from('.cb-row', { y: 26, opacity: 0, duration: 0.8, stagger: 0.07, ease: 'expo.out', scrollTrigger: { trigger: '.cabida-dl', start: 'top 82%' } });
 }
 
