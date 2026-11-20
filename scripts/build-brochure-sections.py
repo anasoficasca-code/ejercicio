@@ -192,14 +192,29 @@ for lx, lz, t in ((ox+4.7, oz+4.2, 'A'), (ox+20, oz+4.2, 'A'), (ox+4.7, oz+11.2,
     b(f'<text class="cb-u" x="{QX(lx)}" y="{QZ(lz)}" text-anchor="middle">{t}</text>')
 b(f'<text class="cb-s" x="{QX(ox+PW/2)}" y="{QZ(oz+7.25)}" text-anchor="middle">Punto fijo</text>')
 if max(zs) - (oz + PD) > 2.5:
-    b(f'<text class="cb-s" x="{QX(ox+PW/2)}" y="{QZ((oz+PD+max(zs))/2)+4}" text-anchor="middle">Jardín del patio</text>')
+    b(f'<text class="cb-s" x="{QX(ox+PW/2+12)}" y="{QZ((oz+PD+max(zs))/2)+4}" text-anchor="middle">Jardín del patio</text>')
 b(f'<text class="cb-st" x="{QX((min(xs)+max(xs))/2)}" y="38" text-anchor="middle">Calle 56</text>')
 b(f'<text class="cb-st" x="30" y="{QZ((min(zs)+max(zs))/2)}" text-anchor="middle" transform="rotate(-90 30 {QZ((min(zs)+max(zs))/2)})">Carrera 18</text>')
 yd = QZ(oz + PD) + 16
 b(f'<g class="cb-dim"><path d="M{QX(ox)} {yd}H{QX(ox+PW)}M{QX(ox)} {yd-5}v10M{QX(ox+PW)} {yd-5}v10"/><text x="{QX(ox+PW/2)}" y="{yd+16}" text-anchor="middle">{es(PW)} m</text>')
 xd2 = QX(ox + PW) + 16
 b(f'<path d="M{xd2} {QZ(oz)}V{QZ(oz+PD)}M{xd2-5} {QZ(oz)}h10M{xd2-5} {QZ(oz+PD)}h10"/><text x="{xd2+14}" y="{QZ(oz+PD/2)}" transform="rotate(-90 {xd2+14} {QZ(oz+PD/2)})" text-anchor="middle">{es(PD)} m</text>')
-b(f'<text x="{QX(ox+PW/2)}" y="{QZ(oz/2 + min(zs)/2)+4}" text-anchor="middle">Antejardín {es(ant)} m</text></g>')
+
+def _hd(x0_, x1_, z_, txt, cls='cb-is'):
+    y_ = QZ(z_); return (f'<g class="{cls}"><path d="M{QX(x0_)} {y_}H{QX(x1_)}M{QX(x0_)} {y_-5}v10M{QX(x1_)} {y_-5}v10"/>'
+                         f'<text x="{(QX(x0_)+QX(x1_))/2:.1f}" y="{y_-7}" text-anchor="middle">{txt}</text></g>')
+def _vd(z0_, z1_, x_, txt, cls='cb-is'):
+    X_ = QX(x_); ym = (QZ(z0_)+QZ(z1_))/2
+    return (f'<g class="{cls}"><path d="M{X_} {QZ(z0_)}V{QZ(z1_)}M{X_-5} {QZ(z0_)}h10M{X_-5} {QZ(z1_)}h10"/>'
+            f'<text x="{X_+8:.1f}" y="{ym+4:.1f}" text-anchor="start">{txt}</text></g>')
+_rear = max(zs) - (oz + PD); _east = max(xs) - (ox + PW)
+b('</g>')
+b(_vd(min(zs), oz, ox + PW / 2 + 6, f'Antejardín {es(ant)} m'))
+b(_hd(max(0, min(xs)), ox, oz + 2.2, f'{es(ant)} m'))
+b(_vd(oz + PD, max(zs), ox + PW / 2 + 6, f'Aislamiento posterior {es(_rear, 2)} m'))
+b(f'<path class="cb-min" d="M{QX(ox-1)} {QZ(oz+PD+pa["aislamientoPosteriorM"])}H{QX(ox+PW+1)}"/><text class="cb-mint" x="{QX(ox+PW-0.5)}" y="{QZ(oz+PD+pa["aislamientoPosteriorM"])+12}" text-anchor="end">Mínimo POT {es(pa["aislamientoPosteriorM"], 2)} m</text>')
+b(_hd(ox + PW, max(xs), oz + 2.2, f'Lateral {es(_east, 2)} m'))
+
 # norte: el norte del mundo es -z
 nx, nz = -u[1] * -1, -v[1] * -1
 nx, nz = (0*u[0] + -1*u[1]), (0*v[0] + -1*v[1])
