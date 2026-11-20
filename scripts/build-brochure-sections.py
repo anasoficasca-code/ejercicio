@@ -416,13 +416,14 @@ _ar = lambda p: abs(sum(p[i][0] * p[(i + 1) % len(p)][1] - p[(i + 1) % len(p)][0
 qa = {k: round(_ar(v), 1) for k, v in _Q.items()}
 pf = pa['puntoFijoM2']; terr = round(huella - pf, 1)
 A_, B_ = pa['tipologias'][0], pa['tipologias'][1]
-comunes = qa['NW'] + qa['NE'] + qa['SW'] + qa['SE'] + terr
+rterr = round((PW - 12.3) * (ant - 0.15 - 0.25), 1)   # terraza exterior del restaurante (deck del modelo)
+comunes = qa['NW'] + qa['NE'] + qa['SW'] + qa['SE'] + terr + rterr
 def row(name, note, val, cls=''):
     return f'<tr class="{cls}"><th scope="row">{name}<small>{note}</small></th><td>{val}</td></tr>'
 t1 = ''.join([
     '<tr class="ar-group"><th colspan="2">Piso 1 · zonas comunes</th></tr>',
     row('Lobby y bicicletero', 'Esquina Calle 56 con Carrera 18', f'{es(qa["NW"], 1)} m²'),
-    row('Restaurante con terraza', 'Sobre la Calle 56', f'{es(qa["NE"], 1)} m²'),
+    row('Restaurante con terraza', f'{es(qa["NE"], 1)} m² interior + {es(rterr, 1)} m² de terraza en el antejardín sobre la Calle 56', f'{es(qa["NE"] + rterr, 1)} m²'),
     row('Gimnasio', 'Hacia el patio y la Carrera 18', f'{es(qa["SW"], 1)} m²'),
     row('Sala de cine', 'Hacia el patio, costado oriental', f'{es(qa["SE"], 1)} m²'),
     '<tr class="ar-group"><th colspan="2">Cubierta</th></tr>',
@@ -431,7 +432,7 @@ t1 = ''.join([
     row('Punto fijo', f'Escalera y ascensor · {es(pf)} m² × {NF} pisos', f'{es(pf * NF, 1)} m²'),
     '<tr class="ar-group"><th colspan="2">Sótanos</th></tr>',
     row('Parqueaderos', '2 niveles bajo todo el lote · 23 por sótano', '46 cupos'),
-    row('Total zonas comunes', 'Piso 1 y terraza', f'{es(comunes, 1)} m²', 'ar-total'),
+    row('Total zonas comunes', 'Piso 1, terraza del restaurante y terraza comunal', f'{es(comunes, 1)} m²', 'ar-total'),
 ])
 esp = lambda t: [x.strip() for x in t['espacios'].split('(')[0].split('·')]
 import re as _re
