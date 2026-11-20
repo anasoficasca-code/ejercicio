@@ -1404,3 +1404,27 @@ html { scrollbar-color: var(--ink) var(--bg); scrollbar-width: thin; }
 .ax-tree { opacity: .95; filter: saturate(.85); }
 
 .pa-floor { position: absolute; left: 0; top: 0; padding: 8px 14px; background: var(--ink); color: #fff; font: 500 11px var(--display); letter-spacing: .2em; text-transform: uppercase; border-radius: 3px; }
+
+/* ===================== cuadro de áreas ===================== */
+.areas { background: var(--paper); }
+.areas h2 { margin: 10px 0 clamp(26px, 4vw, 44px); }
+.ar-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2vw, 28px); align-items: start; }
+.ar-card { background: #fff; border: 1px solid var(--hair); border-radius: 6px; padding: clamp(18px, 2vw, 26px); }
+.ar-card h3 { margin: 0 0 14px; font: 500 12px var(--display); letter-spacing: .22em; text-transform: uppercase; color: var(--hl, #2b63ad); }
+.ar-t { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.ar-t th, .ar-t td { padding: 9px 0; border-bottom: 1px solid var(--hair); vertical-align: top; text-align: left; }
+.ar-t th { font: 400 14.5px var(--text); color: var(--ink); padding-right: 12px; }
+.ar-t th small { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.ar-t td { font: 300 17px var(--display); color: var(--ink); white-space: nowrap; text-align: right; }
+.ar-t3 td { font-size: 15px; }
+.ar-t .ar-h { font: 500 11px var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.ar-group th { padding-top: 16px; font: 500 11px var(--display) !important; letter-spacing: .2em; text-transform: uppercase; color: var(--muted) !important; border-bottom: 0; }
+.ar-total th, .ar-total td { border-bottom: 0; border-top: 1.5px solid var(--ink); font-weight: 500; }
+.ar-total td { color: var(--hl, #2b63ad); font-size: 19px; }
+.ar-src { margin-top: 18px; font-size: 13px; color: var(--muted); max-width: 80ch; }
+@media (max-width: 1000px) { .ar-grid { grid-template-columns: 1fr; } }
+
+.ar-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } .ar-card { min-width: 0; } .ar-t { table-layout: fixed; } .ar-t th { text-transform: none !important; letter-spacing: 0 !important; width: 62%; } .ar-t3 th { width: 46%; } .ar-t th small { text-transform: none !important; letter-spacing: 0 !important; } .ar-t td { white-space: normal; }
+@media (max-width: 1000px) { .ar-grid { grid-template-columns: minmax(0, 1fr) !important; } }
+
+.ar-t .ar-group th { text-transform: uppercase !important; letter-spacing: .2em !important; width: auto; }

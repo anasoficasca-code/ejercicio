@@ -409,6 +409,65 @@ blocks['cerca'] = f'''
       <script>window.CERCA = {near_js};</script>
     </section>
 '''
+# ------------------------------------------------------------------ cuadro de áreas
+_Q = {'NW': [[0, 0], [12.14, 0], [12.14, 4.44], [9.41, 4.44], [9.41, 7.83], [0, 7.83]], 'NE': [[12.14, 0], [PW, 0], [PW, 7.83], [15.26, 7.83], [15.26, 4.44], [12.14, 4.44]],
+      'SW': [[0, 7.83], [9.41, 7.83], [9.41, 9.52], [12.30, 9.52], [12.30, PD], [0, PD]], 'SE': [[12.30, 9.52], [15.26, 9.52], [15.26, 7.83], [PW, 7.83], [PW, PD], [12.30, PD]]}
+_ar = lambda p: abs(sum(p[i][0] * p[(i + 1) % len(p)][1] - p[(i + 1) % len(p)][0] * p[i][1] for i in range(len(p))) / 2)
+qa = {k: round(_ar(v), 1) for k, v in _Q.items()}
+pf = pa['puntoFijoM2']; terr = round(huella - pf, 1)
+A_, B_ = pa['tipologias'][0], pa['tipologias'][1]
+comunes = qa['NW'] + qa['NE'] + qa['SW'] + qa['SE'] + terr
+def row(name, note, val, cls=''):
+    return f'<tr class="{cls}"><th scope="row">{name}<small>{note}</small></th><td>{val}</td></tr>'
+t1 = ''.join([
+    '<tr class="ar-group"><th colspan="2">Piso 1 · zonas comunes</th></tr>',
+    row('Lobby y bicicletero', 'Esquina Calle 56 con Carrera 18', f'{es(qa["NW"], 1)} m²'),
+    row('Restaurante con terraza', 'Sobre la Calle 56', f'{es(qa["NE"], 1)} m²'),
+    row('Gimnasio', 'Hacia el patio y la Carrera 18', f'{es(qa["SW"], 1)} m²'),
+    row('Sala de cine', 'Hacia el patio, costado oriental', f'{es(qa["SE"], 1)} m²'),
+    '<tr class="ar-group"><th colspan="2">Cubierta</th></tr>',
+    row('Terraza comunal', 'Zona BBQ, café lounge y deck de yoga', f'{es(terr, 1)} m²'),
+    '<tr class="ar-group"><th colspan="2">Circulación</th></tr>',
+    row('Punto fijo', f'Escalera y ascensor · {es(pf)} m² × {NF} pisos', f'{es(pf * NF, 1)} m²'),
+    '<tr class="ar-group"><th colspan="2">Sótanos</th></tr>',
+    row('Parqueaderos', '2 niveles bajo todo el lote · 23 por sótano', '46 cupos'),
+    row('Total zonas comunes', 'Piso 1 y terraza', f'{es(comunes, 1)} m²', 'ar-total'),
+])
+esp = lambda t: [x.strip() for x in t['espacios'].split('(')[0].split('·')]
+import re as _re
+def parse(t):
+    out = []
+    for x in esp(t):
+        m_ = _re.match(r'(.+)\s+(\d+,\d+)(\s*m²)?$', x.strip())
+        if m_: out.append((m_.group(1).strip(), m_.group(2)))
+    return out
+pa_, pb_ = parse(A_), parse(B_)
+names = [n for n, _ in pa_]
+t2 = '<tr><th></th><td class="ar-h">Tipo A</td><td class="ar-h">Tipo B</td></tr>' + ''.join(
+    f'<tr><th scope="row">{n[0].upper() + n[1:]}</th><td>{v} m²</td><td>{dict(pb_).get(n, "—")} m²</td></tr>' for n, v in pa_)
+t2 += f'<tr class="ar-total"><th scope="row">Área privada</th><td>{es(A_["area"], 2)} m²</td><td>{es(B_["area"], 2)} m²</td></tr>'
+t2 += f'<tr><th scope="row">Unidades<small>A: aptos x01 y x02 · B: aptos x03 y x04</small></th><td>10</td><td>10</td></tr>'
+t3 = ''.join([
+    row('Lote', 'Englobe de cinco predios', f'{es(lote)} m²'),
+    row('Huella del edificio', f'{es(PW)} × {es(PD)} m', f'{es(huella)} m²'),
+    row('Antejardines, jardín y patio', 'Lote libre: el 69 % queda verde y abierto', f'{es(lote - huella)} m²'),
+    row('Área construida', f'{NF} pisos de {es(huella)} m²', f'{es(constr)} m²'),
+    row('Área vendible', f'10 × {es(A_["area"])} m² + 10 × {es(B_["area"])} m²', f'{es(vend)} m²', 'ar-total'),
+])
+blocks['areas'] = f"""
+    <section class="sec areas" id="areas" aria-labelledby="areas-h">
+      <div class="wrap">
+        <p class="hero-kicker" data-reveal>Cuadro de áreas</p>
+        <h2 id="areas-h" data-reveal>Todas las áreas del proyecto</h2>
+        <div class="ar-grid">
+          <div class="ar-card"><h3>Zonas comunes</h3><table class="ar-t">{t1}</table></div>
+          <div class="ar-card"><h3>Apartamentos por espacio</h3><table class="ar-t ar-t3">{t2}</table></div>
+          <div class="ar-card"><h3>Lote y edificio</h3><table class="ar-t">{t3}</table></div>
+        </div>
+        <p class="ar-src">Áreas del modelo de Revit del proyecto (ejercicio2.rvt) y de Catastro Bogotá para el lote. Las zonas comunes del piso 1 se miden por eje de muros.</p>
+      </div>
+    </section>
+"""
 blocks['firma'] = f'''
     <section class="sec firma dark" id="firma" aria-labelledby="firma-h">
       <div class="wrap">

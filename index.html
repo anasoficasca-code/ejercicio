@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=v14" />
+  <link rel="stylesheet" href="./assets/brochure/arboleda.css?v=v15" />
   <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script></head>
 <body class="is-loading">
     <div class="progress" aria-hidden="true"><i></i></div>
@@ -369,6 +369,21 @@
       </div>
     </section>
 
+    <!-- gen:areas -->
+    <section class="sec areas" id="areas" aria-labelledby="areas-h">
+      <div class="wrap">
+        <p class="hero-kicker" data-reveal>Cuadro de áreas</p>
+        <h2 id="areas-h" data-reveal>Todas las áreas del proyecto</h2>
+        <div class="ar-grid">
+          <div class="ar-card"><h3>Zonas comunes</h3><table class="ar-t"><tr class="ar-group"><th colspan="2">Piso 1 · zonas comunes</th></tr><tr class=""><th scope="row">Lobby y bicicletero<small>Esquina Calle 56 con Carrera 18</small></th><td>85,8 m²</td></tr><tr class=""><th scope="row">Restaurante con terraza<small>Sobre la Calle 56</small></th><td>88,9 m²</td></tr><tr class=""><th scope="row">Gimnasio<small>Hacia el patio y la Carrera 18</small></th><td>71,0 m²</td></tr><tr class=""><th scope="row">Sala de cine<small>Hacia el patio, costado oriental</small></th><td>72,4 m²</td></tr><tr class="ar-group"><th colspan="2">Cubierta</th></tr><tr class=""><th scope="row">Terraza comunal<small>Zona BBQ, café lounge y deck de yoga</small></th><td>320,7 m²</td></tr><tr class="ar-group"><th colspan="2">Circulación</th></tr><tr class=""><th scope="row">Punto fijo<small>Escalera y ascensor · 27,08 m² × 6 pisos</small></th><td>162,5 m²</td></tr><tr class="ar-group"><th colspan="2">Sótanos</th></tr><tr class=""><th scope="row">Parqueaderos<small>2 niveles bajo todo el lote · 23 por sótano</small></th><td>46 cupos</td></tr><tr class="ar-total"><th scope="row">Total zonas comunes<small>Piso 1 y terraza</small></th><td>638,8 m²</td></tr></table></div>
+          <div class="ar-card"><h3>Apartamentos por espacio</h3><table class="ar-t ar-t3"><tr><th></th><td class="ar-h">Tipo A</td><td class="ar-h">Tipo B</td></tr><tr><th scope="row">Sala, comedor y cocina</th><td>41,0 m²</td><td>40,0 m²</td></tr><tr><th scope="row">Alcoba principal</th><td>12,7 m²</td><td>8,4 m²</td></tr><tr><th scope="row">Baño privado</th><td>3,4 m²</td><td>2,4 m²</td></tr><tr><th scope="row">Alcoba 2</th><td>10,5 m²</td><td>7,9 m²</td></tr><tr><th scope="row">Baño social</th><td>4,9 m²</td><td>2,9 m²</td></tr><tr><th scope="row">Ropas</th><td>3,1 m²</td><td>2,0 m²</td></tr><tr><th scope="row">Depósito</th><td>3,6 m²</td><td>1,9 m²</td></tr><tr class="ar-total"><th scope="row">Área privada</th><td>78,75 m²</td><td>70,00 m²</td></tr><tr><th scope="row">Unidades<small>A: aptos x01 y x02 · B: aptos x03 y x04</small></th><td>10</td><td>10</td></tr></table></div>
+          <div class="ar-card"><h3>Lote y edificio</h3><table class="ar-t"><tr class=""><th scope="row">Lote<small>Englobe de cinco predios</small></th><td>1.104,84 m²</td></tr><tr class=""><th scope="row">Huella del edificio<small>24,84 × 14,00 m</small></th><td>347,76 m²</td></tr><tr class=""><th scope="row">Antejardines, jardín y patio<small>Lote libre: el 69 % queda verde y abierto</small></th><td>757,08 m²</td></tr><tr class=""><th scope="row">Área construida<small>6 pisos de 347,76 m²</small></th><td>2.086,56 m²</td></tr><tr class="ar-total"><th scope="row">Área vendible<small>10 × 78,75 m² + 10 × 70,00 m²</small></th><td>1.487,50 m²</td></tr></table></div>
+        </div>
+        <p class="ar-src">Áreas del modelo de Revit del proyecto (ejercicio2.rvt) y de Catastro Bogotá para el lote. Las zonas comunes del piso 1 se miden por eje de muros.</p>
+      </div>
+    </section>
+    <!-- /gen:areas -->
+
     <!-- gen:firma -->
     <section class="sec firma dark" id="firma" aria-labelledby="firma-h">
       <div class="wrap">
@@ -484,6 +499,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="./assets/brochure/arboleda.js?v=v14"></script>  <a class="jmc-badge" href="#firma" aria-label="JMC Arquitectura"><img src="./assets/branding/jmc-logo.png" alt="" width="28" height="28" /><span>JMC Arquitectura</span></a>
+  <script src="./assets/brochure/arboleda.js?v=v15"></script>  <a class="jmc-badge" href="#firma" aria-label="JMC Arquitectura"><img src="./assets/branding/jmc-logo.png" alt="" width="28" height="28" /><span>JMC Arquitectura</span></a>
 </body>
 </html>
