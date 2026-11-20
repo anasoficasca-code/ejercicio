@@ -309,13 +309,11 @@ if (corte) {
     const on = () => { stop(); pick(b.dataset.l); };
     b.addEventListener('pointerenter', on); b.addEventListener('focus', on); b.addEventListener('click', on);
   });
-  pick('p1', 0);
+  pick('p1', 2);
   if (motion) {
     // el edificio se levanta piso por piso, luego aparecen cotas y árboles; después un "ascensor" recorre los niveles
     const tl = g.timeline({ scrollTrigger: { trigger: '.corte-fig', start: 'top 72%' } });
-    tl.from('.cx-site > *', { opacity: 0, duration: 0.6, stagger: 0.05 })
-      .from(floors, { y: -70, opacity: 0, duration: 0.75, stagger: 0.13, ease: 'back.out(1.3)' }, 0.2)
-      .from('.cx-dim > *', { opacity: 0, x: 12, duration: 0.5, stagger: 0.03 }, '-=0.3')
+    tl.fromTo('.cx-img img', { clipPath: 'inset(100% 0 0 0)', scale: 1.04 }, { clipPath: 'inset(0% 0 0 0)', scale: 1, duration: 2, ease: 'power3.inOut' })
       .add(() => {
         const o = { i: 0 };
         auto = g.to(o, { i: floors.length - 1, duration: 4.2, ease: 'none', repeat: 1, yoyo: true, onUpdate: () => { const f = floors[Math.round(o.i)]; pick(f.dataset.l, +f.dataset.i); } });
@@ -326,11 +324,8 @@ if (corte) {
 // ------------------------------------------------------------------ cabida: se traza el lote y se asienta la huella
 if (motion && document.querySelector('.cabida')) {
   const tl = g.timeline({ scrollTrigger: { trigger: '.cabida-fig', start: 'top 75%' } });
-  tl.from('.cb-lot', { strokeDashoffset: 1, duration: 1.8, ease: 'power2.inOut' })
-    .from('.cb-ant', { opacity: 0, duration: 0.7 }, 0.9)
-    .from('.cb-foot', { scale: 0, duration: 1.1, ease: 'expo.out' }, 1.2)
-    .from('.cb-core, .cb-split, .cb-u, .cb-s, .cb-st, .cb-north', { opacity: 0, duration: 0.5, stagger: 0.05 }, 1.7)
-    .from('.cb-dim > *', { opacity: 0, duration: 0.5, stagger: 0.06 }, 2.0);
+  tl.fromTo('.cabida .cb-img img', { clipPath: 'circle(0% at 50% 60%)' }, { clipPath: 'circle(75% at 50% 60%)', duration: 1.8, stagger: 0.3, ease: 'power3.inOut' })
+    .from('.cabida .lbl, .cabida .cb-h', { opacity: 0, y: 10, duration: 0.5, stagger: 0.06, ease: 'power3.out' }, 1.2);
   g.from('.cb-row', { y: 26, opacity: 0, duration: 0.8, stagger: 0.07, ease: 'expo.out', scrollTrigger: { trigger: '.cabida-dl', start: 'top 82%' } });
 }
 
@@ -508,6 +503,11 @@ if (motion) {
 // sostenibilidad, para quién y misión/visión: entradas escalonadas
 if (motion) {
   g.from('.eco-i', { y: 40, opacity: 0, duration: 1, stagger: 0.09, ease: 'expo.out', scrollTrigger: { trigger: '.eco-grid', start: 'top 82%' } });
+  g.timeline({ scrollTrigger: { trigger: '.piso-axo', start: 'top 78%' } })
+    .fromTo('.pa-img img', { clipPath: 'inset(0 0 100% 0)', y: 30 }, { clipPath: 'inset(0 0 0% 0)', y: 0, duration: 1.6, ease: 'power3.inOut' })
+    .from('.piso-axo .lbl', { opacity: 0, y: -18, scale: 0.8, duration: 0.6, stagger: 0.08, ease: 'back.out(2)' }, '-=0.4');
+  g.from('.qp-chips li', { x: -30, opacity: 0, duration: 0.9, stagger: 0.18, ease: 'expo.out', scrollTrigger: { trigger: '.quien-pic', start: 'top 70%' } });
+  g.from('.mv-ico', { scale: 0.4, rotate: -40, opacity: 0, duration: 1.1, stagger: 0.12, ease: 'back.out(1.8)', scrollTrigger: { trigger: '.mv', start: 'top 80%' } });
   g.from('.quien-list li', { x: 40, opacity: 0, duration: 1, stagger: 0.1, ease: 'expo.out', scrollTrigger: { trigger: '.quien-list', start: 'top 82%' } });
   g.from('.mv-col', { y: 50, opacity: 0, duration: 1.3, stagger: 0.18, ease: 'expo.out', scrollTrigger: { trigger: '.mv', start: 'top 80%' } });
   g.from('.mv-rule', { scaleY: 0, transformOrigin: '50% 0', duration: 1.4, ease: 'power3.inOut', scrollTrigger: { trigger: '.mv', start: 'top 80%' } });
@@ -522,14 +522,14 @@ const fmtP = (v) => '$' + Math.round(v).toLocaleString('es-CO');
   if (!fig) return;
   const band = fig.querySelector('.stc-band'), cap = fig.querySelector('.stc-cap');
   const F = [
-    [75.9, 85.3, 'Sótano', 'Parqueaderos y depósitos'],
-    [66.5, 75.9, 'Piso 1', 'Lobby, restaurante, cine y gimnasio'],
-    [56.8, 66.5, 'Piso 2', '4 apartamentos: 2 tipo A y 2 tipo B'],
-    [47.3, 56.8, 'Piso 3', '4 apartamentos con balcón'],
-    [37.6, 47.3, 'Piso 4', '4 apartamentos con balcón'],
-    [28.2, 37.6, 'Piso 5', '4 apartamentos con balcón'],
-    [18.4, 28.2, 'Piso 6', '4 apartamentos con balcón'],
-    [7.0, 18.4, 'Terraza', 'BBQ, café lounge y gimnasio al aire libre']
+    [75.2, 94.8, 'Sótanos 1 y 2', '46 parqueaderos, 23 por sótano'],
+    [65.3, 75.2, 'Piso 1', 'Lobby, restaurante, cine y gimnasio'],
+    [55.5, 65.3, 'Piso 2', '4 apartamentos: 2 tipo A y 2 tipo B'],
+    [45.7, 55.5, 'Piso 3', '4 apartamentos con balcón'],
+    [35.8, 45.7, 'Piso 4', '4 apartamentos con balcón'],
+    [26.0, 35.8, 'Piso 5', '4 apartamentos con balcón'],
+    [16.2, 26.0, 'Piso 6', '4 apartamentos con balcón'],
+    [6.6, 16.2, 'Terraza', 'BBQ, café lounge y gimnasio al aire libre']
   ];
   const set = (k) => {
     const [t, b, n, d] = F[k];
@@ -557,7 +557,7 @@ const fmtP = (v) => '$' + Math.round(v).toLocaleString('es-CO');
 })();
 
 // cabida en axonometría: el lote se dibuja y el edificio se arma piso por piso
-if (motion && document.querySelector('.ax-svg')) {
+if (false) {
   const tl = g.timeline({ scrollTrigger: { trigger: '.cabida-axo', start: 'top 75%' } });
   tl.from('.ax-lot, .ax-ant', { opacity: 0, duration: 0.8, stagger: 0.2 })
     .from('.ax-f', { y: -60, opacity: 0, duration: 0.7, stagger: 0.16, ease: 'back.out(1.4)' }, 0.5)

@@ -268,6 +268,7 @@ cab_rows = [
     (num(constr, 2, ' m²'), 'Área construida', f'{NF} pisos de {es(huella)} m²'),
     (num(constr / lote, 2), 'Índice de construcción', 'Área construida sobre área del lote'),
     (num(NF * FH, 2, ' m'), 'Altura', f'{NF} pisos de {es(FH)} m, más la terraza'),
+    (num(46, 0), 'Parqueaderos', '2 sótanos de 23 cupos bajo todo el lote, con rampa sobre la Calle 56'),
     (num(pa['unidades'], 0), 'Apartamentos', '4 por piso en los pisos 2 a 6: 10 tipo A y 10 tipo B'),
     (num(vend, 2, ' m²'), 'Área vendible', f'10 × {es(pa["tipologias"][0]["area"])} m² + 10 × {es(pa["tipologias"][1]["area"])} m²'),
     (num(ventas / 1e6, 0, ' M', '$'), 'Ventas estimadas', 'Los 20 apartamentos a precio de lista por piso, en millones de pesos'),
@@ -322,9 +323,10 @@ blocks['corte'] = f'''
             <li><button type="button" data-l="t"><b>Terraza</b><span>Zona BBQ, café lounge bajo la pérgola y gimnasio al aire libre. A {es(NF*FH)} m sobre la calle.</span></button></li>
             <li><button type="button" data-l="apt"><b>Pisos 2 a 6</b><span>Cuatro apartamentos por piso alrededor del punto fijo: dos tipo A de 78,75 m² sobre la Calle 56 y dos tipo B de 70 m² hacia el jardín. Altura de piso a piso de {es(FH)} m.</span></button></li>
             <li><button type="button" data-l="p1"><b>Piso 1</b><span>Lobby con bicicletero en la esquina, restaurante con terraza sobre la Calle 56, sala de cine y gimnasio hacia el patio.</span></button></li>
+            <li><button type="button" data-l="s"><b>Sótanos 1 y 2</b><span>46 parqueaderos, 23 por sótano, bajo todo el lote. La rampa entra por la Calle 56 y deja libres los antejardines.</span></button></li>
           </ol>
         </div>
-        <figure class="corte-fig">{corte_svg}<figcaption>Pasa por cada nivel para resaltarlo. Escalera y ascensor en el punto fijo; balcones con jardinera sobre la Carrera 18.</figcaption></figure>
+        <figure class="corte-fig"><div class="cx-img"><img src="./assets/renders/corte-axo.webp" alt="Corte axonométrico renderizado del edificio: dos sótanos, primer piso con zonas comunes, cinco pisos de apartamentos amoblados y la terraza" loading="lazy" width="2200" height="1416" /><svg class="cx-ov" viewBox="0 0 100 64.36" preserveAspectRatio="none" aria-hidden="false"><polygon class="cx-floor" data-l="s" data-i="0" tabindex="0" aria-label="Sótano 2" points="20.67,53.58 65.15,62.45 65.15,57.24 20.67,48.38"/><polygon class="cx-floor" data-l="s" data-i="1" tabindex="0" aria-label="Sótano 1" points="20.67,48.38 65.15,57.24 65.15,52.03 20.67,43.16"/><polygon class="cx-floor" data-l="p1" data-i="2" tabindex="0" aria-label="Piso 1" points="20.67,43.16 65.15,52.03 65.15,46.82 20.67,37.96"/><polygon class="cx-floor" data-l="apt" data-i="3" tabindex="0" aria-label="Piso 2" points="20.67,37.96 65.15,46.82 65.15,41.60 20.67,32.75"/><polygon class="cx-floor" data-l="apt" data-i="4" tabindex="0" aria-label="Piso 3" points="20.67,32.75 65.15,41.60 65.15,36.40 20.67,27.54"/><polygon class="cx-floor" data-l="apt" data-i="5" tabindex="0" aria-label="Piso 4" points="20.67,27.54 65.15,36.40 65.15,31.20 20.67,22.33"/><polygon class="cx-floor" data-l="apt" data-i="6" tabindex="0" aria-label="Piso 5" points="20.67,22.33 65.15,31.20 65.15,25.98 20.67,17.12"/><polygon class="cx-floor" data-l="apt" data-i="7" tabindex="0" aria-label="Piso 6" points="20.67,17.12 65.15,25.98 65.15,20.78 20.67,11.92"/><polygon class="cx-floor" data-l="t" data-i="8" tabindex="0" aria-label="Terraza" points="20.67,11.92 65.15,20.78 65.15,15.74 20.67,6.87"/></svg></div><figcaption>Pasa por cada nivel para resaltarlo. Corte a lo largo de la Calle 56, modelo de Revit del proyecto.</figcaption></figure>
       </div>
     </section>
 '''
@@ -335,11 +337,12 @@ blocks['cabida'] = f'''
           <p class="hero-kicker" data-reveal>Cabida arquitectónica</p>
           <h2 id="cabida-h" data-reveal>Cuánto cabe en el lote</h2>
           <p class="cabida-lead">Lote esquinero de {es(lote)} m² en la Calle 56 con Carrera 18. El volumen se retira {es(ant)} m de las dos calles para los antejardines y deja un jardín en el patio.</p>
+          <p class="eco-note"><svg class="eco-leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-8 5-13 15-14-1 10-6 15-14 15"/><path d="M5 19l8-8"/></svg>Solo el {round(huella/lote*100)} % del lote se ocupa: el resto queda para antejardines sembrados, árboles y el jardín del patio.</p>
         </div>
         <div class="cabida-vis">
-          <figure class="cabida-axo">{axo_svg}<figcaption>Axonometría · volumen de {NF} pisos sobre el lote</figcaption></figure>
-          <figure class="cabida-fig">{cabida_svg}
-            <figcaption><span><i class="k-foot"></i>Huella del edificio</span><span><i class="k-ant"></i>Antejardín de {es(ant)} m</span><span><i class="k-lot"></i>Lindero del lote</span></figcaption>
+          <figure class="cabida-axo"><div class="cb-img"><img src="./assets/renders/cabida-axo.webp" alt="Axonometría renderizada de la cabida: edificio de 6 pisos sobre el lote esquinero con antejardines arborizados y dos sótanos de parqueaderos a la vista" loading="lazy" width="2000" height="1493" /><span class="lbl lbl-st" style="left:39.56%;top:78.32%">Calle 56</span><span class="lbl lbl-st" style="left:80.13%;top:74.02%">Carrera 18</span><span class="lbl lbl-s lbl-r" style="left:63.5%;top:89.1%">Sótano 1 · 23 parqueaderos</span><span class="lbl lbl-s lbl-r" style="left:63.5%;top:96.23%">Sótano 2 · 23 parqueaderos</span><span class="cb-h" style="left:21.77%;top:23.58%;height:42.78%"><em>18,6 m · 6 pisos</em></span><span class="lbl lbl-s" style="left:49.42%;top:15.58%">Terraza</span></div><figcaption>Axonometría · {NF} pisos y 2 sótanos sobre el lote</figcaption></figure>
+          <figure class="cabida-fig"><div class="cb-img"><img src="./assets/renders/cabida-planta.webp" alt="Planta renderizada del piso tipo sobre el lote, con la misma orientación de la axonometría" loading="lazy" width="1600" height="1467" /><span class="lbl lbl-a" style="left:60.95%;top:70.32%"><b>A</b></span><span class="lbl lbl-a" style="left:31.86%;top:55.52%"><b>A</b></span><span class="lbl lbl-b" style="left:68.35%;top:53.03%"><b>B</b></span><span class="lbl lbl-b" style="left:39.26%;top:38.23%"><b>B</b></span><span class="lbl lbl-s" style="left:50.0%;top:54.52%">Punto fijo</span><span class="lbl lbl-st" style="left:37.85%;top:82.94%">Calle 56</span><span class="lbl lbl-st" style="left:88.34%;top:74.02%">Carrera 18</span></div>
+            <figcaption>Planta del piso tipo, vista con la misma orientación de la axonometría</figcaption>
           </figure>
         </div>
         <dl class="cabida-dl">{cab_dl}</dl>
@@ -375,19 +378,19 @@ blocks['firma'] = f'''
         <p class="firma-lead wh2" data-wh2>Somos un estudio de Bogotá que diseña vivienda sostenible para jóvenes en barrios que ya existen. Diseñamos edificios con luz y aire naturales, más verde en la calle y todo a pocos minutos a pie o en bicicleta.</p>
         <div class="mv">
           <article class="mv-col">
-            <p class="mv-k">Misión</p>
+            <svg class="mv-ico" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19"/><circle cx="24" cy="24" r="11"/><circle cx="24" cy="24" r="3"/><path d="M24 5v6M24 37v6M5 24h6M37 24h6"/></svg><p class="mv-k">Misión</p>
             <p class="mv-t">Diseñar vivienda sostenible y asequible para jóvenes en barrios consolidados de Bogotá: con luz y ventilación naturales, materiales locales, más árboles en la calle y a pocos minutos del transporte público.</p>
           </article>
           <div class="mv-rule" aria-hidden="true"></div>
           <article class="mv-col">
-            <p class="mv-k">Visión</p>
+            <svg class="mv-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M4 24s8-13 20-13 20 13 20 13-8 13-20 13S4 24 4 24z"/><circle cx="24" cy="24" r="6"/><path d="M24 4v3M38 9l-2 2M10 9l2 2"/></svg><p class="mv-k">Visión</p>
             <p class="mv-t">Ser en 2035 el estudio de referencia en Bogotá para vivienda joven y sostenible, demostrando que densificar con cuidado un barrio tradicional lo hace más verde, más caminable y más vivo.</p>
           </article>
         </div>
         <ul class="firma-vals">
-          <li><b>Sostenibilidad</b><span>Primero lo pasivo: sombra, luz y ventilación natural antes que máquinas. Menos energía, menos costo para quien vive.</span></li>
-          <li><b>Para jóvenes</b><span>Apartamentos compactos y flexibles, con espacios comunes que reemplazan lo que no cabe en casa: terraza, cine, gimnasio.</span></li>
-          <li><b>El barrio primero</b><span>Antejardines sembrados, primeros pisos abiertos y bicicletas antes que carros.</span></li>
+          <li><svg class="mv-ico sm" viewBox="0 0 48 48" aria-hidden="true"><path d="M8 38c0-16 10-26 30-28-2 20-12 30-28 28"/><path d="M8 38l16-16"/></svg><b>Sostenibilidad</b><span>Primero lo pasivo: sombra, luz y ventilación natural antes que máquinas. Menos energía, menos costo para quien vive.</span></li>
+          <li><svg class="mv-ico sm" viewBox="0 0 48 48" aria-hidden="true"><circle cx="17" cy="16" r="6"/><circle cx="32" cy="18" r="5"/><path d="M6 38c1-7 6-11 11-11s10 4 11 11M27 38c1-6 3-9 6-9s7 3 8 9"/></svg><b>Para jóvenes</b><span>Apartamentos compactos y flexibles, con espacios comunes que reemplazan lo que no cabe en casa: terraza, cine, gimnasio.</span></li>
+          <li><svg class="mv-ico sm" viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40V20l10-8 10 8v20M26 40V14h16v26M4 40h40"/><path d="M12 28h8M31 21h6M31 28h6M31 34h6"/></svg><b>El barrio primero</b><span>Antejardines sembrados, primeros pisos abiertos y bicicletas antes que carros.</span></li>
         </ul>
         <div class="ficha">
           <div class="ficha-head"><p class="mv-k">Ficha técnica</p><h3>JMC Arquitectura S.A.S.</h3></div>
