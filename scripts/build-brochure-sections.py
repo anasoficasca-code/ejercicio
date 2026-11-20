@@ -292,7 +292,7 @@ lote, huella = pa['loteM2'], pa['plantaM2']
 constr = huella * NF
 vend = sum(t['area'] for t in pa['tipologias']) * (pa['unidades'] / len(pa['tipologias']))
 ventas = sum(2 * t['area'] * (pa['precioM2Base'] + (f - 2) * pa['diferencialPiso']) for f in range(2, NF + 1) for t in pa['tipologias'])
-LOCAL_M2, LOCAL_PM2 = 88.9, 14000000
+LOCAL_M2, LOCAL_PM2 = 88.9, 15000000
 ventas += LOCAL_M2 * LOCAL_PM2   # local comercial (restaurante) del piso 1
 comunal = constr / 80 * 10
 num = lambda v, d, suf='', pre='': f'<dt data-num="{v:.4f}" data-dec="{d}" data-pre="{pre}" data-suf="{suf}">{pre}{es(v, d)}{suf}</dt>'
