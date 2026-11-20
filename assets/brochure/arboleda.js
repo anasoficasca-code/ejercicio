@@ -647,6 +647,8 @@ if (motion) {
         g.to(n, { v: price, duration: 0.9, ease: 'power3.out', onUpdate: () => { el.textContent = fmtP(Math.round(n.v / 1e4) * 1e4); }, onComplete: () => { el.textContent = fmtP(price); } });
         g.fromTo(c.querySelector('.tipo-apto b'), { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
       } else el.textContent = fmtP(price);
+      const sum = document.querySelector(`[data-sum="${c.dataset.tipo}"]`);
+      if (sum) { sum.textContent = fmtP(price); if (motion && animate !== false) g.fromTo(sum, { y: -6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }); }
     });
   };
   btns.forEach((b) => b.addEventListener('click', () => show(+b.dataset.f)));

@@ -1445,3 +1445,17 @@ html { scrollbar-color: var(--ink) var(--bg); scrollbar-width: thin; }
 .local .tipo-nums b { font-size: clamp(20px, 1.9vw, 28px) !important; white-space: nowrap; }
 .local .tipo-nums div:nth-child(2) { grid-column: 1 / -1; grid-row: 1; }
 @media (max-width: 860px) { .local .tipo-nums b { font-size: 20px !important; } }
+
+/* selector de piso: fijo mientras se ven los dos tipos, con el precio de cada uno a la vista */
+.floor-pick { position: sticky; top: 92px; z-index: 6; margin: 0 0 clamp(18px, 2.4vw, 28px) !important; padding: 12px 14px; background: rgba(251, 248, 242, .92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--hair); border-radius: 6px; box-shadow: 0 10px 30px -18px rgba(15, 28, 46, .35); }
+.floor-pick button { width: 46px !important; height: 46px !important; }
+.fp-sum { margin: 0 0 0 auto; display: flex; gap: 22px; flex-wrap: wrap; font: 500 11px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.fp-sum b { display: block; margin-top: 2px; font: 300 clamp(17px, 1.6vw, 22px) var(--display); letter-spacing: .02em; color: var(--ink); text-transform: none; }
+@media (max-width: 760px) {
+  .floor-pick { top: 70px; padding: 10px; gap: 6px; }
+  .floor-pick span:first-child { width: 100%; margin: 0; }
+  .floor-pick button { width: 40px !important; height: 40px !important; font-size: 17px !important; }
+  .fp-sum { width: 100%; margin: 6px 0 0; gap: 16px; }
+}
+
+@media (max-width: 760px) { .fp-sum span:first-child { width: auto !important; } .fp-sum b { font-size: 16px !important; } }
