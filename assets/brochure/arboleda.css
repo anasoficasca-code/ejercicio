@@ -1408,3 +1408,5 @@ html { scrollbar-color: var(--ink) var(--bg); scrollbar-width: thin; }
 @media (max-width: 860px) { .cabida .cabida-vis { grid-template-columns: 1fr !important; } }
 
 .ax-bt2 { font-size: 9.5px !important; fill: var(--on-night-2) !important; }
+
+.ax-tree { opacity: .95; filter: saturate(.85); }

@@ -246,12 +246,13 @@ x0, x1, z0, z1 = min(xs), max(xs), min(zs), max(zs)
 ax.append('<g class="ax-ant">' + poly_ax([(x0, z0, 0), (x1, z0, 0), (x1, oz, 0), (ox, oz, 0), (ox, z1, 0), (x0, z1, 0)], 'ax-green') + '</g>')
 TOP = NF * FH
 # árboles esquemáticos en el patio y en el costado oriental (atrás del edificio, no al frente)
-trees = [(ox + x_, z1 - 2.0) for x_ in (2.5, 8.5, 15.5, 22.0)] + [(x1 - 2.0, oz + z_) for z_ in (3.0, 9.0)] + [(ox + 5.5, oz + PD + 2.6), (ox + 19.0, oz + PD + 2.6)]
+trees = [(ox + x_, z1 - 2.0) for x_ in (1.0, 6.0, 11.5, 17.0, 22.5)] + [(x1 - 2.0, oz + z_) for z_ in (1.0, 6.0, 11.0)] + [(ox + 5.5, oz + PD + 2.6), (ox + 19.0, oz + PD + 2.6)]
 tr = ['<g class="ax-trees">']
 for tx_, tz_ in sorted(trees, key=lambda p: -(p[0] + p[1])):
     a_, c_ = ISO(tx_, tz_, 0), ISO(tx_, tz_, 4.6)
-    tr.append(f'<path class="ax-trunk" d="M{a_[0]:.1f} {a_[1]:.1f}V{c_[1]+10:.1f}"/><ellipse class="ax-crown" cx="{c_[0]:.1f}" cy="{c_[1]:.1f}" rx="{2.4*SA:.1f}" ry="{2.2*SA:.1f}"/>')
-    axp.append(ISO(tx_, tz_, 7))
+    th = 11.0 * SA * (0.9 + ((tx_ * 7.3 + tz_ * 3.1) % 1) * 0.25); tw = th * 240 / 379
+    tr.append(f'<image class="ax-tree" href="./assets/brochure/arbol-corte.png" x="{a_[0]-tw/2:.1f}" y="{a_[1]-th:.1f}" width="{tw:.1f}" height="{th:.1f}" preserveAspectRatio="xMidYMax meet"/>')
+    axp.append((a_[0], a_[1] - th))
 tr.append('</g>'); ax.append(''.join(tr))
 for i in range(NF):
     y0, y1 = i * FH, (i + 1) * FH

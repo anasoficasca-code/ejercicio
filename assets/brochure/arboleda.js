@@ -538,7 +538,7 @@ const fmtP = (v) => '$' + Math.round(v).toLocaleString('es-CO');
   const fig = document.querySelector('.st-corte');
   if (!fig) return;
   const band = fig.querySelector('.stc-band'), calls = [...fig.querySelectorAll('.stc-d')];
-  const F = [[74.71, 91.61, "s"], [66.25, 74.71, "p1"], [57.79, 66.25, "apt"], [49.33, 57.79, "apt"], [40.88, 49.33, "apt"], [32.42, 40.88, "apt"], [23.96, 32.42, "apt"], [15.78, 23.96, "t"]];
+  const F = [[77.44, 95.3, "s"], [68.51, 77.44, "p1"], [59.57, 68.51, "apt"], [50.64, 59.57, "apt"], [41.71, 50.64, "apt"], [32.77, 41.71, "apt"], [23.84, 32.77, "apt"], [15.2, 23.84, "t"]];
   const set = (i) => {
     const [t, b, k] = F[i];
     band.style.top = t + '%'; band.style.height = (b - t) + '%';
