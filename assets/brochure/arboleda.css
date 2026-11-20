@@ -1369,3 +1369,22 @@ html { scrollbar-color: var(--ink) var(--bg); scrollbar-width: thin; }
 }
 
 @media (min-width: 861px) { .lift-copy { left: calc(var(--gutter) + 20px) !important; width: calc(36vw - var(--gutter) - 40px) !important; } .lift-stage { left: 38vw !important; } }
+
+/* ===================== v9: inicio más sobrio ===================== */
+.st-type { font: 300 clamp(15px, 1.35vw, 20px)/1.7 var(--display) !important; letter-spacing: .08em !important; max-width: 62ch !important; min-height: 0 !important; color: var(--ink-2) !important; }
+.statement .st-corte { display: grid !important; grid-template-columns: minmax(150px, 15%) minmax(0, 1fr) minmax(150px, 15%); gap: clamp(16px, 2.4vw, 40px); align-items: center; }
+.stc-img { border-radius: 6px !important; box-shadow: 0 24px 60px -36px rgba(15, 28, 46, .4) !important; }
+.stc-side { display: grid; gap: clamp(22px, 3vw, 44px); }
+.stc-side.r { text-align: right; }
+.stc-d { display: grid; gap: 4px; padding-top: 14px; border-top: 1px solid var(--hair); transition: border-color .4s; }
+.stc-d b { font: 200 clamp(38px, 3.6vw, 60px)/1 var(--display); color: var(--ink); transition: color .4s; }
+.stc-d span { font: 500 11.5px var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
+.stc-d small { font-size: 13px; color: var(--muted); line-height: 1.45; }
+.stc-d.on { border-color: var(--hl); } .stc-d.on b { color: var(--hl); }
+@media (max-width: 860px) {
+  .statement .st-corte { grid-template-columns: 1fr 1fr !important; }
+  .stc-img { grid-column: 1 / -1; grid-row: 1; display: block !important; }
+  .stc-side { grid-row: 2; }
+  .stc-side.r { text-align: left; }
+  .st-type { font-size: 15px !important; }
+}

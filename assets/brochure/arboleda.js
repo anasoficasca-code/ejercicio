@@ -193,7 +193,9 @@ if (mpSec) {
       if (on && !w?.__masterplan?.controls) setTimeout(() => preview(!mpSec.classList.contains('is-live')), 1500);
     } catch (e) { /* otro origen */ }
   };
-  new IntersectionObserver(([e]) => { if (e.isIntersecting) load(); }, { rootMargin: '150% 0px' }).observe(mpSec);
+  new IntersectionObserver(([e]) => { if (e.isIntersecting) load(); }, { rootMargin: '400% 0px' }).observe(mpSec);
+  // se precarga en segundo plano para que esté listo al llegar a la sección
+  addEventListener('load', () => setTimeout(() => (window.requestIdleCallback || setTimeout)(load), matchMedia('(max-width: 760px)').matches ? 9000 : 4000));
   const exit = () => { preview(true); mpSec.classList.remove('is-live'); document.body.classList.remove('tour-open'); frame.tabIndex = -1; document.getElementById('tour-enter').focus(); };
   document.getElementById('tour-enter').addEventListener('click', () => {
     load();
@@ -525,7 +527,7 @@ const fmtP = (v) => '$' + Math.round(v).toLocaleString('es-CO');
 (() => {
   const fig = document.querySelector('.st-corte');
   if (!fig) return;
-  const band = fig.querySelector('.stc-band'), calls = [...fig.querySelectorAll('.stc-call')];
+  const band = fig.querySelector('.stc-band'), calls = [...fig.querySelectorAll('.stc-d')];
   const F = [[74.71, 91.61, "s"], [66.25, 74.71, "p1"], [57.79, 66.25, "apt"], [49.33, 57.79, "apt"], [40.88, 49.33, "apt"], [32.42, 40.88, "apt"], [23.96, 32.42, "apt"], [15.78, 23.96, "t"]];
   const set = (i) => {
     const [t, b, k] = F[i];
@@ -537,7 +539,7 @@ const fmtP = (v) => '$' + Math.round(v).toLocaleString('es-CO');
   g.set(band, { opacity: 0 });
   const tl = g.timeline({ scrollTrigger: { trigger: fig, start: 'top 80%' } });
   tl.fromTo(fig.querySelector('img'), { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 2, ease: 'power2.inOut' })
-    .from(calls, { '--line': 0, opacity: 0, duration: 0.7, stagger: 0.12, ease: 'power3.out' }, 1.2)
+    .from(calls, { y: 24, opacity: 0, duration: 0.8, stagger: 0.12, ease: 'expo.out' }, 0.8)
     .to(band, { opacity: 1, duration: 0.5 })
     .add(() => {
       let i = 0;
