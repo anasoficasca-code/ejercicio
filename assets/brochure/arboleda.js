@@ -193,9 +193,19 @@ if (mpSec) {
       if (on && !w?.__masterplan?.controls) setTimeout(() => preview(!mpSec.classList.contains('is-live')), 1500);
     } catch (e) { /* otro origen */ }
   };
-  new IntersectionObserver(([e]) => { if (e.isIntersecting) load(); }, { rootMargin: '400% 0px' }).observe(mpSec);
-  // se precarga en segundo plano para que esté listo al llegar a la sección
-  addEventListener('load', () => setTimeout(() => (window.requestIdleCallback || setTimeout)(load), matchMedia('(max-width: 760px)').matches ? 9000 : 4000));
+  // se carga al acercarse (una pantalla antes) y solo dibuja mientras la sección está a la vista:
+  // fuera de pantalla el 3D se pausa para que el brochure no se trabe al bajar
+  let mpVisible = false;
+  const run = () => {
+    try {
+      const sc = frame.contentWindow?.__masterplan;
+      if (!sc?.renderer) return;
+      sc.renderer.setAnimationLoop(mpVisible ? () => sc.render() : null);
+    } catch (e) { /* otro origen */ }
+  };
+  frame.addEventListener('load', () => { const t = setInterval(() => { if (frame.contentWindow?.__masterplan?.renderer) { clearInterval(t); run(); } }, 500); });
+  new IntersectionObserver(([e]) => { if (e.isIntersecting) load(); }, { rootMargin: '100% 0px' }).observe(mpSec);
+  new IntersectionObserver(([e]) => { mpVisible = e.isIntersecting; run(); }, { rootMargin: '10% 0px' }).observe(mpSec);
   const exit = () => { preview(true); mpSec.classList.remove('is-live'); document.body.classList.remove('tour-open'); frame.tabIndex = -1; document.getElementById('tour-enter').focus(); };
   document.getElementById('tour-enter').addEventListener('click', () => {
     load();
