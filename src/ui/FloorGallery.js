@@ -38,9 +38,9 @@ function zonesFor(key) {
     return {
       eyebrow: 'Piso 1 · zonas sociales', title: 'Lobby y zonas comunes',
       zones: [
-        { title: 'Lobby', text: 'Recepción y sala de espera en la esquina de la Calle 56 con Carrera 18.', photos: ['lobby-recepcion.webp', 'lobby-sala.webp'], unit: 'lobby' },
+        { title: 'Lobby', text: 'Recepción y sala de espera en la esquina de la Calle 56 con Carrera 18.', photos: ['lobby-recepcion.webp', 'lobby-sala.webp'], unit: 'lobby', pano: 'lobby' },
         { title: 'Bicicletero', text: 'Bicicletero cubierto junto al acceso, con cupos para los residentes.', photos: imgs('bici', 4), unit: 'lobby' },
-        { title: 'Restaurante con terraza', text: 'Restaurante sobre la Calle 56, con terraza al aire libre en el antejardín.', photos: [...imgs('rest-int', 4), ...imgs('rest-ext', 4)], unit: 'salon' },
+        { title: 'Restaurante con terraza', text: 'Restaurante sobre la Calle 56, con terraza al aire libre en el antejardín.', photos: [...imgs('rest-int', 4), ...imgs('rest-ext', 4)], unit: 'salon', pano: 'salon' },
         { title: 'Sala de cine', text: 'Sala de cine privada para los residentes, hacia el patio.', photos: imgs('cine', 4), unit: 'cine' },
         { title: 'Gimnasio', text: 'Gimnasio con ventanal al jardín del patio posterior.', photos: imgs('gym', 4), unit: 'gym' }
       ]
@@ -51,10 +51,10 @@ function zonesFor(key) {
     eyebrow: `Piso ${f} · 4 apartamentos`, title: `Apartamentos ${f}01 a ${f}04`,
     prices: TIPOS.map((t) => ({ ...t, precio: Math.round(t.area * M2(f)) })),
     zones: [
-      { title: 'Sala y comedor', text: 'Sala y comedor integrados, con salida al balcón.', photos: ['sala-final.webp'], unit: `${f}01` },
-      { title: 'Cocina', text: 'Cocina abierta hacia la sala, con barra y zona de ropas.', photos: ['cocina-final.webp'], unit: `${f}01` },
-      { title: 'Alcobas', text: 'Alcoba principal y alcoba 2, con closet y buena luz natural.', photos: ['alcoba-hd.webp', ...imgs('alcoba', 4), 'alcoba-lift.webp'], unit: `${f}02` },
-      { title: 'Baños', text: 'Dos baños con enchape claro y ducha en vidrio.', photos: ['bano-hd.webp', ...imgs('bano', 2)], unit: `${f}03` },
+      { title: 'Sala y comedor', text: 'Sala y comedor integrados, con salida al balcón.', photos: ['sala-final.webp'], unit: `${f}01`, pano: 'sala' },
+      { title: 'Cocina', text: 'Cocina abierta hacia la sala, con barra y zona de ropas.', photos: ['cocina-final.webp'], unit: `${f}01`, pano: 'cocina' },
+      { title: 'Alcobas', text: 'Alcoba principal y alcoba 2, con closet y buena luz natural.', photos: ['alcoba-hd.webp', ...imgs('alcoba', 4), 'alcoba-lift.webp'], unit: `${f}02`, pano: 'habitacion' },
+      { title: 'Baños', text: 'Dos baños con enchape claro y ducha en vidrio.', photos: ['bano-hd.webp', ...imgs('bano', 2)], unit: `${f}03`, pano: 'bano' },
       { title: 'Planta tipo A', text: `78,75 m² · apartamentos ${f}01 y ${f}02, sobre la Calle 56.`, photos: ['planta-a-render.webp'], unit: `${f}01` },
       { title: 'Planta tipo B', text: `70 m² · apartamentos ${f}03 y ${f}04, hacia el patio.`, photos: ['planta-b-render.webp'], unit: `${f}03` }
     ]
@@ -86,7 +86,7 @@ export class FloorGallery {
       if (Math.abs(dx) > 40) this.go(this.i + (dx < 0 ? 1 : -1));
     });
     window.addEventListener('keydown', (e) => {
-      if (!this.key || /input|textarea/i.test(e.target.tagName) || document.querySelector('.umbra-modal-backdrop.active, .umbra-modal-backdrop.open')) return;
+      if (!this.key || document.body.classList.contains('has-room-photo') || /input|textarea/i.test(e.target.tagName) || document.querySelector('.umbra-modal-backdrop.active, .umbra-modal-backdrop.open')) return;
       if (e.key === 'ArrowRight') this.go(this.i + 1);
       if (e.key === 'ArrowLeft') this.go(this.i - 1);
       if (e.key === 'Escape') this.close();
@@ -119,12 +119,13 @@ export class FloorGallery {
         ${def.prices ? `<div class="fg-prices">${def.prices.map((t) => `
           <div><span>Tipo ${t.tipo} · ${fmtNum(t.area, t.area % 1 ? 2 : 0)} m²</span><strong>${fmtCOP(t.precio)}</strong><em>Aptos ${t.aptos.map((a) => key + a).join(' y ')} · ${t.donde}</em></div>`).join('')}
         </div>` : ''}
-        <div class="fg-chips" role="tablist">${def.zones.map((z, k) => `<button role="tab" data-zone="${k}">${z.title}</button>`).join('')}</div>
+        <div class="fg-chips" role="tablist">${def.zones.map((z, k) => `<button role="tab" data-zone="${k}">${z.title}${z.pano ? '<i class="fg-360tag">360°</i>' : ''}</button>`).join('')}</div>
         <figure class="fg-stage">
           <img class="fg-img" alt="" decoding="async" />
           <button class="fg-nav prev" data-act="prev" aria-label="Foto anterior"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
           <button class="fg-nav next" data-act="next" aria-label="Foto siguiente"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
           <span class="fg-count"></span>
+          <button class="fg-360" data-act="pano" hidden><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="4"/><path d="M12 3c2.2 0 4 4 4 9s-1.8 9-4 9"/><path d="M8 3.9C6.8 5.6 6 8.6 6 12s.8 6.4 2 8.1"/></svg>Ver en 360°</button>
           <button class="fg-full" data-act="full" aria-label="Ver en pantalla completa"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
         </figure>
         <div class="fg-caption"><h3 class="fg-zone"></h3><p class="fg-text"></p></div>
@@ -169,6 +170,7 @@ export class FloorGallery {
     this.el.querySelector('.fg-zone').textContent = z.title;
     this.el.querySelector('.fg-text').textContent = z.text;
     this.el.querySelector('.fg-count').textContent = `${i + 1} / ${n}`;
+    this.el.querySelector('.fg-360').hidden = !z.pano;
     this.el.querySelectorAll('[data-zone]').forEach((b) => b.setAttribute('aria-selected', String(+b.dataset.zone === s.zi)));
     this.el.querySelectorAll('.fg-thumbs [data-i]').forEach((b) => b.classList.toggle('on', +b.dataset.i === i));
     this.el.querySelector(`.fg-thumbs [data-i="${i}"]`)?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
@@ -190,14 +192,33 @@ export class FloorGallery {
   _click(e) {
     const t = e.target.closest('[data-act],[data-zone],[data-i]');
     if (!t) return;
-    if (t.dataset.zone != null) { this.go(this.slides.findIndex((s) => s.zi === +t.dataset.zone)); return; }
+    if (t.dataset.zone != null) {
+      // tocar de nuevo la zona ya elegida (o su etiqueta 360°) abre su panorámica, si la tiene
+      const zi = +t.dataset.zone, z = this.def.zones[zi];
+      if (z.pano && (this.slides[this.i]?.zi === zi || e.target.closest('.fg-360tag'))) { this.openPano(z); return; }
+      this.go(this.slides.findIndex((s) => s.zi === zi));
+      return;
+    }
     if (t.dataset.i != null) { this.go(+t.dataset.i); return; }
     const a = t.dataset.act;
     if (a === 'prev') this.go(this.i - 1);
     if (a === 'next') this.go(this.i + 1);
     if (a === 'min') this.el.classList.toggle('min');
+    if (a === 'pano') this.openPano(this.def.zones[this.slides[this.i].zi]);
     if (a === 'close') this.close();
     if (a === 'full') this.onFullscreen?.(`${this.def.eyebrow} · ${this.def.title}`, this.slides.map((s) => ({ src: s.src, title: this.def.title, type: this.def.zones[s.zi].title })), this.i);
+  }
+
+  /**
+   * Abre la panorámica 360° de la zona en el visor a pantalla completa (RoomPhoto): arrastrar o deslizar con
+   * el dedo mira alrededor; "Volver a la galería" o Esc lo cierra y la galería queda donde estaba.
+   */
+  openPano(z) {
+    if (!z?.pano) return;
+    const s = this.scene;
+    s.showRoomPhoto(z.pano, 0, 'Volver a la galería');
+    document.body.classList.add('has-gallery-pano');
+    s.photo.onClose = () => document.body.classList.remove('has-gallery-pano');
   }
 
   close() { store.setState({ galleryKey: null }); }

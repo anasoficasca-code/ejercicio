@@ -393,9 +393,9 @@ export class MasterplanScene {
   }
 
   /** Render a pantalla completa (sala, cocina, alcoba, lobby, restaurante). */
-  showRoomPhoto(key, delay = 0) {
+  showRoomPhoto(key, delay = 0, closeLabel) {
     this.photo ??= new RoomPhoto(document.getElementById('app'));
-    return this.photo.show(key, { delay });
+    return this.photo.show(key, { delay, ...(closeLabel ? { closeLabel } : {}) });
   }
 
   hideRoomPhoto() { this.photo?.hide(); }

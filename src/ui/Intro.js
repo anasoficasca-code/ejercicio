@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export const START_HOUR = 15.5;
+export const START_HOUR = 16;
 
 /** Lleva el control de la hora del día al valor que anima la intro. */
 function syncSlider(h) {
@@ -46,7 +46,7 @@ export class Intro {
   play() {
     const g = window.gsap, s = this.scene;
     document.body.classList.add('is-intro');
-    // la tarde arranca a las 15:30 (sol alto del occidente sobre la fachada de la Carrera 18)
+    // la tarde arranca a las 16:00 (sol alto del occidente sobre la fachada de la Carrera 18)
     s.setHour(START_HOUR);
     syncSlider(START_HOUR);
     if (!g || this.reduced) {

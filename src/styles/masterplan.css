@@ -1621,3 +1621,12 @@ body:not(.has-floor-gallery) .floor-gallery,body.is-intro .floor-gallery{opacity
   body.has-floor-gallery .sky-time-control{opacity:0;pointer-events:none}
 }
 @media (prefers-reduced-motion:reduce){.floor-gallery,.fg-img{transition:none}}
+/* 360° desde la galería de pisos: el visor tapa todo (también el panel y la galería) */
+.room-photo{z-index:65}
+.fg-360{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.55);background:rgba(10,16,24,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;
+  font:600 11.5px var(--sans-a);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .25s,color .25s}
+.fg-360:hover{background:#fff;color:#0f1c2e}
+.fg-360[hidden]{display:none}
+.fg-360 svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.fg-360tag{margin-left:6px;padding:1px 5px;border-radius:6px;border:1px solid currentColor;font-style:normal;font-size:9px;letter-spacing:.04em;opacity:.8}

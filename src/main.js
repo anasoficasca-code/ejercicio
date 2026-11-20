@@ -89,7 +89,7 @@ class App {
     });
     // noche ↔ tarde: la luz cambia en 2,4 s y se van encendiendo apartamentos, bañadores y calle
     night.onclick = () => {
-      const g = window.gsap, from = parseFloat(hour.value), to = from >= 17.9 ? 15.5 : 18.15;
+      const g = window.gsap, from = parseFloat(hour.value), to = from >= 17.9 ? 16 : 18.15;
       const apply = (h) => { hour.value = h; show(h); this.scene.setHour(h); };
       if (!g || matchMedia('(prefers-reduced-motion: reduce)').matches) { apply(to); return; }
       const o = { h: from };

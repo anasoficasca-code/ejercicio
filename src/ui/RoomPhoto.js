@@ -131,9 +131,10 @@ export class RoomPhoto {
   }
 
   /** Abre la vista 360 del cuarto `key` (si no hay, no hace nada y devuelve false). */
-  show(key, { delay = 0 } = {}) {
+  show(key, { delay = 0, closeLabel = 'Ver en el modelo 3D' } = {}) {
     const p = ROOM_PHOTOS[key];
     if (!p) { this.hide(); return false; }
+    this.el.querySelector('.rp-3d').textContent = closeLabel;
     clearTimeout(this._tm);
     const token = (this._token = (this._token || 0) + 1);
     const ready = this.renderer ? this._texture(p.pano) : Promise.resolve(null);
