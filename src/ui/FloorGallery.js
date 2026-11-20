@@ -41,8 +41,8 @@ function zonesFor(key) {
         { title: 'Lobby', text: 'Recepción y sala de espera en la esquina de la Calle 56 con Carrera 18.', photos: ['lobby-recepcion.webp', 'lobby-sala.webp'], unit: 'lobby', pano: 'lobby' },
         { title: 'Bicicletero', text: 'Bicicletero cubierto junto al acceso, con cupos para los residentes.', photos: imgs('bici', 4), unit: 'lobby' },
         { title: 'Restaurante con terraza', text: 'Restaurante sobre la Calle 56, con terraza al aire libre en el antejardín.', photos: [...imgs('rest-int', 4), ...imgs('rest-ext', 4)], unit: 'salon', pano: 'salon' },
-        { title: 'Sala de cine', text: 'Sala de cine privada para los residentes, hacia el patio.', photos: imgs('cine', 4), unit: 'cine' },
-        { title: 'Gimnasio', text: 'Gimnasio con ventanal al jardín del patio posterior.', photos: imgs('gym', 4), unit: 'gym' }
+        { title: 'Sala de cine', text: 'Sala de cine privada para los residentes, hacia el patio en el costado oriental.', photos: imgs('cine', 4), unit: 'cine' },
+        { title: 'Gimnasio', text: 'Gimnasio con ventanal al jardín del patio, sobre la Carrera 18.', photos: imgs('gym', 4), unit: 'gym' }
       ]
     };
   }
@@ -129,6 +129,11 @@ export class FloorGallery {
           <button class="fg-full" data-act="full" aria-label="Ver en pantalla completa"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
         </figure>
         <div class="fg-caption"><h3 class="fg-zone"></h3><p class="fg-text"></p></div>
+        ${def.zones.length > 1 ? `<nav class="fg-places" aria-label="Lugares del piso">
+          <button data-act="pzone"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg><span class="fg-pl"><small>Lugar anterior</small><b class="fg-pname"></b></span></button>
+          <span class="fg-pidx"></span>
+          <button data-act="nzone"><span class="fg-pl"><small>Siguiente lugar</small><b class="fg-nname"></b></span><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        </nav>` : ''}
         <div class="fg-thumbs">${this.slides.map((s, k) => `<button data-i="${k}" aria-label="Foto ${k + 1}"><img src="${s.src}" alt="" loading="lazy" decoding="async" /></button>`).join('')}</div>
       </div>`;
     this.el.classList.remove('min');
@@ -152,7 +157,17 @@ export class FloorGallery {
     const z = zonesFor(key).zones.findIndex((z) => z.unit === u.id);
     this._nextZone = Math.max(0, z);
     if (this.key === key) this.open(key, this._nextZone);
-    store.setState({ selectedUnitId: null, activeFloor: u.floor, galleryKey: key });
+    store.setState({ selectedUnitId: null, activeFloor: u.floor, galleryKey: key, galleryUnitId: u.id });
+    // después del corte del piso, la cámara se acerca a ese lugar
+    clearTimeout(this._ft);
+    this._ft = setTimeout(() => this.scene.focusUnit(u.id), 60);
+  }
+
+  /** Lugar anterior / siguiente del mismo piso (vuelve a empezar al llegar al final). */
+  goZone(d) {
+    const n = this.def.zones.length, cur = this.slides[this.i]?.zi ?? 0;
+    const zi = (((cur + d) % n) + n) % n;
+    this.go(this.slides.findIndex((s) => s.zi === zi));
   }
 
   go(i, { camera = true } = {}) {
@@ -171,6 +186,12 @@ export class FloorGallery {
     this.el.querySelector('.fg-text').textContent = z.text;
     this.el.querySelector('.fg-count').textContent = `${i + 1} / ${n}`;
     this.el.querySelector('.fg-360').hidden = !z.pano;
+    const zn = this.def.zones.length, zp = this.def.zones[(s.zi - 1 + zn) % zn], zx = this.def.zones[(s.zi + 1) % zn];
+    if (this.el.querySelector('.fg-places')) {
+      this.el.querySelector('.fg-pname').textContent = zp.title;
+      this.el.querySelector('.fg-nname').textContent = zx.title;
+      this.el.querySelector('.fg-pidx').textContent = `${s.zi + 1} / ${zn}`;
+    }
     this.el.querySelectorAll('[data-zone]').forEach((b) => b.setAttribute('aria-selected', String(+b.dataset.zone === s.zi)));
     this.el.querySelectorAll('.fg-thumbs [data-i]').forEach((b) => b.classList.toggle('on', +b.dataset.i === i));
     this.el.querySelector(`.fg-thumbs [data-i="${i}"]`)?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
@@ -185,7 +206,7 @@ export class FloorGallery {
     if (z.terrace) { this.scene.focusTerrace?.(); return; }
     if (z.unit) {
       this.scene.focusUnit(z.unit);
-      store.setState({ hoveredUnitId: z.unit });   // resalta la unidad de esa zona
+      store.setState({ galleryUnitId: z.unit });   // resalta la unidad de ese lugar en el modelo
     }
   }
 
@@ -203,6 +224,8 @@ export class FloorGallery {
     const a = t.dataset.act;
     if (a === 'prev') this.go(this.i - 1);
     if (a === 'next') this.go(this.i + 1);
+    if (a === 'pzone') this.goZone(-1);
+    if (a === 'nzone') this.goZone(1);
     if (a === 'min') this.el.classList.toggle('min');
     if (a === 'pano') this.openPano(this.def.zones[this.slides[this.i].zi]);
     if (a === 'close') this.close();
@@ -221,7 +244,7 @@ export class FloorGallery {
     s.photo.onClose = () => document.body.classList.remove('has-gallery-pano');
   }
 
-  close() { store.setState({ galleryKey: null }); }
+  close() { store.setState({ galleryKey: null, galleryUnitId: null }); }
 
   _hide() {
     this.key = null;

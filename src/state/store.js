@@ -11,6 +11,7 @@ export class MasterplanStore {
       activeFloor: null,             // filtro por piso (1..6)
       activeTypology: null,          // 'Apartamento' | 'Zona común'
       galleryKey: null,              // galería de zonas abierta: null | 'edificio' | 'terraza' | 1..6
+      galleryUnitId: null,           // unidad del lugar que muestra la galería (queda resaltada en el modelo)
       selectedUnitId: null,
       hoveredUnitId: null,
       interiorView: null,            // null (planta abierta) | 'cocina' | 'habitacion'

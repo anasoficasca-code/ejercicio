@@ -525,8 +525,9 @@ export class ProjectBuilding {
       const zc = (title, quad, facades) => ({ typology: 'Zona común', title, facades, area: +area(Q[quad]).toFixed(1) });
       mk('lobby', 'NW', { ...zc('Lobby de acceso y bicicletero', 'NW', 'Calle 56 y Carrera 18'), location: 'Esquina Calle 56 con Carrera 18' });
       mk('salon', 'NE', { ...zc('Restaurante con terraza', 'NE', 'Calle 56'), location: 'Sobre la Calle 56 · terraza en el antejardín' });
-      mk('cine', 'SW', { ...zc('Sala de cine', 'SW', 'Carrera 18 y patio'), location: 'Hacia el patio' });
-      mk('gym', 'SE', { ...zc('Gimnasio', 'SE', 'Patio'), location: 'Hacia el patio, con ventanal al jardín' });
+      // gimnasio en la esquina del patio sobre la Carrera 18 y sala de cine al oriente (como en el modelo)
+      mk('gym', 'SW', { ...zc('Gimnasio', 'SW', 'Carrera 18 y patio'), location: 'Hacia el patio y la Carrera 18, con ventanal al jardín' });
+      mk('cine', 'SE', { ...zc('Sala de cine', 'SE', 'Patio y oriente'), location: 'Hacia el patio · costado oriental' });
     } else {
       const [A, B] = this.pa.tipologias;
       const apt = (t, n, loc, facades) => ({ typology: 'Apartamento', tipo: t.tipo, title: `Apartamento ${i + 1}0${n} · Tipo ${t.tipo}`, area: t.area, price: t.precio, location: loc, facades, espacios: t.espacios, lamina: t.lamina });

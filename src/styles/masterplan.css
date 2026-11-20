@@ -1630,3 +1630,16 @@ body:not(.has-floor-gallery) .floor-gallery,body.is-intro .floor-gallery{opacity
 .fg-360[hidden]{display:none}
 .fg-360 svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .fg-360tag{margin-left:6px;padding:1px 5px;border-radius:6px;border:1px solid currentColor;font-style:normal;font-size:9px;letter-spacing:.04em;opacity:.8}
+/* recorrer el piso lugar por lugar (anterior / siguiente, da la vuelta) */
+.fg-places{display:flex;align-items:stretch;gap:8px;margin:0 0 12px}
+.fg-places button{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08);color:#fff;cursor:pointer;text-align:left;font-family:var(--sans-a);transition:background .25s,border-color .25s}
+.fg-places button:last-child{justify-content:flex-end;text-align:right;background:rgba(31,79,143,.55);border-color:rgba(169,199,232,.45)}
+.fg-places button:hover{background:rgba(255,255,255,.2)}
+.fg-places button:last-child:hover{background:rgba(42,99,173,.85)}
+.fg-places svg{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fg-pl{display:flex;flex-direction:column;min-width:0}
+.fg-pl small{font-size:9.5px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.62)}
+.fg-pl b{font-size:12px;font-weight:600;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fg-pidx{align-self:center;flex:none;font-size:11px;font-weight:600;letter-spacing:.06em;color:rgba(255,255,255,.7)}
+@media (max-width:760px){.fg-places button{padding:8px 10px}.fg-pl b{font-size:11px}}

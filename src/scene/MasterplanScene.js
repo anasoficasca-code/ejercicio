@@ -234,7 +234,7 @@ export class MasterplanScene {
   onState(s) {
     if (!this.building) return;
     const filtered = (s.activeFloor || s.activeTypology) ? new Set(store.getFilteredUnits().map((u) => u.id)) : null;
-    this.building.setHighlight({ show: s.showUnitsOverlay, selectedId: s.selectedUnitId, hoveredId: s.hoveredUnitId, filter: filtered });
+    this.building.setHighlight({ show: s.showUnitsOverlay, selectedId: s.selectedUnitId, hoveredId: s.hoveredUnitId || (s.galleryKey != null ? s.galleryUnitId : null), filter: filtered });
 
     if (s.cityTheme !== this._theme) { this._theme = s.cityTheme; this.city.setTheme(s.cityTheme); }
     for (const k of ['estudio', 'predios']) this.city.setLayer(k, s.layers[k]);
@@ -522,7 +522,8 @@ export class MasterplanScene {
     el.addEventListener('pointerup', (e) => {
       if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
       const id = this._pick(e);
-      if (id) store.setState({ selectedUnitId: id, activeTab: 'inmuebles' });
+      // tocar una zona o un apartamento en el modelo abre las vistas de ese lugar (galería del piso)
+      if (id) { if (this.onUnitPick) this.onUnitPick(id); else store.setState({ selectedUnitId: id, activeTab: 'inmuebles' }); }
     });
   }
 

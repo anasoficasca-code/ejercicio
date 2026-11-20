@@ -39,6 +39,11 @@ class App {
       store.setState({ activeTab: 'inmuebles' });
       // galería de cada nivel (edificio, terraza, pisos 6 a 1): se abre al elegir el piso en el panel
       this.floorGallery = new FloorGallery({ scene: this.scene, onFullscreen: (title, items, i) => this.gallery.open(title, items, i) });
+      // tocar un lugar en el modelo 3D abre su piso y sus vistas, y desde ahí se recorre lugar por lugar
+      this.scene.onUnitPick = (id) => {
+        const u = store.state.units.find((k) => k.id === id);
+        if (u) { store.setState({ viewMode: 'exterior', activeTab: 'inmuebles' }); this.floorGallery.openForUnit(u); }
+      };
       this.loading.set(0.8, 'Descargando la ortofoto…');
       // la ortofoto y el relieve terminan de llegar con la escena ya a la vista (antes se esperaban hasta 7 s)
       await Promise.race([this.scene.city.ready, new Promise((r) => setTimeout(r, 900))]);
