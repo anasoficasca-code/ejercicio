@@ -207,21 +207,52 @@ ang = math.degrees(math.atan2(nx, -nz))
 b(f'<g class="cb-north" transform="translate({W2-44:.0f} {H2-44:.0f}) rotate({ang:.1f})"><circle r="17"/><path d="M0 -13L5 6L0 2L-5 6Z"/></g><text class="cb-s" x="{W2-44:.0f}" y="{H2-10:.0f}" text-anchor="middle">N</text>')
 b('</svg>')
 cabida_svg = ''.join(k)
+_i = cabida_svg.index('</defs>') + len('</defs>')
+cabida_svg = cabida_svg[:_i] + f'<g transform="rotate(180 {W2/2:.1f} {H2/2:.1f})">' + cabida_svg[_i:].replace('</svg>', '</g></svg>')
+def _up(m):
+    t = m.group(0); x_ = re.search(r' x="([-\d.]+)"', t).group(1); y_ = re.search(r' y="([-\d.]+)"', t).group(1)
+    if ' transform="' in t: return t.replace(' transform="', f' transform="rotate(180 {x_} {y_}) ', 1)
+    return t.replace('<text', f'<text transform="rotate(180 {x_} {y_})"', 1)
+cabida_svg = re.sub(r'<text[^>]*>', _up, cabida_svg)
 
 # ------------------------------------------------------------------ cabida en axonometría (isométrica)
 SA = 11.5
 def ISO(x, z, y=0.0):
-    return ((x - z) * 0.8660 * SA, -(x + z) * 0.5 * SA - y * SA)
+    return ((z - x) * 0.8660 * SA, -(x + z) * 0.5 * SA - y * SA)
 axp = []
 def poly_ax(pts3, cls, extra=''):
     q = [ISO(*p) for p in pts3]; axp.extend(q)
     return f'<path class="{cls}" d="M' + 'L'.join(f'{a:.1f} {b:.1f}' for a, b in q) + f'Z"{extra}/>'
 ax = []
+x0, x1, z0, z1 = min(xs), max(xs), min(zs), max(zs)
+BS = 2 * FH
+bs = ['<g class="ax-bs">', poly_ax([(x0, z1, -BS), (x0, z0, -BS), (x0, z0, 0), (x0, z1, 0)], 'ax-bw'), poly_ax([(x0, z0, -BS), (x1, z0, -BS), (x1, z0, 0), (x0, z0, 0)], 'ax-bn')]
+for yy in (-FH, -BS):
+    a_, b_, c_ = ISO(x0, z1, yy), ISO(x0, z0, yy), ISO(x1, z0, yy)
+    bs.append(f'<path class="ax-bl" d="M{a_[0]:.1f} {a_[1]:.1f}L{b_[0]:.1f} {b_[1]:.1f}L{c_[0]:.1f} {c_[1]:.1f}"/>')
+for k_, yy in enumerate((-FH / 2, -FH * 1.5)):
+    for i_ in range(9):
+        xx = x0 + 2.5 + i_ * (x1 - x0 - 5) / 8
+        q = [ISO(xx - 0.9, z0, yy - 0.75), ISO(xx + 0.9, z0, yy - 0.75), ISO(xx + 0.9, z0, yy + 0.35), ISO(xx - 0.9, z0, yy + 0.35)]
+        bs.append('<path class="ax-car" d="M' + 'L'.join(f'{p[0]:.1f} {p[1]:.1f}' for p in q) + 'Z"/>')
+bs.append('</g>')
+_bx, _by = ISO(x0, z0, -BS)
+bs_label = f'<text class="ax-bt" x="{_bx:.1f}" y="{_by + 26:.1f}" text-anchor="middle">2 sótanos · 46 parqueaderos</text><text class="ax-bt ax-bt2" x="{_bx:.1f}" y="{_by + 42:.1f}" text-anchor="middle">23 por nivel, bajo todo el lote</text>'
+axp.append((_bx, _by + 50))
+ax.append(''.join(bs))
 ax.append('<g class="ax-lot">' + poly_ax([(x, z, 0) for x, z in poly], 'ax-ground') + '</g>')
 # antejardines (franja de 3,50 m sobre las dos calles), dentro del lote
 x0, x1, z0, z1 = min(xs), max(xs), min(zs), max(zs)
 ax.append('<g class="ax-ant">' + poly_ax([(x0, z0, 0), (x1, z0, 0), (x1, oz, 0), (ox, oz, 0), (ox, z1, 0), (x0, z1, 0)], 'ax-green') + '</g>')
 TOP = NF * FH
+# árboles esquemáticos en el patio y en el costado oriental (atrás del edificio, no al frente)
+trees = [(ox + x_, z1 - 2.0) for x_ in (2.5, 8.5, 15.5, 22.0)] + [(x1 - 2.0, oz + z_) for z_ in (3.0, 9.0)] + [(ox + 5.5, oz + PD + 2.6), (ox + 19.0, oz + PD + 2.6)]
+tr = ['<g class="ax-trees">']
+for tx_, tz_ in sorted(trees, key=lambda p: -(p[0] + p[1])):
+    a_, c_ = ISO(tx_, tz_, 0), ISO(tx_, tz_, 4.6)
+    tr.append(f'<path class="ax-trunk" d="M{a_[0]:.1f} {a_[1]:.1f}V{c_[1]+10:.1f}"/><ellipse class="ax-crown" cx="{c_[0]:.1f}" cy="{c_[1]:.1f}" rx="{2.4*SA:.1f}" ry="{2.2*SA:.1f}"/>')
+    axp.append(ISO(tx_, tz_, 7))
+tr.append('</g>'); ax.append(''.join(tr))
 for i in range(NF):
     y0, y1 = i * FH, (i + 1) * FH
     g = ['<g class="ax-f">']
@@ -247,11 +278,12 @@ r.append('</g>'); ax.append(''.join(r))
 # cotas y rótulos
 hx, hy = ISO(ox, oz + PD + 2.6, 0); tx, ty = ISO(ox, oz + PD + 2.6, TOP)
 ax.append(f'<g class="ax-dim"><path d="M{hx:.1f} {hy:.1f}V{ty:.1f}M{hx-5:.1f} {hy:.1f}h10M{tx-5:.1f} {ty:.1f}h10"/>'
-          f'<text x="{hx-10:.1f}" y="{(hy+ty)/2:.1f}" text-anchor="end">{es(TOP)} m</text><text x="{hx-10:.1f}" y="{(hy+ty)/2+15:.1f}" text-anchor="end" class="ax-sm">{NF} pisos</text>')
+          f'<text x="{hx+10:.1f}" y="{(hy+ty)/2:.1f}" text-anchor="start">{es(TOP)} m</text><text x="{hx+10:.1f}" y="{(hy+ty)/2+15:.1f}" text-anchor="start" class="ax-sm">{NF} pisos</text>')
 cx_, cy_ = ISO((x0 + x1) / 2, z0 - 2.4, 0)
-ax.append(f'<text class="ax-st" transform="translate({cx_:.1f} {cy_:.1f}) rotate(-30)" text-anchor="middle">Calle 56</text>')
+ax.append(f'<text class="ax-st" transform="translate({cx_:.1f} {cy_:.1f}) rotate(30)" text-anchor="middle">Calle 56</text>')
 cx_, cy_ = ISO(x0 - 2.4, (z0 + z1) / 2, 0)
-ax.append(f'<text class="ax-st" transform="translate({cx_:.1f} {cy_:.1f}) rotate(30)" text-anchor="middle">Carrera 18</text></g>')
+ax.append(f'<text class="ax-st" transform="translate({cx_:.1f} {cy_:.1f}) rotate(-30)" text-anchor="middle">Carrera 18</text></g>')
+ax.append(bs_label)
 X0 = min(a for a, b in axp) - 90; X1 = max(a for a, b in axp) + 40; Y0 = min(b for a, b in axp) - 30; Y1 = max(b for a, b in axp) + 40
 axo_svg = (f'<svg class="ax-svg" viewBox="{X0:.0f} {Y0:.0f} {X1-X0:.0f} {Y1-Y0:.0f}" role="img" aria-label="Axonometría de la cabida: lote esquinero con antejardines y el volumen de {NF} pisos">' + ''.join(ax) + '</svg>')
 
@@ -346,8 +378,10 @@ blocks['cabida'] = f'''
           <li><b>04</b><span>Sótanos</span><p>2 niveles bajo todo el lote: 46 parqueaderos.</p></li>
         </ol>
         <div class="cabida-vis">
-          <figure class="cabida-axo"><div class="cb-img"><img src="./assets/renders/cabida-axo.webp" alt="Axonometría renderizada de la cabida: edificio de 6 pisos sobre el lote esquinero y dos sótanos de parqueaderos a la vista" loading="lazy" width="2000" height="1498" /><span class="lbl lbl-st" style="left:39.66%;top:78.05%">Calle 56</span><span class="lbl lbl-st" style="left:79.98%;top:73.79%">Carrera 18</span><span class="lbl lbl-s lbl-r" style="left:63.5%;top:89.1%">Sótano 1 · 23 parqueaderos</span><span class="lbl lbl-s lbl-r" style="left:63.5%;top:96.23%">Sótano 2 · 23 parqueaderos</span><span class="cb-h" style="left:21.77%;top:23.58%;height:42.78%"><em>18,6 m · 6 pisos</em></span><span class="lbl lbl-s" style="left:49.42%;top:15.58%">Terraza</span></div><figcaption>Axonometría desde la esquina de la Calle 56 con Carrera 18</figcaption></figure>
-          <figure class="cabida-fig"><div class="cb-tabs" role="tablist"><button type="button" role="tab" data-p="p1" aria-selected="true">Planta piso 1</button><button type="button" role="tab" data-p="tipo" aria-selected="false">Planta piso tipo</button></div><div class="cb-img cb-plan on" data-p="p1"><img src="./assets/renders/planta-p1.webp" alt="Planta renderizada del piso 1 con la Calle 56 y la Carrera 18: lobby, bicicletero, restaurante, sala de cine, gimnasio, rampa a sótanos y jardín" loading="lazy" width="1900" height="1603" /><svg class="poly-ov" viewBox="0 0 100 84.37" preserveAspectRatio="none" aria-hidden="true"><polygon class="pl pl-z" data-k="NW" points="70.70,55.40 50.47,55.40 50.47,48.00 55.02,48.00 55.02,42.34 70.70,42.34"><title>Lobby</title></polygon><polygon class="pl pl-z" data-k="NE" points="50.47,55.40 29.30,55.40 29.30,42.34 45.27,42.34 45.27,48.00 50.47,48.00"><title>Restaurante</title></polygon><polygon class="pl pl-z" data-k="SW" points="70.70,42.34 55.02,42.34 55.02,39.54 50.20,39.54 50.20,32.07 70.70,32.07"><title>Sala de cine</title></polygon><polygon class="pl pl-z" data-k="SE" points="50.20,39.54 45.27,39.54 45.27,42.34 29.30,42.34 29.30,32.07 50.20,32.07"><title>Gimnasio</title></polygon><polygon class="pl pl-c" data-k="CORE" points="55.02,48.00 45.27,48.00 45.27,39.54 55.02,39.54"><title>Punto fijo</title></polygon></svg><span class="lbl lbl-z" style="left:58.73%;top:57.58%">Lobby</span><span class="lbl lbl-z" style="left:41.68%;top:57.58%">Restaurante</span><span class="lbl lbl-z" style="left:58.64%;top:45.02%">Sala de cine</span><span class="lbl lbl-z" style="left:41.59%;top:45.02%">Gimnasio</span><span class="lbl lbl-s" style="left:50.15%;top:51.88%">Punto fijo</span><span class="lbl lbl-pin" style="left:53.2%;top:69.81%">Bicicletero</span><span class="lbl lbl-pin lbl-v" style="left:23.3%;top:53.81%">Rampa a sótanos</span><span class="lbl lbl-road" style="left:50.0%;top:88.38%">Calle 56</span><span class="lbl lbl-road lbl-v" style="left:90.8%;top:51.84%">Carrera 18</span><span class="lbl lbl-g" style="left:50.0%;top:26.92%">Jardín del patio</span><span class="lbl lbl-g" style="left:50.0%;top:69.12%">Antejardín 3,50 m</span></div><div class="cb-img cb-plan" data-p="tipo"><img src="./assets/renders/planta-tipo.webp" alt="Planta renderizada del piso tipo con la Calle 56 y la Carrera 18 y el límite de cada apartamento: dos tipo A y dos tipo B" loading="lazy" width="1900" height="1603" /><svg class="poly-ov" viewBox="0 0 100 84.37" preserveAspectRatio="none" aria-hidden="true"><polygon class="pl pl-a" data-k="NW" points="70.70,55.40 50.47,55.40 50.47,48.00 55.02,48.00 55.02,42.34 70.70,42.34"><title>x01 tipo A</title></polygon><polygon class="pl pl-a" data-k="NE" points="50.47,55.40 29.30,55.40 29.30,42.34 45.27,42.34 45.27,48.00 50.47,48.00"><title>x02 tipo A</title></polygon><polygon class="pl pl-b" data-k="SW" points="70.70,42.34 55.02,42.34 55.02,39.54 50.20,39.54 50.20,32.07 70.70,32.07"><title>x03 tipo B</title></polygon><polygon class="pl pl-b" data-k="SE" points="50.20,39.54 45.27,39.54 45.27,42.34 29.30,42.34 29.30,32.07 50.20,32.07"><title>x04 tipo B</title></polygon><polygon class="pl pl-c" data-k="CORE" points="55.02,48.00 45.27,48.00 45.27,39.54 55.02,39.54"><title>Punto fijo</title></polygon></svg><span class="lbl lbl-a" style="left:58.73%;top:57.58%"><b>A</b>x01</span><span class="lbl lbl-a" style="left:41.68%;top:57.58%"><b>A</b>x02</span><span class="lbl lbl-b" style="left:58.64%;top:45.02%"><b>B</b>x03</span><span class="lbl lbl-b" style="left:41.59%;top:45.02%"><b>B</b>x04</span><span class="lbl lbl-s" style="left:50.15%;top:51.88%">Punto fijo</span><span class="lbl lbl-road" style="left:50.0%;top:88.38%">Calle 56</span><span class="lbl lbl-road lbl-v" style="left:90.8%;top:51.84%">Carrera 18</span><span class="lbl lbl-g" style="left:50.0%;top:26.92%">Jardín del patio</span></div><figcaption class="cb-cap-p1"><span><i class="k-z"></i>Zonas comunes</span><span><i class="k-c"></i>Punto fijo</span><span>Calle 56 abajo y Carrera 18 a la derecha, como en la axonometría</span></figcaption><figcaption class="cb-cap-tipo"><span><i class="k-a"></i>Tipo A · 78,75 m²</span><span><i class="k-b"></i>Tipo B · 70 m²</span><span>Pisos 2 a 6</span></figcaption></figure>
+          <figure class="cabida-axo">{axo_svg}<figcaption>Axonometría · {NF} pisos sobre el lote y 2 sótanos con 46 parqueaderos</figcaption></figure>
+          <figure class="cabida-fig">{cabida_svg}
+            <figcaption class="cb-leg"><span><i class="k-foot"></i>Huella del edificio</span><span><i class="k-ant"></i>Antejardín de {es(ant)} m</span><span><i class="k-lot"></i>Lindero del lote</span><span>A · tipo A 78,75 m² · B · tipo B 70 m²</span></figcaption>
+          </figure>
         </div>
         <dl class="cabida-dl">{cab_dl}</dl>
         <p class="cabida-src">Fuentes: Catastro Bogotá (lote), POT de Bogotá, Decreto 555 de 2021 (antejardín, aislamiento posterior de {es(pa["aislamientoPosteriorM"])} m y equipamiento comunal) y modelo de Revit del proyecto (huella, alturas y áreas).</p>

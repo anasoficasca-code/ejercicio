@@ -1390,3 +1390,21 @@ html { scrollbar-color: var(--ink) var(--bg); scrollbar-width: thin; }
 }
 
 .st-type { max-width: min(1320px, 100%) !important; font-size: clamp(16px, 1.65vw, 25px) !important; line-height: 1.6 !important; }
+
+/* ===================== v10: cabida en esquema (vectorial, sobre el fondo oscuro) ===================== */
+.cabida .cabida-axo, .cabida .cabida-fig { background: none !important; padding: 0 !important; border-radius: 0 !important; }
+.cabida .cabida-vis { align-items: center !important; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) !important; gap: clamp(24px, 4vw, 70px) !important; }
+.cabida-fig figcaption.cb-leg { display: flex !important; flex-wrap: wrap; gap: 8px 20px; margin-top: 14px; color: var(--on-night-2) !important; font-size: 13px; }
+.cabida-fig figcaption.cb-leg span { display: inline-flex; align-items: center; gap: 8px; }
+.cabida-fig figcaption.cb-leg i { width: 14px; height: 14px; display: inline-block; }
+.cabida .cabida-axo figcaption { color: var(--on-night-2) !important; }
+.ax-bw { fill: rgba(214, 194, 155, .10); stroke: rgba(214, 194, 155, .75); stroke-width: 1; stroke-dasharray: 5 4; }
+.ax-bn { fill: rgba(214, 194, 155, .16); stroke: rgba(214, 194, 155, .75); stroke-width: 1; stroke-dasharray: 5 4; }
+.ax-bl { fill: none; stroke: rgba(214, 194, 155, .6); stroke-width: 1; }
+.ax-car { fill: rgba(214, 194, 155, .35); stroke: none; }
+.ax-bt { font: 500 10.5px var(--display); letter-spacing: .16em; text-transform: uppercase; fill: var(--sky); }
+.ax-trunk { stroke: rgba(214, 194, 155, .7); stroke-width: 1.6; fill: none; }
+.ax-crown { fill: rgba(126, 168, 112, .38); stroke: rgba(170, 205, 150, .8); stroke-width: 1; }
+@media (max-width: 860px) { .cabida .cabida-vis { grid-template-columns: 1fr !important; } }
+
+.ax-bt2 { font-size: 9.5px !important; fill: var(--on-night-2) !important; }

@@ -579,9 +579,9 @@ const fmtP = (v) => '$' + Math.round(v).toLocaleString('es-CO');
 })();
 
 // cabida en axonometría: el lote se dibuja y el edificio se arma piso por piso
-if (false) {
+if (motion && document.querySelector('.ax-svg')) {
   const tl = g.timeline({ scrollTrigger: { trigger: '.cabida-axo', start: 'top 75%' } });
-  tl.from('.ax-lot, .ax-ant', { opacity: 0, duration: 0.8, stagger: 0.2 })
+  tl.from('.ax-bs, .ax-lot, .ax-ant, .ax-trees', { opacity: 0, duration: 0.8, stagger: 0.2 })
     .from('.ax-f', { y: -60, opacity: 0, duration: 0.7, stagger: 0.16, ease: 'back.out(1.4)' }, 0.5)
     .from('.ax-roof', { y: -40, opacity: 0, duration: 0.7, ease: 'back.out(1.4)' }, '-=0.3')
     .from('.ax-dim, .ax-st', { opacity: 0, duration: 0.6, stagger: 0.1 });
